@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExplAIner | Cadastro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="pagina">
+        <header class="cabecalho">
+            <div class="marca">
+                <span class="logo">E</span>
+                <div>
+                    <h1>ExplAIner</h1>
+                    <p>Cadastro de aluno</p>
+                </div>
+            </div>
+
+            <nav class="menu-navegacao">
+                <a href="index.html" class="link-navegacao ativo">Cadastro</a>
+                <a href="ler.html" class="link-navegacao">Ler</a>
+                <a href="atualizar.html" class="link-navegacao">Atualizar</a>
+                <a href="deletar.html" class="link-navegacao">Deletar</a>
+            </nav>
+        </header>
+
+        <main class="conteudo">
+            <section class="cartao">
+                <div class="titulo-cartao">
+                    <h2>Formulário de cadastro</h2>
+                    <p>Preencha os dados abaixo para cadastrar um novo aluno.</p>
+                </div>
+
+                <form class="grade-formulario">
+                    <label class="campo">
+                        <span>ID do aluno</span>
+                        <input type="number" placeholder="Ex.: 1">
+                    </label>
+
+                    <label class="campo">
+                        <span>Nome completo</span>
+                        <input type="text" placeholder="Ex.: Ana Souza" required>
+                    </label>
+
+                    <label class="campo">
+                        <span>E-mail</span>
+                        <input type="email" placeholder="ana@email.com" required>
+                    </label>
+
+                    <label class="campo">
+                        <span>Senha</span>
+                        <input type="password" placeholder="Digite uma senha" required>
+                    </label>
+
+                    <label class="campo campo-longo">
+                        <span>Data de nascimento</span>
+                        <input type="date">
+                    </label>
+
+                    <button type="submit">Cadastrar</button>
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
