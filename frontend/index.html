@@ -25,48 +25,56 @@
             <nav class="menu-navegacao">
                 <a href="index.html" class="link-navegacao ativo">Cadastro</a>
                 <a href="ler.html" class="link-navegacao">Ler</a>
+                <a href="listar.html" class="link-navegacao">Listar</a>
                 <a href="atualizar.html" class="link-navegacao">Atualizar</a>
                 <a href="deletar.html" class="link-navegacao">Deletar</a>
             </nav>
         </header>
 
-        <main class="conteudo">
-            <section class="cartao">
-                <div class="titulo-cartao">
-                    <h2>Formulário de cadastro</h2>
-                    <p>Preencha os dados abaixo para cadastrar um novo aluno.</p>
-                </div>
+<main class="conteudo">
+    <section class="cartao">
+        <div class="intro-bloco">
+            <p class="intro-kicker">Cadastro</p>
+            <p class="intro-text">Gerencie os cadastros de forma simples e objetiva.</p>
+        </div>
+        <div class="titulo-cartao">
+            <h2>Formulário de cadastro</h2>
+            <p>Preencha os dados abaixo para cadastrar um novo aluno.</p>
+        </div>
 
-                <form class="grade-formulario">
-                    <label class="campo">
-                        <span>ID do aluno</span>
-                        <input type="number" placeholder="Ex.: 1">
-                    </label>
+        <form class="grade-formulario" id="form-cadastro">
+            <label class="campo">
+                <span>Nome completo</span>
+                <input type="text" name="nome" placeholder="Ex.: Ana Souza" required>
+            </label>
 
-                    <label class="campo">
-                        <span>Nome completo</span>
-                        <input type="text" placeholder="Ex.: Ana Souza" required>
-                    </label>
+            <label class="campo">
+                <span>E-mail</span>
+                <input type="email" name="email" placeholder="ana@email.com" required>
+            </label>
 
-                    <label class="campo">
-                        <span>E-mail</span>
-                        <input type="email" placeholder="ana@email.com" required>
-                    </label>
+            <label class="campo">
+                <span>Senha</span>
+                <input type="password" name="senha" placeholder="Digite uma senha" required>
+            </label>
 
-                    <label class="campo">
-                        <span>Senha</span>
-                        <input type="password" placeholder="Digite uma senha" required>
-                    </label>
+            <label class="campo">
+                <span>Data de nascimento</span>
+                <input type="date" name="data_nascimento" required>
+            </label>
 
-                    <label class="campo campo-longo">
-                        <span>Data de nascimento</span>
-                        <input type="date">
-                    </label>
+            <button type="submit" id="btn-enviar">Cadastrar</button>
+        </form>
 
-                    <button type="submit">Cadastrar</button>
-                </form>
-            </section>
-        </main>
-    </div>
+        <div id="mensagem-resposta" class="resultado" style="display: none;">
+            <h3 id="resposta-titulo"></h3>
+            <p id="resposta-corpo" class="texto-ajuda"></p>
+        </div>
+    </section>
+</main>
+</div>
+
+<script src="script.js"></script>
+    
 </body>
 </html>

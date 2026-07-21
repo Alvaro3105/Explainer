@@ -1,7 +1,7 @@
 from .database import db
 
 class Aluno(db.Model):
-    __tablename__ = "alunos"
+    __tablename__ = "Aluno"  # Nome idêntico ao SQL
 
     id_aluno = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String(100), nullable=False)
@@ -18,15 +18,18 @@ class Aluno(db.Model):
     def atualizar(self, nome=None, email=None, senha=None, data_nascimento=None, pontos=None, foguinho=None):
         if nome is not None:
             self.nome = nome
-
         if email is not None:
             self.email = email
-
         if senha is not None:
             self.senha = senha
-
         if data_nascimento is not None:
             self.data_nascimento = data_nascimento
+        if pontos is not None:
+            self.pontos = pontos
+        if foguinho is not None:
+            self.foguinho = foguinho
+            
+        db.session.commit()
 
     def atualizar_foguinho(self, dias=1):
         self.foguinho += dias
@@ -41,6 +44,7 @@ class Aluno(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    @staticmethod
     def buscar_por_email(email):
         return Aluno.query.filter_by(email=email).first()
 

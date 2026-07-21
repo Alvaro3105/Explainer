@@ -1,6 +1,5 @@
 from models.model_aluno import Aluno
 
-
 class DeletarAlunoService:
 
     def executar(self, aluno_id):

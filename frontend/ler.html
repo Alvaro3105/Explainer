@@ -25,33 +25,42 @@
             <nav class="menu-navegacao">
                 <a href="index.html" class="link-navegacao">Cadastro</a>
                 <a href="ler.html" class="link-navegacao ativo">Ler</a>
+                <a href="listar.html" class="link-navegacao">Listar</a>
                 <a href="atualizar.html" class="link-navegacao">Atualizar</a>
                 <a href="deletar.html" class="link-navegacao">Deletar</a>
             </nav>
         </header>
 
-        <main class="conteudo">
-            <section class="cartao">
-                <div class="titulo-cartao">
-                    <h2>Consultar aluno</h2>
-                    <p>Informe o código do aluno para visualizar as informações cadastradas.</p>
-                </div>
+      <main class="conteudo">
+    <section class="cartao">
+        <div class="intro-bloco">
+            <p class="intro-kicker">Consulta</p>
+            <p class="intro-text">Consulte rapidamente os dados cadastrais de um aluno.</p>
+        </div>
+        <div class="titulo-cartao">
+            <h2>Consultar aluno</h2>
+            <p>Informe o código do aluno para visualizar as informações cadastradas.</p>
+        </div>
 
-                <form class="grade-formulario">
-                    <label class="campo campo-longo">
-                        <span>ID do aluno</span>
-                        <input type="number" placeholder="Ex.: 1" required>
-                    </label>
+        <form class="grade-formulario" id="form-buscar">
+            <label class="campo campo-longo">
+                <span>ID do aluno</span>
+                <input type="number" id="buscar-id" placeholder="Ex.: 1" required>
+            </label>
 
-                    <button type="submit">Buscar</button>
-                </form>
+            <button type="submit" id="btn-buscar">Buscar</button>
+        </form>
 
-                <div class="resultado">
-                    <h3>Resultado</h3>
-                    <p class="texto-ajuda">Digite um ID acima para ver os dados deste aluno na tela.</p>
-                </div>
-            </section>
-        </main>
-    </div>
+        <div class="resultado" id="resultado-busca">
+            <h3 id="busca-titulo">Resultado</h3>
+            <div id="busca-corpo" class="texto-ajuda">
+                Digite um ID acima para ver os dados deste aluno na tela.
+            </div>
+        </div>
+    </section>
+</main>
+</div>
+
+<script src="ler.js"></script>
 </body>
 </html>

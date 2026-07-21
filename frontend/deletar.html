@@ -25,33 +25,41 @@
             <nav class="menu-navegacao">
                 <a href="index.html" class="link-navegacao">Cadastro</a>
                 <a href="ler.html" class="link-navegacao">Ler</a>
+                <a href="listar.html" class="link-navegacao">Listar</a>
                 <a href="atualizar.html" class="link-navegacao">Atualizar</a>
                 <a href="deletar.html" class="link-navegacao ativo">Deletar</a>
             </nav>
         </header>
 
         <main class="conteudo">
-            <section class="cartao">
-                <div class="titulo-cartao">
-                    <h2>Excluir aluno</h2>
-                    <p>Digite o ID do aluno que deseja remover do sistema.</p>
-                </div>
+    <section class="cartao">
+        <div class="intro-bloco">
+            <p class="intro-kicker">Remoção</p>
+            <p class="intro-text">Exclua cadastros com confirmação explícita antes de prosseguir.</p>
+        </div>
+        <div class="titulo-cartao">
+            <h2>Excluir aluno</h2>
+            <p>Digite o ID do aluno que deseja remover do sistema.</p>
+        </div>
 
-                <form class="grade-formulario">
-                    <label class="campo campo-longo">
-                        <span>ID do aluno</span>
-                        <input type="number" placeholder="Ex.: 3" required>
-                    </label>
+        <form class="grade-formulario" id="form-deletar">
+            <label class="campo campo-longo">
+                <span>ID do aluno</span>
+                <input type="number" id="deletar-id" placeholder="Ex.: 3" required>
+            </label>
 
-                    <button type="submit">Excluir aluno</button>
-                </form>
+            <button type="submit" id="btn-deletar" style="background-color: #dc2626;">Excluir aluno</button>
+        </form>
 
-                <div class="resultado">
-                    <h3>Atenção</h3>
-                    <p class="texto-ajuda">Essa ação remove o aluno do cadastro. Confirme antes de continuar.</p>
-                </div>
-            </section>
-        </main>
-    </div>
+        <div class="resultado" id="mensagem-deletar">
+            <h3 id="deletar-titulo">Atenção</h3>
+            <p id="deletar-corpo" class="texto-ajuda">Essa ação remove o aluno do cadastro. Confirme antes de continuar.</p>
+        </div>
+    </section>
+</main>
+</div>
+
+<script src="deletar.js"></script>
+
 </body>
 </html>

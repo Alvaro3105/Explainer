@@ -5,13 +5,15 @@
 }
 
 :root {
-    --primaria: #4f46e5;
-    --primaria-escura: #4338ca;
-    --fundo: #f3f4f6;
+    --primaria: #111827;
+    --primaria-escura: #1f2937;
+    --fundo: #f3f5f8;
     --cartao: #ffffff;
     --texto: #111827;
     --texto-suave: #6b7280;
     --borda: #e5e7eb;
+    --verde: #16a34a;
+    --vermelho: #dc2626;
 }
 
 body {
@@ -22,17 +24,19 @@ body {
 }
 
 .pagina {
-    width: min(860px, 92vw);
+    width: min(900px, 94vw);
     margin: 0 auto;
-    padding: 2rem 0 3rem;
+    padding: 1.4rem 0 2.2rem;
 }
 
 .cabecalho {
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--borda);
 }
 
 .marca {
@@ -44,12 +48,13 @@ body {
 .logo {
     width: 46px;
     height: 46px;
-    border-radius: 12px;
+    border-radius: 10px;
     display: grid;
     place-items: center;
-    background: linear-gradient(135deg, var(--primaria), var(--primaria-escura));
+    background: var(--primaria);
     color: white;
     font-weight: 700;
+    box-shadow: none;
 }
 
 .marca h1 {
@@ -71,23 +76,46 @@ body {
 .link-navegacao {
     text-decoration: none;
     color: var(--texto-suave);
-    padding: 0.55rem 0.8rem;
-    border-radius: 999px;
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
     font-size: 0.95rem;
+    transition: background 180ms ease, color 180ms ease;
 }
 
 .link-navegacao.ativo,
 .link-navegacao:hover {
-    background: #e0e7ff;
-    color: var(--primaria-escura);
+    background: #f3f4f6;
+    color: var(--texto);
 }
 
 .cartao {
     background: var(--cartao);
     border: 1px solid var(--borda);
-    border-radius: 18px;
-    padding: 1.4rem;
-    box-shadow: 0 6px 18px rgba(17, 24, 39, 0.05);
+    border-radius: 12px;
+    padding: 1.2rem;
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
+}
+
+.intro-bloco {
+    margin-bottom: 0.9rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #eef2f7;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.intro-kicker {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 0.2rem;
+}
+
+.intro-text {
+    color: #374151;
+    font-size: 0.95rem;
 }
 
 .titulo-cartao {
@@ -95,7 +123,7 @@ body {
 }
 
 .titulo-cartao h2 {
-    font-size: 1.3rem;
+    font-size: 1.35rem;
     margin-bottom: 0.35rem;
 }
 
@@ -112,7 +140,7 @@ body {
 .campo {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.4rem;
     font-weight: 500;
 }
 
@@ -121,18 +149,18 @@ body {
 }
 
 input {
-    border: 1px solid var(--borda);
-    border-radius: 10px;
-    padding: 0.8rem 0.9rem;
-    font-size: 1rem;
-    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 0.8rem 0.85rem;
+    font-size: 0.95rem;
+    background: #fcfdff;
     color: var(--texto);
 }
 
 input:focus {
     outline: none;
-    border-color: var(--primaria);
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.12);
+    border-color: #9ca3af;
+    box-shadow: none;
 }
 
 .campo-longo {
@@ -142,12 +170,14 @@ input:focus {
 button {
     grid-column: 1 / -1;
     border: none;
-    border-radius: 10px;
-    padding: 0.9rem 1rem;
+    border-radius: 8px;
+    padding: 0.85rem 0.95rem;
     background: var(--primaria);
     color: white;
     font-weight: 600;
     cursor: pointer;
+    transition: background 180ms ease;
+    box-shadow: none;
 }
 
 button:hover {
@@ -155,9 +185,9 @@ button:hover {
 }
 
 .resultado {
-    margin-top: 1.1rem;
-    padding: 1rem;
-    border-radius: 12px;
+    margin-top: 1rem;
+    padding: 0.95rem 1rem;
+    border-radius: 10px;
     background: #f9fafb;
     border: 1px solid var(--borda);
 }
@@ -181,4 +211,3 @@ button:hover {
         grid-template-columns: 1fr;
     }
 }
-

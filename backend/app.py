@@ -1,24 +1,45 @@
 import os
-#from dotenv import load_dotenv
 from flask import Flask, jsonify
-#from flask_cors import CORS
 
 import models.database as d
 from controllers.aluno_controller import aluno_controller
+from controllers.desafio_controller import desafio_controller
+from controllers.tema_controller import tema_controller
+from controllers.questao_controller import questao_controller
+from controllers.ranking_controller import ranking_controller
+from controllers.desafio_questao_controller import desafio_questao_controller
+from controllers.aluno_desafio_controller import aluno_desafio_controller
 
 
 def create_app():
-    #load_dotenv()
-
     app = Flask(__name__)
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "mysql+pymysql://root:@localhost/explainer")
+    database_url = os.getenv("DATABASE_URL", "sqlite:///explainer.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    if database_url.startswith("sqlite"):
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "connect_args": {"check_same_thread": False}
+        }
 
     d.db.init_app(app)
 
-    # Registra todos os controllers
+    @app.after_request
+    def adicionar_cors(response):
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
+
+    # Registro de todos os Blueprints
     app.register_blueprint(aluno_controller)
+    app.register_blueprint(desafio_controller)
+    app.register_blueprint(tema_controller)
+    app.register_blueprint(questao_controller)
+    app.register_blueprint(ranking_controller)
+    app.register_blueprint(desafio_questao_controller)
+    app.register_blueprint(aluno_desafio_controller)
 
     @app.get("/")
     def home():
@@ -31,38 +52,46 @@ def create_app():
                     "criar": "POST /alunos",
                     "atualizar": "PUT /alunos/<id>",
                     "deletar": "DELETE /alunos/<id>",
-                    "historico": "GET /alunos/<id>/historico"
                 },
                 "desafios": {
-                    "listar": "GET /desafios",
-                    "buscar": "GET /desafios/<id>",
-                    "criar": "POST /desafios",
-                    "atualizar": "PUT /desafios/<id>",
-                    "deletar": "DELETE /desafios/<id>"
+                    "listar": "GET /desafio",
+                    "buscar_por_nome": "GET /desafio/nome/<nome>",
+                    "criar": "POST /desafio",
+                    "atualizar": "PUT /desafio/<id>",
+                    "deletar": "DELETE /desafio/<id>",
                 },
                 "temas": {
-                    "listar_por_materia": "GET /temas?materia=<materia>",
-                    "buscar": "GET /temas/<id>",
+                    "listar": "GET /temas",
                     "criar": "POST /temas",
-                    "deletar": "DELETE /temas/<id>"
+                    "atualizar": "PUT /temas/<id>",
+                    "deletar": "DELETE /temas/<id>",
                 },
                 "questoes": {
-                    "listar_por_tema": "GET /questoes?id_tema=<id>",
-                    "buscar": "GET /questoes/<id>",
-                    "criar": "POST /questoes"
+                    "listar": "GET /questoes",
+                    "criar": "POST /questoes",
+                    "atualizar": "PUT /questoes/<id>",
+                    "deletar": "DELETE /questoes/<id>",
                 },
                 "ranking": {
-                    "listar": "GET /ranking?limite=<n>",
-                    "recalcular": "POST /ranking/recalcular"
+                    "listar": "GET /ranking",
+                    "criar": "POST /ranking",
+                    "atualizar": "PUT /ranking/<id>",
+                    "deletar": "DELETE /ranking/<id>",
                 },
-                "aluno_desafio": {
-                    "concluir": "POST /alunos-desafios"
+                "desafio_questoes": {
+                    "adicionar": "POST /desafios/<id_desafio>/questoes/<id_questao>",
+                    "listar": "GET /desafios/<id_desafio>/questoes",
+                    "remover": "DELETE /desafios/<id_desafio>/questoes/<id_questao>",
+                },
+                "aluno_desafios": {
+                    "registrar": "POST /alunos/desafios",
+                    "listar_por_aluno": "GET /alunos/<id_aluno>/desafios",
+                    "atualizar": "PUT /alunos/<id_aluno>/desafios/<id_desafio>",
                 }
             }
         })
 
     with app.app_context():
-        # Cria as tabelas automaticamente
         d.db.create_all()
 
     return app

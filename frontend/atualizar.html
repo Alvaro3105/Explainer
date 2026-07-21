@@ -25,48 +25,61 @@
             <nav class="menu-navegacao">
                 <a href="index.html" class="link-navegacao">Cadastro</a>
                 <a href="ler.html" class="link-navegacao">Ler</a>
+                <a href="listar.html" class="link-navegacao">Listar</a>
                 <a href="atualizar.html" class="link-navegacao ativo">Atualizar</a>
                 <a href="deletar.html" class="link-navegacao">Deletar</a>
             </nav>
         </header>
 
         <main class="conteudo">
-            <section class="cartao">
-                <div class="titulo-cartao">
-                    <h2>Atualizar dados do aluno</h2>
-                    <p>Informe o ID do aluno e edite as informações desejadas.</p>
-                </div>
+    <section class="cartao">
+        <div class="intro-bloco">
+            <p class="intro-kicker">Edição</p>
+            <p class="intro-text">Atualize os dados de um aluno sem perder o contexto do cadastro.</p>
+        </div>
+        <div class="titulo-cartao">
+            <h2>Atualizar dados do aluno</h2>
+            <p>Informe o ID do aluno e edite as informações desejadas.</p>
+        </div>
 
-                <form class="grade-formulario">
-                    <label class="campo">
-                        <span>ID do aluno</span>
-                        <input type="number" placeholder="Ex.: 1" required>
-                    </label>
+        <form class="grade-formulario" id="form-atualizar">
+            <label class="campo">
+                <span>ID do aluno</span>
+                <input type="number" id="atualizar-id" placeholder="Ex.: 1" required>
+            </label>
 
-                    <label class="campo">
-                        <span>Nome completo</span>
-                        <input type="text" placeholder="Novo nome">
-                    </label>
+            <label class="campo">
+                <span>Nome completo</span>
+                <input type="text" name="nome" placeholder="Novo nome">
+            </label>
 
-                    <label class="campo">
-                        <span>E-mail</span>
-                        <input type="email" placeholder="novo@email.com">
-                    </label>
+            <label class="campo">
+                <span>E-mail</span>
+                <input type="email" name="email" placeholder="novo@email.com">
+            </label>
 
-                    <label class="campo">
-                        <span>Senha</span>
-                        <input type="password" placeholder="Nova senha">
-                    </label>
+            <label class="campo">
+                <span>Senha</span>
+                <input type="password" name="senha" placeholder="Nova senha">
+            </label>
 
-                    <label class="campo campo-longo">
-                        <span>Data de nascimento</span>
-                        <input type="date">
-                    </label>
+            <label class="campo campo-longo">
+                <span>Data de nascimento</span>
+                <input type="date" name="data_nascimento">
+            </label>
 
-                    <button type="submit">Atualizar</button>
-                </form>
-            </section>
-        </main>
-    </div>
+            <button type="submit" id="btn-atualizar">Atualizar</button>
+        </form>
+
+        <div id="mensagem-atualizar" class="resultado" style="display: none; margin-top: 1.1rem;">
+            <h3 id="atualizar-titulo"></h3>
+            <p id="atualizar-corpo" class="texto-ajuda"></p>
+        </div>
+    </section>
+</main>
+</div>
+
+<script src="atualizar.js"></script>
+
 </body>
 </html>

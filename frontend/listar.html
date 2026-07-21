@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExplAIner | Listar Alunos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="pagina">
+        <header class="cabecalho">
+            <div class="marca">
+                <span class="logo">E</span>
+                <div>
+                    <h1>ExplAIner</h1>
+                    <p>Painel de Controle</p>
+                </div>
+            </div>
+
+            <nav class="menu-navegacao">
+                <a href="index.html" class="link-navegacao">Cadastro</a>
+                <a href="ler.html" class="link-navegacao">Ler</a>
+                <a href="listar.html" class="link-navegacao ativo">Listar</a>
+                <a href="atualizar.html" class="link-navegacao">Atualizar</a>
+                <a href="deletar.html" class="link-navegacao">Deletar</a>
+            </nav>
+        </header>
+
+        <main class="conteudo">
+            <section class="cartao">
+                <div class="titulo-cartao">
+                    <h2>Alunos Cadastrados</h2>
+                    <p>Abaixo estão listados todos os estudantes integrados ao sistema de gamificação.</p>
+                </div>
+
+                <div class="resultado" id="container-tabela" style="overflow-x: auto; padding: 0; border: none;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--borda); color: var(--texto-suave);">
+                                <th style="padding: 0.75rem 0.5rem; font-weight: 600;">ID</th>
+                                <th style="padding: 0.75rem 0.5rem; font-weight: 600;">Nome</th>
+                                <th style="padding: 0.75rem 0.5rem; font-weight: 600;">E-mail</th>
+                                <th style="padding: 0.75rem 0.5rem; font-weight: 600;">Nascimento</th>
+                                <th style="padding: 0.75rem 0.5rem; font-weight: 600;">Pontos</th>
+                                <th style="padding: 0.75rem 0.5rem; font-weight: 600;">Foguinho</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-alunos-corpo">
+                            <tr>
+                                <td colspan="6" style="padding: 2rem; text-align: center; color: var(--texto-suave);" id="mensagem-status">
+                                    Carregando alunos...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="listar.js"></script>
+</body>
+</html>

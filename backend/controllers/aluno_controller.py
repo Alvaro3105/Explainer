@@ -86,17 +86,3 @@ def deletar_aluno(aluno_id):
     except SQLAlchemyError:
         db.session.rollback()
         return jsonify({"erro": "Erro ao deletar aluno no banco de dados."}), 500
-
-
-@aluno_controller.get("/alunos/<int:aluno_id>/historico")
-def buscar_historico_aluno(aluno_id):
-    try:
-        service = BuscarHistoricoAlunoService()
-        historico = service.executar(aluno_id)
-        return jsonify(historico), 200
-
-    except ValueError as erro:
-        return jsonify({"erro": str(erro)}), 400
-
-    except SQLAlchemyError:
-        return jsonify({"erro": "Erro ao buscar histórico do aluno."}), 500
