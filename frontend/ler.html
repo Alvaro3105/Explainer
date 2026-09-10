@@ -1,1 +1,51 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ExplAIner | Consultar aluno</title><link rel="stylesheet" href="style.css"></head><body><div class="pagina"><header class="cabecalho"><div class="marca"><span class="logo">E</span><div><h1>ExplAIner</h1><p>Consultar aluno</p></div></div><nav class="menu-navegacao" aria-label="Navegação principal"><a class="link-navegacao" href="index.html">Cadastro</a><a class="link-navegacao ativo" href="ler.html">Ler</a><a class="link-navegacao" href="listar.html">Listar</a><a class="link-navegacao" href="atualizar.html">Atualizar</a><a class="link-navegacao" href="deletar.html">Deletar</a><a class="link-navegacao" href="temas.html">Temas</a><a class="link-navegacao" href="desafios.html">Desafios</a><a class="link-navegacao" href="questoes.html">Questões</a><a class="link-navegacao" href="ranking.html">Ranking</a></nav></header><main class="conteudo"><section class="cartao"><div class="titulo-cartao"><h2>Consultar aluno</h2><p>Informe o ID para visualizar os dados cadastrados.</p></div><form class="grade-formulario" id="form-buscar"><label class="campo campo-longo"><span>ID do aluno</span><input type="number" id="buscar-id" min="1" required></label><button type="submit">Buscar</button></form><div class="resultado" id="resultado-busca" aria-live="polite"><p class="texto-ajuda">Digite um ID para realizar a consulta.</p></div></section></main></div><script src="common.js"></script><script src="ler.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExplAIner | Consultar aluno</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="pagina">
+    <header class="cabecalho">
+      <div class="marca">
+        <span class="logo">E</span>
+        <div><h1>ExplAIner</h1><p>Consultar aluno</p></div>
+      </div>
+      <nav class="menu-navegacao" aria-label="Navegação principal">
+        <a class="link-navegacao" href="index.html">Cadastro</a>
+        <a class="link-navegacao ativo" href="ler.html">Ler</a>
+        <a class="link-navegacao" href="listar.html">Listar</a>
+        <a class="link-navegacao" href="atualizar.html">Atualizar</a>
+        <a class="link-navegacao" href="deletar.html">Deletar</a>
+        <a class="link-navegacao" href="temas.html">Temas</a>
+        <a class="link-navegacao" href="desafios.html">Desafios</a>
+        <a class="link-navegacao" href="questoes.html">Questões</a>
+        <a class="link-navegacao" href="ranking.html">Ranking</a>
+      </nav>
+    </header>
+
+    <main class="conteudo">
+      <section class="cartao">
+        <div class="titulo-cartao">
+          <h2>Consultar aluno</h2>
+          <p>Informe o ID para visualizar os dados cadastrados.</p>
+        </div>
+        <form class="grade-formulario" id="form-buscar">
+          <label class="campo campo-longo">
+            <span>ID do aluno</span>
+            <input type="number" id="buscar-id" min="1" required>
+          </label>
+          <button type="submit">Buscar</button>
+        </form>
+        <div class="resultado" id="resultado-busca" aria-live="polite">
+          <p class="texto-ajuda">Digite um ID para realizar a consulta.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="common.js"></script>
+  <script src="ler.js"></script>
+</body>
+</html>

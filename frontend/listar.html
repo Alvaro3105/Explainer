@@ -1,1 +1,42 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ExplAIner | Alunos</title><link rel="stylesheet" href="style.css"></head><body><div class="pagina"><header class="cabecalho"><div class="marca"><span class="logo">E</span><div><h1>ExplAIner</h1><p>Alunos cadastrados</p></div></div><nav class="menu-navegacao" aria-label="Navegação principal"><a class="link-navegacao" href="index.html">Cadastro</a><a class="link-navegacao" href="ler.html">Ler</a><a class="link-navegacao ativo" href="listar.html">Listar</a><a class="link-navegacao" href="atualizar.html">Atualizar</a><a class="link-navegacao" href="deletar.html">Deletar</a><a class="link-navegacao" href="temas.html">Temas</a><a class="link-navegacao" href="desafios.html">Desafios</a><a class="link-navegacao" href="questoes.html">Questões</a><a class="link-navegacao" href="ranking.html">Ranking</a></nav></header><main class="conteudo"><section class="cartao"><div class="titulo-cartao"><h2>Alunos cadastrados</h2><p>Dados principais e indicadores de gamificação.</p></div><div class="tabela-wrapper"><table><thead><tr><th>ID</th><th>Nome</th><th>E-mail</th><th>Nascimento</th><th>Pontos</th><th>Foguinho</th></tr></thead><tbody id="tabela-alunos-corpo"><tr><td colspan="6">Carregando...</td></tr></tbody></table></div><div class="resultado" id="mensagem-lista" hidden aria-live="polite"></div></section></main></div><script src="common.js"></script><script src="listar.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExplAIner | Alunos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="pagina">
+    <header class="cabecalho">
+      <div class="marca"><span class="logo">E</span><div><h1>ExplAIner</h1><p>Alunos cadastrados</p></div></div>
+      <nav class="menu-navegacao" aria-label="Navegação principal">
+        <a class="link-navegacao" href="index.html">Cadastro</a>
+        <a class="link-navegacao" href="ler.html">Ler</a>
+        <a class="link-navegacao ativo" href="listar.html">Listar</a>
+        <a class="link-navegacao" href="atualizar.html">Atualizar</a>
+        <a class="link-navegacao" href="deletar.html">Deletar</a>
+        <a class="link-navegacao" href="temas.html">Temas</a>
+        <a class="link-navegacao" href="desafios.html">Desafios</a>
+        <a class="link-navegacao" href="questoes.html">Questões</a>
+        <a class="link-navegacao" href="ranking.html">Ranking</a>
+      </nav>
+    </header>
+
+    <main class="conteudo">
+      <section class="cartao">
+        <div class="titulo-cartao"><h2>Alunos cadastrados</h2><p>Dados principais e indicadores de gamificação.</p></div>
+        <div class="tabela-wrapper">
+          <table>
+            <thead><tr><th>ID</th><th>Nome</th><th>E-mail</th><th>Nascimento</th><th>Pontos</th><th>Foguinho</th></tr></thead>
+            <tbody id="tabela-alunos-corpo"><tr><td colspan="6">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+        <div class="resultado" id="mensagem-lista" hidden aria-live="polite"></div>
+      </section>
+    </main>
+  </div>
+  <script src="common.js"></script>
+  <script src="listar.js"></script>
+</body>
+</html>

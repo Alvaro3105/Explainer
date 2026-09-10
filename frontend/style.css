@@ -64,15 +64,8 @@ body {
     font-weight: 800;
 }
 
-.marca h1 {
-    font-size: 1.2rem;
-}
-
-.marca p,
-.titulo-cartao p,
-.texto-ajuda {
-    color: var(--muted);
-}
+.marca h1 { font-size: 1.2rem; }
+.marca p, .titulo-cartao p, .texto-ajuda { color: var(--muted); }
 
 .menu-navegacao {
     display: flex;
@@ -96,16 +89,8 @@ body {
     text-decoration: none;
 }
 
-.link-navegacao:hover,
-.link-navegacao.ativo {
-    background: var(--primary);
-    color: #fff;
-}
-
-.conteudo {
-    display: grid;
-    gap: 18px;
-}
+.link-navegacao:hover, .link-navegacao.ativo { background: var(--primary); color: #fff; }
+.conteudo { display: grid; gap: 18px; }
 
 .cartao {
     padding: 22px;
@@ -132,19 +117,9 @@ body {
     text-transform: uppercase;
 }
 
-.intro-text {
-    color: #4d574d;
-    line-height: 1.5;
-}
-
-.titulo-cartao {
-    margin-bottom: 18px;
-}
-
-.titulo-cartao h2 {
-    margin-bottom: 5px;
-    font-size: 1.35rem;
-}
+.intro-text { color: #4d574d; line-height: 1.5; }
+.titulo-cartao { margin-bottom: 18px; }
+.titulo-cartao h2 { margin-bottom: 5px; font-size: 1.35rem; }
 
 .grade-formulario {
     display: grid;
@@ -152,25 +127,11 @@ body {
     gap: 14px;
 }
 
-.campo {
-    display: grid;
-    gap: 6px;
-}
+.campo { display: grid; gap: 6px; }
+.campo span { font-size: 0.9rem; font-weight: 650; }
+.campo-longo, .grade-formulario > button, .grade-formulario > .acoes-formulario { grid-column: 1 / -1; }
 
-.campo span {
-    font-size: 0.9rem;
-    font-weight: 650;
-}
-
-.campo-longo,
-.grade-formulario > button,
-.grade-formulario > .acoes-formulario {
-    grid-column: 1 / -1;
-}
-
-input,
-select,
-textarea {
+input, select, textarea {
     width: 100%;
     min-height: 44px;
     padding: 10px 12px;
@@ -181,13 +142,9 @@ textarea {
     font: inherit;
 }
 
-textarea {
-    min-height: 100px;
-    resize: vertical;
-}
+textarea { min-height: 100px; resize: vertical; }
 
-button,
-.botao {
+button, .botao {
     min-height: 44px;
     padding: 10px 16px;
     border: 0;
@@ -200,20 +157,9 @@ button,
     text-decoration: none;
 }
 
-button:hover,
-.botao:hover {
-    background: var(--primary-hover);
-}
-
-.botao-perigo {
-    background: var(--danger);
-}
-
-.acoes-formulario {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
+button:hover, .botao:hover { background: var(--primary-hover); }
+.botao-perigo { background: var(--danger); }
+.acoes-formulario { display: flex; flex-wrap: wrap; gap: 10px; }
 
 .resultado {
     margin-top: 16px;
@@ -224,20 +170,9 @@ button:hover,
     line-height: 1.5;
 }
 
-.resultado[data-tipo="sucesso"] {
-    border-color: rgba(47, 122, 72, 0.35);
-    color: var(--success);
-}
-
-.resultado[data-tipo="erro"] {
-    border-color: rgba(168, 62, 53, 0.35);
-    color: var(--danger);
-}
-
-.resultado[data-tipo="aviso"] {
-    border-color: rgba(154, 103, 0, 0.35);
-    color: var(--warning);
-}
+.resultado[data-tipo="sucesso"] { border-color: rgba(47, 122, 72, 0.35); color: var(--success); }
+.resultado[data-tipo="erro"] { border-color: rgba(168, 62, 53, 0.35); color: var(--danger); }
+.resultado[data-tipo="aviso"] { border-color: rgba(154, 103, 0, 0.35); color: var(--warning); }
 
 .tabela-wrapper {
     width: 100%;
@@ -247,95 +182,34 @@ button:hover,
     border-radius: 11px;
 }
 
-table {
-    width: 100%;
-    min-width: 650px;
-    border-collapse: collapse;
-    background: #fff;
-}
+.subtitulo-tabela { margin-top: 24px; }
 
-th,
-td {
-    padding: 12px 13px;
-    border-bottom: 1px solid #ece4d8;
-    text-align: left;
-    vertical-align: top;
-}
+table { width: 100%; min-width: 650px; border-collapse: collapse; background: #fff; }
+th, td { padding: 12px 13px; border-bottom: 1px solid #ece4d8; text-align: left; vertical-align: top; }
+th { background: #f8f3eb; color: var(--muted); font-size: 0.84rem; text-transform: uppercase; letter-spacing: 0.03em; }
+tr:last-child td { border-bottom: 0; }
 
-th {
-    background: #f8f3eb;
-    color: var(--muted);
-    font-size: 0.84rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-}
-
-tr:last-child td {
-    border-bottom: 0;
-}
-
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-button:focus-visible,
-a:focus-visible {
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
     outline: 3px solid rgba(47, 63, 50, 0.24);
     outline-offset: 2px;
 }
 
-.separador {
-    margin: 24px 0;
-    border: 0;
-    border-top: 1px solid var(--border);
-}
+.separador { margin: 24px 0; border: 0; border-top: 1px solid var(--border); }
 
 @media (max-width: 820px) {
-    .cabecalho {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .menu-navegacao {
-        width: 100%;
-    }
+    .cabecalho { flex-direction: column; align-items: stretch; }
+    .menu-navegacao { width: 100%; }
 }
 
 @media (max-width: 620px) {
-    .pagina {
-        width: min(100% - 20px, 1100px);
-        padding-top: 10px;
-    }
-
-    .cartao {
-        padding: 17px;
-    }
-
-    .grade-formulario {
-        grid-template-columns: 1fr;
-    }
-
-    .campo-longo,
-    .grade-formulario > button,
-    .grade-formulario > .acoes-formulario {
-        grid-column: auto;
-    }
-
-    .acoes-formulario {
-        flex-direction: column;
-    }
-
-    .acoes-formulario button,
-    .acoes-formulario .botao {
-        width: 100%;
-    }
+    .pagina { width: min(100% - 20px, 1100px); padding-top: 10px; }
+    .cartao { padding: 17px; }
+    .grade-formulario { grid-template-columns: 1fr; }
+    .campo-longo, .grade-formulario > button, .grade-formulario > .acoes-formulario { grid-column: auto; }
+    .acoes-formulario { flex-direction: column; }
+    .acoes-formulario button, .acoes-formulario .botao { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        scroll-behavior: auto !important;
-        transition: none !important;
-        animation: none !important;
-    }
+    *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }

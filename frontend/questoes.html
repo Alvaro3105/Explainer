@@ -1,1 +1,59 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ExplAIner | Questões</title><link rel="stylesheet" href="style.css"></head><body><div class="pagina"><header class="cabecalho"><div class="marca"><span class="logo">E</span><div><h1>ExplAIner</h1><p>Gerenciar questões</p></div></div><nav class="menu-navegacao" aria-label="Navegação principal"><a class="link-navegacao" href="index.html">Cadastro</a><a class="link-navegacao" href="ler.html">Ler</a><a class="link-navegacao" href="listar.html">Listar</a><a class="link-navegacao" href="atualizar.html">Atualizar</a><a class="link-navegacao" href="deletar.html">Deletar</a><a class="link-navegacao" href="temas.html">Temas</a><a class="link-navegacao" href="desafios.html">Desafios</a><a class="link-navegacao ativo" href="questoes.html">Questões</a><a class="link-navegacao" href="ranking.html">Ranking</a></nav></header><main class="conteudo"><section class="cartao"><div class="titulo-cartao"><h2>Questões</h2><p>Cadastre questões, vincule a um tema e verifique respostas.</p></div><form class="grade-formulario" id="form-questao"><label class="campo campo-longo"><span>Enunciado</span><textarea name="enunciado" required></textarea></label><label class="campo"><span>Alternativa correta</span><input name="alternativa_correta" maxlength="1"></label><label class="campo"><span>ID do tema</span><input name="id_tema" type="number" min="1" required></label><button type="submit">Cadastrar questão</button></form><div class="resultado" id="mensagem-questao" hidden></div><hr class="separador"><form class="grade-formulario" id="form-verificar"><label class="campo"><span>ID da questão</span><input id="questao-id-verificar" type="number" min="1" required></label><label class="campo"><span>Alternativa escolhida</span><input id="questao-alternativa-verificar" maxlength="1" required></label><button type="submit">Verificar resposta</button></form><div class="resultado" id="mensagem-verificar" hidden></div><hr class="separador"><form class="grade-formulario" id="form-questao-atualizar"><label class="campo"><span>ID</span><input id="questao-id-atualizar" type="number" min="1" required></label><label class="campo"><span>Nova alternativa</span><input id="questao-alternativa-atualizar" maxlength="1"></label><label class="campo campo-longo"><span>Novo enunciado</span><textarea id="questao-enunciado-atualizar"></textarea></label><label class="campo campo-longo"><span>Novo ID do tema</span><input id="questao-tema-atualizar" type="number" min="1"></label><button type="submit">Atualizar questão</button></form><div class="resultado" id="mensagem-questao-atualizar" hidden></div><hr class="separador"><form class="grade-formulario" id="form-questao-deletar"><label class="campo campo-longo"><span>ID para excluir</span><input id="questao-id-deletar" type="number" min="1" required></label><button class="botao-perigo" type="submit">Excluir questão</button></form><div class="resultado" id="mensagem-questao-deletar" hidden></div><div class="tabela-wrapper"><table><thead><tr><th>ID</th><th>Enunciado</th><th>Alternativa</th><th>Tema</th></tr></thead><tbody id="lista-questoes"></tbody></table></div></section></main></div><script src="common.js"></script><script src="questoes.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExplAIner | Questões</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="pagina">
+    <header class="cabecalho">
+      <div class="marca"><span class="logo">E</span><div><h1>ExplAIner</h1><p>Gerenciar questões</p></div></div>
+      <nav class="menu-navegacao" aria-label="Navegação principal">
+        <a class="link-navegacao" href="index.html">Cadastro</a><a class="link-navegacao" href="ler.html">Ler</a>
+        <a class="link-navegacao" href="listar.html">Listar</a><a class="link-navegacao" href="atualizar.html">Atualizar</a>
+        <a class="link-navegacao" href="deletar.html">Deletar</a><a class="link-navegacao" href="temas.html">Temas</a>
+        <a class="link-navegacao" href="desafios.html">Desafios</a><a class="link-navegacao ativo" href="questoes.html">Questões</a>
+        <a class="link-navegacao" href="ranking.html">Ranking</a>
+      </nav>
+    </header>
+
+    <main class="conteudo"><section class="cartao">
+      <div class="titulo-cartao"><h2>Questões</h2><p>Cadastre questões, vincule a um tema e verifique respostas.</p></div>
+      <form class="grade-formulario" id="form-questao">
+        <label class="campo campo-longo"><span>Enunciado</span><textarea name="enunciado" required></textarea></label>
+        <label class="campo"><span>Alternativa correta</span><input name="alternativa_correta" maxlength="1"></label>
+        <label class="campo"><span>ID do tema</span><input name="id_tema" type="number" min="1" required></label>
+        <button type="submit">Cadastrar questão</button>
+      </form>
+      <div class="resultado" id="mensagem-questao" hidden></div>
+      <hr class="separador">
+      <form class="grade-formulario" id="form-verificar">
+        <label class="campo"><span>ID da questão</span><input id="questao-id-verificar" type="number" min="1" required></label>
+        <label class="campo"><span>Alternativa escolhida</span><input id="questao-alternativa-verificar" maxlength="1" required></label>
+        <button type="submit">Verificar resposta</button>
+      </form>
+      <div class="resultado" id="mensagem-verificar" hidden></div>
+      <hr class="separador">
+      <form class="grade-formulario" id="form-questao-atualizar">
+        <label class="campo"><span>ID</span><input id="questao-id-atualizar" type="number" min="1" required></label>
+        <label class="campo"><span>Nova alternativa</span><input id="questao-alternativa-atualizar" maxlength="1"></label>
+        <label class="campo campo-longo"><span>Novo enunciado</span><textarea id="questao-enunciado-atualizar"></textarea></label>
+        <label class="campo campo-longo"><span>Novo ID do tema</span><input id="questao-tema-atualizar" type="number" min="1"></label>
+        <button type="submit">Atualizar questão</button>
+      </form>
+      <div class="resultado" id="mensagem-questao-atualizar" hidden></div>
+      <hr class="separador">
+      <form class="grade-formulario" id="form-questao-deletar">
+        <label class="campo campo-longo"><span>ID para excluir</span><input id="questao-id-deletar" type="number" min="1" required></label>
+        <button class="botao-perigo" type="submit">Excluir questão</button>
+      </form>
+      <div class="resultado" id="mensagem-questao-deletar" hidden></div>
+      <div class="tabela-wrapper"><table><thead><tr><th>ID</th><th>Enunciado</th><th>Alternativa</th><th>Tema</th></tr></thead><tbody id="lista-questoes"></tbody></table></div>
+    </section></main>
+  </div>
+  <script src="common.js"></script>
+  <script src="questoes.js"></script>
+</body>
+</html>

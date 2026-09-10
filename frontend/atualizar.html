@@ -1,1 +1,40 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ExplAIner | Atualizar aluno</title><link rel="stylesheet" href="style.css"></head><body><div class="pagina"><header class="cabecalho"><div class="marca"><span class="logo">E</span><div><h1>ExplAIner</h1><p>Atualizar aluno</p></div></div><nav class="menu-navegacao" aria-label="Navegação principal"><a class="link-navegacao" href="index.html">Cadastro</a><a class="link-navegacao" href="ler.html">Ler</a><a class="link-navegacao" href="listar.html">Listar</a><a class="link-navegacao ativo" href="atualizar.html">Atualizar</a><a class="link-navegacao" href="deletar.html">Deletar</a><a class="link-navegacao" href="temas.html">Temas</a><a class="link-navegacao" href="desafios.html">Desafios</a><a class="link-navegacao" href="questoes.html">Questões</a><a class="link-navegacao" href="ranking.html">Ranking</a></nav></header><main class="conteudo"><section class="cartao"><div class="titulo-cartao"><h2>Atualizar aluno</h2><p>Informe o ID e somente os campos que deseja alterar.</p></div><form class="grade-formulario" id="form-atualizar"><label class="campo"><span>ID do aluno</span><input type="number" id="atualizar-id" min="1" required></label><label class="campo"><span>Nome</span><input name="nome" type="text"></label><label class="campo"><span>E-mail</span><input name="email" type="email"></label><label class="campo"><span>Nova senha</span><input name="senha" type="password" minlength="6"></label><label class="campo campo-longo"><span>Data de nascimento</span><input name="data_nascimento" type="date"></label><button type="submit">Atualizar</button></form><div class="resultado" id="mensagem-atualizar" hidden aria-live="polite"></div></section></main></div><script src="common.js"></script><script src="atualizar.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExplAIner | Atualizar aluno</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="pagina">
+    <header class="cabecalho">
+      <div class="marca"><span class="logo">E</span><div><h1>ExplAIner</h1><p>Atualizar aluno</p></div></div>
+      <nav class="menu-navegacao" aria-label="Navegação principal">
+        <a class="link-navegacao" href="index.html">Cadastro</a><a class="link-navegacao" href="ler.html">Ler</a>
+        <a class="link-navegacao" href="listar.html">Listar</a><a class="link-navegacao ativo" href="atualizar.html">Atualizar</a>
+        <a class="link-navegacao" href="deletar.html">Deletar</a><a class="link-navegacao" href="temas.html">Temas</a>
+        <a class="link-navegacao" href="desafios.html">Desafios</a><a class="link-navegacao" href="questoes.html">Questões</a>
+        <a class="link-navegacao" href="ranking.html">Ranking</a>
+      </nav>
+    </header>
+
+    <main class="conteudo">
+      <section class="cartao">
+        <div class="titulo-cartao"><h2>Atualizar aluno</h2><p>Informe o ID e somente os campos que deseja alterar.</p></div>
+        <form class="grade-formulario" id="form-atualizar">
+          <label class="campo"><span>ID do aluno</span><input type="number" id="atualizar-id" min="1" required></label>
+          <label class="campo"><span>Nome</span><input name="nome" type="text"></label>
+          <label class="campo"><span>E-mail</span><input name="email" type="email"></label>
+          <label class="campo"><span>Nova senha</span><input name="senha" type="password" minlength="6"></label>
+          <label class="campo campo-longo"><span>Data de nascimento</span><input name="data_nascimento" type="date"></label>
+          <button type="submit">Atualizar</button>
+        </form>
+        <div class="resultado" id="mensagem-atualizar" hidden aria-live="polite"></div>
+      </section>
+    </main>
+  </div>
+  <script src="common.js"></script>
+  <script src="atualizar.js"></script>
+</body>
+</html>

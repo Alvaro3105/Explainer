@@ -1,1 +1,50 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ExplAIner | Temas</title><link rel="stylesheet" href="style.css"></head><body><div class="pagina"><header class="cabecalho"><div class="marca"><span class="logo">E</span><div><h1>ExplAIner</h1><p>Gerenciar temas</p></div></div><nav class="menu-navegacao" aria-label="Navegação principal"><a class="link-navegacao" href="index.html">Cadastro</a><a class="link-navegacao" href="ler.html">Ler</a><a class="link-navegacao" href="listar.html">Listar</a><a class="link-navegacao" href="atualizar.html">Atualizar</a><a class="link-navegacao" href="deletar.html">Deletar</a><a class="link-navegacao ativo" href="temas.html">Temas</a><a class="link-navegacao" href="desafios.html">Desafios</a><a class="link-navegacao" href="questoes.html">Questões</a><a class="link-navegacao" href="ranking.html">Ranking</a></nav></header><main class="conteudo"><section class="cartao"><div class="titulo-cartao"><h2>Temas</h2><p>Cadastre, atualize e exclua temas utilizados pelas questões.</p></div><form class="grade-formulario" id="form-tema"><label class="campo"><span>Matéria</span><input name="materia" required></label><label class="campo"><span>Nome do tema</span><input name="nome" required></label><button type="submit">Cadastrar tema</button></form><div class="resultado" id="mensagem-tema" hidden></div><hr class="separador"><form class="grade-formulario" id="form-tema-atualizar"><label class="campo"><span>ID</span><input id="tema-id-atualizar" type="number" min="1" required></label><label class="campo"><span>Nova matéria</span><input id="tema-materia-atualizar"></label><label class="campo campo-longo"><span>Novo nome</span><input id="tema-nome-atualizar"></label><button type="submit">Atualizar tema</button></form><div class="resultado" id="mensagem-tema-atualizar" hidden></div><hr class="separador"><form class="grade-formulario" id="form-tema-deletar"><label class="campo campo-longo"><span>ID para excluir</span><input id="tema-id-deletar" type="number" min="1" required></label><button class="botao-perigo" type="submit">Excluir tema</button></form><div class="resultado" id="mensagem-tema-deletar" hidden></div><div class="tabela-wrapper"><table><thead><tr><th>ID</th><th>Matéria</th><th>Tema</th></tr></thead><tbody id="lista-temas"></tbody></table></div></section></main></div><script src="common.js"></script><script src="temas.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExplAIner | Temas</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="pagina">
+    <header class="cabecalho">
+      <div class="marca"><span class="logo">E</span><div><h1>ExplAIner</h1><p>Gerenciar temas</p></div></div>
+      <nav class="menu-navegacao" aria-label="Navegação principal">
+        <a class="link-navegacao" href="index.html">Cadastro</a><a class="link-navegacao" href="ler.html">Ler</a>
+        <a class="link-navegacao" href="listar.html">Listar</a><a class="link-navegacao" href="atualizar.html">Atualizar</a>
+        <a class="link-navegacao" href="deletar.html">Deletar</a><a class="link-navegacao ativo" href="temas.html">Temas</a>
+        <a class="link-navegacao" href="desafios.html">Desafios</a><a class="link-navegacao" href="questoes.html">Questões</a>
+        <a class="link-navegacao" href="ranking.html">Ranking</a>
+      </nav>
+    </header>
+
+    <main class="conteudo"><section class="cartao">
+      <div class="titulo-cartao"><h2>Temas</h2><p>Cadastre, atualize e exclua temas utilizados pelas questões.</p></div>
+      <form class="grade-formulario" id="form-tema">
+        <label class="campo"><span>Matéria</span><input name="materia" required></label>
+        <label class="campo"><span>Nome do tema</span><input name="nome" required></label>
+        <button type="submit">Cadastrar tema</button>
+      </form>
+      <div class="resultado" id="mensagem-tema" hidden></div>
+      <hr class="separador">
+      <form class="grade-formulario" id="form-tema-atualizar">
+        <label class="campo"><span>ID</span><input id="tema-id-atualizar" type="number" min="1" required></label>
+        <label class="campo"><span>Nova matéria</span><input id="tema-materia-atualizar"></label>
+        <label class="campo campo-longo"><span>Novo nome</span><input id="tema-nome-atualizar"></label>
+        <button type="submit">Atualizar tema</button>
+      </form>
+      <div class="resultado" id="mensagem-tema-atualizar" hidden></div>
+      <hr class="separador">
+      <form class="grade-formulario" id="form-tema-deletar">
+        <label class="campo campo-longo"><span>ID para excluir</span><input id="tema-id-deletar" type="number" min="1" required></label>
+        <button class="botao-perigo" type="submit">Excluir tema</button>
+      </form>
+      <div class="resultado" id="mensagem-tema-deletar" hidden></div>
+      <div class="tabela-wrapper"><table><thead><tr><th>ID</th><th>Matéria</th><th>Tema</th></tr></thead><tbody id="lista-temas"></tbody></table></div>
+    </section></main>
+  </div>
+  <script src="common.js"></script>
+  <script src="temas.js"></script>
+</body>
+</html>
