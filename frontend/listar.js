@@ -1,43 +1,30 @@
-const API_URL = 'http://127.0.0.1:5000';
+const tabelaAlunos = document.getElementById('tabela-alunos-corpo');
+const mensagemLista = document.getElementById('mensagem-lista');
 
 async function carregarAlunos() {
-  const tabelaCorpo = document.getElementById('tabela-alunos-corpo');
-  const msgStatus = document.getElementById('mensagem-status');
-
   try {
-    const response = await fetch(`${API_URL}/alunos`);
-    const alunos = await response.json();
+    const alunos = await explainerRequest('/alunos');
+    limparElemento(tabelaAlunos);
 
-    if (response.ok) {
-      if (alunos.length === 0) {
-        msgStatus.innerText = 'Nenhum aluno cadastrado ainda.';
-        return;
-      }
-
-      tabelaCorpo.innerHTML = '';
-
-      alunos.forEach((aluno) => {
-        const linha = document.createElement('tr');
-        linha.style.borderBottom = '1px solid var(--borda)';
-        linha.innerHTML = `
-          <td style="padding: 0.8rem 0.5rem; font-weight: 600; color: var(--primaria);">${aluno.id_aluno}</td>
-          <td style="padding: 0.8rem 0.5rem; color: var(--texto);">${aluno.nome}</td>
-          <td style="padding: 0.8rem 0.5rem; color: var(--texto-suave);">${aluno.email}</td>
-          <td style="padding: 0.8rem 0.5rem; color: var(--texto-suave);">${aluno.data_nascimento || '-'}</td>
-          <td style="padding: 0.8rem 0.5rem; color: var(--texto);">✨ ${aluno.pontos}</td>
-          <td style="padding: 0.8rem 0.5rem; color: var(--texto);">🔥 ${aluno.foguinho}</td>
-        `;
-        tabelaCorpo.appendChild(linha);
-      });
-    } else {
-      msgStatus.innerText = 'Erro ao carregar a lista de alunos do servidor.';
-      msgStatus.style.color = '#dc2626';
+    if (!alunos.length) {
+      const linha = document.createElement('tr');
+      const celula = document.createElement('td');
+      celula.colSpan = 6;
+      celula.textContent = 'Nenhum aluno cadastrado.';
+      linha.appendChild(celula);
+      tabelaAlunos.appendChild(linha);
+      return;
     }
+
+    alunos.forEach((aluno) => {
+      const linha = document.createElement('tr');
+      [aluno.id_aluno, aluno.nome, aluno.email, aluno.data_nascimento || '-', aluno.pontos, aluno.foguinho].forEach((valor) => adicionarCelula(linha, valor));
+      tabelaAlunos.appendChild(linha);
+    });
   } catch (error) {
-    msgStatus.innerText = 'Não foi possível conectar ao backend. Verifique se a API está rodando.';
-    msgStatus.style.color = '#dc2626';
-    console.error(error);
+    limparElemento(tabelaAlunos);
+    mostrarMensagem(mensagemLista, error.message || 'Não foi possível carregar os alunos.', 'erro');
   }
 }
 
-window.addEventListener('DOMContentLoaded', carregarAlunos);
+document.addEventListener('DOMContentLoaded', carregarAlunos);

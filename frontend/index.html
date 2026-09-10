@@ -1,80 +1,34 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExplAIner | Cadastro</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExplAIner | Cadastro</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <div class="pagina">
-        <header class="cabecalho">
-            <div class="marca">
-                <span class="logo">E</span>
-                <div>
-                    <h1>ExplAIner</h1>
-                    <p>Cadastro de aluno</p>
-                </div>
-            </div>
-
-            <nav class="menu-navegacao">
-                <a href="index.html" class="link-navegacao ativo">Cadastro</a>
-                <a href="ler.html" class="link-navegacao">Ler</a>
-                <a href="listar.html" class="link-navegacao">Listar</a>
-                <a href="atualizar.html" class="link-navegacao">Atualizar</a>
-                <a href="deletar.html" class="link-navegacao">Deletar</a>
-            </nav>
-        </header>
-
-<main class="conteudo">
+<div class="pagina">
+  <header class="cabecalho">
+    <div class="marca"><span class="logo">E</span><div><h1>ExplAIner</h1><p>Gamificação educacional</p></div></div>
+    <nav class="menu-navegacao" aria-label="Navegação principal">
+      <a class="link-navegacao ativo" href="index.html">Cadastro</a><a class="link-navegacao" href="ler.html">Ler</a><a class="link-navegacao" href="listar.html">Listar</a><a class="link-navegacao" href="atualizar.html">Atualizar</a><a class="link-navegacao" href="deletar.html">Deletar</a><a class="link-navegacao" href="temas.html">Temas</a><a class="link-navegacao" href="desafios.html">Desafios</a><a class="link-navegacao" href="questoes.html">Questões</a><a class="link-navegacao" href="ranking.html">Ranking</a>
+    </nav>
+  </header>
+  <main class="conteudo">
     <section class="cartao">
-        <div class="intro-bloco">
-            <p class="intro-kicker">Cadastro</p>
-            <p class="intro-text">Gerencie os cadastros de forma simples e objetiva.</p>
-        </div>
-        <div class="titulo-cartao">
-            <h2>Formulário de cadastro</h2>
-            <p>Preencha os dados abaixo para cadastrar um novo aluno.</p>
-        </div>
-
-        <form class="grade-formulario" id="form-cadastro">
-            <label class="campo">
-                <span>Nome completo</span>
-                <input type="text" name="nome" placeholder="Ex.: Ana Souza" required>
-            </label>
-
-            <label class="campo">
-                <span>E-mail</span>
-                <input type="email" name="email" placeholder="ana@email.com" required>
-            </label>
-
-            <label class="campo">
-                <span>Senha</span>
-                <input type="password" name="senha" placeholder="Digite uma senha" required>
-            </label>
-
-            <label class="campo">
-                <span>Data de nascimento</span>
-                <input type="date" name="data_nascimento" required>
-            </label>
-
-            <button type="submit" id="btn-enviar">Cadastrar</button>
-        </form>
-
-        <div id="mensagem-resposta" class="resultado" style="display: none;">
-            <h3 id="resposta-titulo"></h3>
-            <p id="resposta-corpo" class="texto-ajuda"></p>
-        </div>
+      <div class="intro-bloco"><p class="intro-kicker">Alunos</p><p class="intro-text">Cadastre um estudante para utilizar os recursos de gamificação.</p></div>
+      <div class="titulo-cartao"><h2>Novo aluno</h2><p>Preencha os dados abaixo.</p></div>
+      <form class="grade-formulario" id="form-cadastro">
+        <label class="campo"><span>Nome completo</span><input name="nome" type="text" required></label>
+        <label class="campo"><span>E-mail</span><input name="email" type="email" required></label>
+        <label class="campo"><span>Senha</span><input name="senha" type="password" minlength="6" required></label>
+        <label class="campo"><span>Data de nascimento</span><input name="data_nascimento" type="date" required></label>
+        <button id="btn-enviar" type="submit">Cadastrar</button>
+      </form>
+      <div class="resultado" id="mensagem-resposta" hidden aria-live="polite"></div>
     </section>
-</main>
+  </main>
 </div>
-
-<script src="script.js"></script>
-    
+<script src="common.js"></script><script src="script.js"></script>
 </body>
 </html>

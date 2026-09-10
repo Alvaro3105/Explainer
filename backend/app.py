@@ -1,5 +1,9 @@
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
 from flask import Flask, jsonify
+from flask_cors import CORS
 
 import models.database as d
 from controllers.aluno_controller import aluno_controller
@@ -10,14 +14,23 @@ from controllers.ranking_controller import ranking_controller
 from controllers.desafio_questao_controller import desafio_questao_controller
 from controllers.aluno_desafio_controller import aluno_desafio_controller
 
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env")
 
-def create_app():
-    app = Flask(__name__)
 
-    database_url = os.getenv("DATABASE_URL", "sqlite:///explainer.db")
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+def create_app(test_config=None):
+    frontend_path = (BASE_DIR / ".." / "frontend").resolve()
+    app = Flask(__name__, static_folder=str(frontend_path), static_url_path="")
 
+    app.config.update(
+        SQLALCHEMY_DATABASE_URI=os.getenv("DATABASE_URL", "sqlite:///explainer.db"),
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+    )
+
+    if test_config:
+        app.config.update(test_config)
+
+    database_url = app.config["SQLALCHEMY_DATABASE_URI"]
     if database_url.startswith("sqlite"):
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
             "connect_args": {"check_same_thread": False}
@@ -25,14 +38,9 @@ def create_app():
 
     d.db.init_app(app)
 
-    @app.after_request
-    def adicionar_cors(response):
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
-        return response
+    cors_origins = os.getenv("CORS_ORIGINS", "*")
+    CORS(app, resources={r"/*": {"origins": cors_origins}})
 
-    # Registro de todos os Blueprints
     app.register_blueprint(aluno_controller)
     app.register_blueprint(desafio_controller)
     app.register_blueprint(tema_controller)
@@ -42,53 +50,33 @@ def create_app():
     app.register_blueprint(aluno_desafio_controller)
 
     @app.get("/")
-    def home():
+    def frontend_home():
+        return app.send_static_file("index.html")
+
+    @app.get("/api")
+    def api_home():
         return jsonify({
-            "mensagem": "API Flask + SQLAlchemy - Sistema de Gamificação Educacional",
+            "mensagem": "API do ExplAIner - Sistema de Gamificação Educacional",
             "rotas": {
-                "alunos": {
-                    "listar": "GET /alunos",
-                    "buscar": "GET /alunos/<id>",
-                    "criar": "POST /alunos",
-                    "atualizar": "PUT /alunos/<id>",
-                    "deletar": "DELETE /alunos/<id>",
-                },
-                "desafios": {
-                    "listar": "GET /desafio",
-                    "buscar_por_nome": "GET /desafio/nome/<nome>",
-                    "criar": "POST /desafio",
-                    "atualizar": "PUT /desafio/<id>",
-                    "deletar": "DELETE /desafio/<id>",
-                },
-                "temas": {
-                    "listar": "GET /temas",
-                    "criar": "POST /temas",
-                    "atualizar": "PUT /temas/<id>",
-                    "deletar": "DELETE /temas/<id>",
-                },
-                "questoes": {
-                    "listar": "GET /questoes",
-                    "criar": "POST /questoes",
-                    "atualizar": "PUT /questoes/<id>",
-                    "deletar": "DELETE /questoes/<id>",
-                },
-                "ranking": {
-                    "listar": "GET /ranking",
-                    "criar": "POST /ranking",
-                    "atualizar": "PUT /ranking/<id>",
-                    "deletar": "DELETE /ranking/<id>",
-                },
-                "desafio_questoes": {
-                    "adicionar": "POST /desafios/<id_desafio>/questoes/<id_questao>",
-                    "listar": "GET /desafios/<id_desafio>/questoes",
-                    "remover": "DELETE /desafios/<id_desafio>/questoes/<id_questao>",
-                },
-                "aluno_desafios": {
-                    "registrar": "POST /alunos/desafios",
-                    "listar_por_aluno": "GET /alunos/<id_aluno>/desafios",
-                    "atualizar": "PUT /alunos/<id_aluno>/desafios/<id_desafio>",
-                }
-            }
+                "alunos": [
+                    "GET /alunos",
+                    "GET /alunos/<id>",
+                    "POST /alunos",
+                    "PUT /alunos/<id>",
+                    "DELETE /alunos/<id>",
+                    "GET /alunos/ranking",
+                ],
+                "temas": ["GET /temas", "POST /temas", "PUT /temas/<id>", "DELETE /temas/<id>"],
+                "desafios": ["GET /desafio", "POST /desafio", "PUT /desafio/<id>", "DELETE /desafio/<id>"],
+                "questoes": [
+                    "GET /questoes",
+                    "POST /questoes",
+                    "PUT /questoes/<id>",
+                    "DELETE /questoes/<id>",
+                    "POST /questoes/<id>/verificar",
+                ],
+                "ranking": ["GET /ranking", "POST /ranking", "PUT /ranking/<id>", "DELETE /ranking/<id>"],
+            },
         })
 
     with app.app_context():
@@ -101,5 +89,5 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    debug = os.getenv("FLASK_DEBUG", "True") == "True"
+    debug = os.getenv("FLASK_DEBUG", "False").lower() in {"1", "true", "yes", "on"}
     app.run(debug=debug)

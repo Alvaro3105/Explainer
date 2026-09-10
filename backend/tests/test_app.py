@@ -1,37 +1,51 @@
 import unittest
 from uuid import uuid4
 
+from models.database import db
 from app import create_app
 
 
 class ExplainerAppTests(unittest.TestCase):
     def setUp(self):
-        self.app = create_app()
+        self.app = create_app({
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+        })
         self.client = self.app.test_client()
 
-    def test_root_endpoint(self):
-        response = self.client.get('/')
+    def tearDown(self):
+        with self.app.app_context():
+            db.session.remove()
+            db.drop_all()
+
+    def test_frontend_home(self):
+        response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertIn('mensagem', response.get_json())
+        self.assertIn(b"ExplAIner", response.data)
+
+    def test_api_docs(self):
+        response = self.client.get("/api")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("mensagem", response.get_json())
 
     def test_alunos_list_endpoint_supports_cors(self):
-        response = self.client.get('/alunos')
+        response = self.client.get("/alunos")
         self.assertEqual(response.status_code, 200)
-        self.assertIn('Access-Control-Allow-Origin', response.headers)
+        self.assertIn("Access-Control-Allow-Origin", response.headers)
 
     def test_create_aluno_with_birth_date(self):
         email = f"{uuid4()}@teste.com"
-        response = self.client.post('/alunos', json={
-            'nome': 'Teste Cadastro',
-            'email': email,
-            'senha': '123456',
-            'data_nascimento': '1998-03-15'
+        response = self.client.post("/alunos", json={
+            "nome": "Teste Cadastro",
+            "email": email,
+            "senha": "123456",
+            "data_nascimento": "2008-03-15",
         })
         self.assertEqual(response.status_code, 201)
         payload = response.get_json()
-        self.assertEqual(payload['email'], email)
-        self.assertEqual(payload['data_nascimento'], '1998-03-15')
+        self.assertEqual(payload["email"], email)
+        self.assertEqual(payload["data_nascimento"], "2008-03-15")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
