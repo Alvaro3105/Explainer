@@ -1,0 +1,54 @@
+flowchart TD
+  subgraph F["Frontend — estudar.js"]
+    A(["Aluno escolhe a alternativa e clica em Continuar"]) --> B["fetch POST /api/learning/challenges/{id}/answer<br/>{ id_questao, alternativa, segundos_gastos }"]
+    Z(["Mostra correção, explicação e pontos<br/>e marca ✓ ou ✗ na bolinha do mapa"])
+  end
+  subgraph C["Controller — aprendizado_controller.py"]
+    C1{"@rota: há aluno<br/>na sessão?"}
+    C2["responder_questao() chama RespostaService"]
+    C3["jsonify(resultado) → HTTP 200"]
+    E401["HTTP 401"]
+    EERR["HTTP 400 / 404 / 409<br/>(ErroDeNegocio)"]
+  end
+  subgraph S["Service — RespostaService.responder()"]
+    S1{"Alternativa A–D<br/>e id válidos?"}
+    S2{"Questão pertence a um<br/>desafio deste aluno?"}
+    S3{"Já respondida?"}
+    S4{"Respondendo<br/>na ordem?"}
+    S5["Corrige e calcula pontos (regras.py)<br/>acerto: +10/15/20 · erro: −25% · revisão: 0<br/>atualiza foguinho (sequência diária)"]
+    S6["Monta JSON: correta, alternativa_correta,<br/>explicacao, pontos_ganhos, pontos_totais"]
+  end
+  subgraph R["Repository"]
+    R1["DesafioRepository.buscar_por_id<br/>QuestaoRepository.buscar_por_id<br/>DesafioQuestaoRepository.pertence"]
+    R2["RespostaRepository.buscar"]
+    R3["DesafioQuestaoRepository.ids_questoes<br/>RespostaRepository.listar"]
+    R4["RespostaRepository.adicionar(RespostaDesafio)<br/>Transacao.confirmar()"]
+  end
+  subgraph M["Model / Banco"]
+    MO["Model RespostaDesafio criado<br/>Model Aluno: pontos atualizados"]
+    DB[("SQLite — INSERT em resposta_desafio<br/>UPDATE em Aluno")]
+  end
+  B --> C1
+  C1 -- "Não" --> E401
+  C1 -- "Sim" --> C2 --> S1
+  S1 -- "Não" --> EERR
+  S1 -- "Sim" --> R1 --> S2
+  S2 -- "Não" --> EERR
+  S2 -- "Sim" --> R2 --> S3
+  S3 -- "Sim: devolve o resultado salvo" --> S6
+  S3 -- "Não" --> R3 --> S4
+  S4 -- "Não" --> EERR
+  S4 -- "Sim" --> S5 --> MO --> R4 --> DB --> S6 --> C3 --> Z
+  class A,B,Z front
+  class C1,C2,C3 ctrl
+  class S1,S2,S3,S4,S5,S6 serv
+  class R1,R2,R3,R4 repo
+  class MO,DB banco
+  class E401,EERR erro
+
+  classDef front fill:#D1DC5A,stroke:#6B7223,color:#1E2C32
+  classDef ctrl fill:#6AC5CB,stroke:#1d7f86,color:#1E2C32
+  classDef serv fill:#7C79FF,stroke:#4f4cc2,color:#ffffff
+  classDef repo fill:#FF8918,stroke:#b35d0b,color:#1E2C32
+  classDef banco fill:#45444E,stroke:#1E2C32,color:#ffffff
+  classDef erro fill:#ea2b2b,stroke:#a51d1d,color:#ffffff

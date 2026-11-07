@@ -24,7 +24,7 @@ class Tema(db.Model):
 
     @staticmethod
     def buscar_por_id(id_tema):
-        return Tema.query.get(id_tema)
+        return db.session.get(Tema, id_tema)
 
     def to_dict(self):
         return {

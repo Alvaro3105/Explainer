@@ -1,0 +1,41 @@
+flowchart TD
+  subgraph F["Frontend — estudar.js"]
+    A(["Painel ou aba Ranking é aberta"]) --> B["fetch GET /api/learning/ranking?limite=5"]
+    Z(["renderizarRankingPreview / renderizarTabelaRanking<br/>mostra posições, pontos e a posição do usuário"])
+  end
+  subgraph C["Controller — aprendizado_controller.py"]
+    C1["ranking_de_estudo()<br/>lê o limite da URL e o aluno da sessão"]
+    C2["jsonify(resultado) → HTTP 200"]
+  end
+  subgraph S["Service — ProgressoService.ranking()"]
+    S1["Limita entre 1 e 100"]
+    S2["Monta itens com posição 1, 2, 3…"]
+    S3{"Usuário logado está<br/>fora do topo?"}
+    S4["Monta JSON: itens, posicao_usuario, total_alunos"]
+  end
+  subgraph R["Repository — AlunoRepository (SQL)"]
+    R1["ranking_topo(limite)<br/>SELECT … FROM Aluno WHERE id_aluno IN (SELECT DISTINCT id_aluno FROM resposta_desafio)<br/>ORDER BY pontos DESC, nome, id LIMIT :limite"]
+    R2["quantos_a_frente(pontos, nome, id)<br/>SELECT COUNT(*) …"]
+    R3["total_participantes()<br/>SELECT COUNT(*) …"]
+  end
+  subgraph M["Model / Banco"]
+    DB[("SQLite — tabelas Aluno e resposta_desafio")]
+    DB2[("SQLite — contagens")]
+  end
+  B --> C1 --> S1 --> R1 --> DB
+  DB --> S2 --> S3
+  S3 -- "Sim" --> R2 --> DB2 --> R3
+  S3 -- "Não" --> R3
+  R3 --> S4 --> C2 --> Z
+  class A,B,Z front
+  class C1,C2 ctrl
+  class S1,S2,S3,S4 serv
+  class R1,R2,R3 repo
+  class DB,DB2 banco
+
+  classDef front fill:#D1DC5A,stroke:#6B7223,color:#1E2C32
+  classDef ctrl fill:#6AC5CB,stroke:#1d7f86,color:#1E2C32
+  classDef serv fill:#7C79FF,stroke:#4f4cc2,color:#ffffff
+  classDef repo fill:#FF8918,stroke:#b35d0b,color:#1E2C32
+  classDef banco fill:#45444E,stroke:#1E2C32,color:#ffffff
+  classDef erro fill:#ea2b2b,stroke:#a51d1d,color:#ffffff

@@ -1,8 +1,7 @@
 from datetime import date
 
-from werkzeug.security import generate_password_hash
-
 from models.model_aluno import Aluno
+from werkzeug.security import generate_password_hash
 
 
 class CriarAlunoService:
@@ -19,20 +18,22 @@ class CriarAlunoService:
         raise ValueError("A data de nascimento está em um formato inválido.")
 
     def executar(self, dados):
-        campos_obrigatorios = ["nome", "email", "senha", "data_nascimento"]
+        campos_obrigatorios = ["nome", "email", "senha"]
+
         for campo in campos_obrigatorios:
             if not dados.get(campo):
                 raise ValueError(f"O campo '{campo}' é obrigatório.")
 
-        email = dados["email"].strip().lower()
-        if Aluno.buscar_por_email(email):
+        aluno_existente = Aluno.buscar_por_email(dados["email"])
+        if aluno_existente:
             raise ValueError("Já existe um aluno cadastrado com este e-mail.")
 
         aluno = Aluno(
-            nome=dados["nome"].strip(),
-            email=email,
+            nome=dados["nome"],
+            email=dados["email"],
             senha=generate_password_hash(dados["senha"]),
             data_nascimento=self._normalizar_data_nascimento(dados.get("data_nascimento")),
+            nick=(dados.get("nick") or dados["nome"]).strip()[:40],
         )
         aluno.salvar()
         return aluno.to_dict()

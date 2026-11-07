@@ -1,4 +1,19 @@
+from datetime import date
+
 from models.model_aluno_desafio import AlunoDesafio
+
+
+def _converter_data(valor):
+    """O JSON traz a data como texto; a coluna Date só aceita objetos date (antes: erro 500)."""
+    if valor in (None, ""):
+        return None
+    if isinstance(valor, date):
+        return valor
+    try:
+        return date.fromisoformat(str(valor))
+    except ValueError as erro:
+        raise ValueError("A data de realização deve estar no formato AAAA-MM-DD.") from erro
+
 
 class AtualizarAlunoDesafioService:
     def executar(self, id_aluno, id_desafio, dados):
@@ -10,7 +25,7 @@ class AtualizarAlunoDesafioService:
             return None
 
         relacao.atualizar(
-            data_realizacao=dados.get("data_realizacao"),
+            data_realizacao=_converter_data(dados.get("data_realizacao")),
             pontuacao_obtida=dados.get("pontuacao_obtida"),
             concluido=dados.get("concluido")
         )

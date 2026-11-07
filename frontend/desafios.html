@@ -1,54 +1,113 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ExplAIner | Desafios</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExplAIner | Desafios</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="pagina">
-    <header class="cabecalho">
-      <div class="marca"><span class="logo">E</span><div><h1>ExplAIner</h1><p>Gerenciar desafios</p></div></div>
-      <nav class="menu-navegacao" aria-label="Navegação principal">
-        <a class="link-navegacao" href="index.html">Cadastro</a><a class="link-navegacao" href="ler.html">Ler</a>
-        <a class="link-navegacao" href="listar.html">Listar</a><a class="link-navegacao" href="atualizar.html">Atualizar</a>
-        <a class="link-navegacao" href="deletar.html">Deletar</a><a class="link-navegacao" href="temas.html">Temas</a>
-        <a class="link-navegacao ativo" href="desafios.html">Desafios</a><a class="link-navegacao" href="questoes.html">Questões</a>
-        <a class="link-navegacao" href="ranking.html">Ranking</a>
-      </nav>
-    </header>
+    <div class="pagina">
+        <header class="cabecalho">
+            <div class="marca">
+                <button class="botao-voltar" type="button" data-voltar data-voltar-fallback="/" aria-label="Voltar para a página anterior" title="Voltar"><span aria-hidden="true">←</span></button>
+                <span class="logo">E</span>
+                <div>
+                    <h1>ExplAIner</h1>
+                    <p>Gerenciar desafios</p>
+                </div>
+            </div>
+            <nav class="menu-navegacao">
+                <a href="index.html" class="link-navegacao">Cadastro</a>
+                <a href="ler.html" class="link-navegacao">Ler</a>
+                <a href="listar.html" class="link-navegacao">Listar</a>
+                <a href="temas.html" class="link-navegacao">Temas</a>
+                <a href="desafios.html" class="link-navegacao ativo">Desafios</a>
+                <a href="questoes.html" class="link-navegacao">Questões</a>
+                <a href="ranking.html" class="link-navegacao">Ranking</a>
+            </nav>
+        </header>
 
-    <main class="conteudo"><section class="cartao">
-      <div class="titulo-cartao"><h2>Desafios</h2><p>Gerencie dificuldade, pontuação e quantidade de questões.</p></div>
-      <form class="grade-formulario" id="form-desafio">
-        <label class="campo"><span>Nome</span><input name="nome" required></label>
-        <label class="campo"><span>Dificuldade</span><input name="dificuldade" required></label>
-        <label class="campo"><span>Pontuação</span><input name="pontuacao" type="number" min="0" required></label>
-        <label class="campo"><span>Quantidade de questões</span><input name="quantidade_questoes" type="number" min="1"></label>
-        <button type="submit">Cadastrar desafio</button>
-      </form>
-      <div class="resultado" id="mensagem-desafio" hidden></div>
-      <hr class="separador">
-      <form class="grade-formulario" id="form-desafio-atualizar">
-        <label class="campo"><span>ID</span><input id="desafio-id-atualizar" type="number" min="1" required></label>
-        <label class="campo"><span>Novo nome</span><input id="desafio-nome-atualizar"></label>
-        <label class="campo"><span>Nova dificuldade</span><input id="desafio-dificuldade-atualizar"></label>
-        <label class="campo"><span>Nova pontuação</span><input id="desafio-pontuacao-atualizar" type="number" min="0"></label>
-        <label class="campo campo-longo"><span>Nova quantidade</span><input id="desafio-quantidade-atualizar" type="number" min="1"></label>
-        <button type="submit">Atualizar desafio</button>
-      </form>
-      <div class="resultado" id="mensagem-desafio-atualizar" hidden></div>
-      <hr class="separador">
-      <form class="grade-formulario" id="form-desafio-deletar">
-        <label class="campo campo-longo"><span>ID para excluir</span><input id="desafio-id-deletar" type="number" min="1" required></label>
-        <button class="botao-perigo" type="submit">Excluir desafio</button>
-      </form>
-      <div class="resultado" id="mensagem-desafio-deletar" hidden></div>
-      <div class="tabela-wrapper"><table><thead><tr><th>ID</th><th>Nome</th><th>Dificuldade</th><th>Pontos</th><th>Questões</th></tr></thead><tbody id="lista-desafios"></tbody></table></div>
-    </section></main>
-  </div>
-  <script src="common.js"></script>
-  <script src="desafios.js"></script>
+        <main class="conteudo">
+            <section class="cartao">
+                <div class="intro-bloco">
+                    <p class="intro-kicker">Desafios</p>
+                    <p class="intro-text">Cadastre desafios e organize os pontos e dificuldade.</p>
+                </div>
+                <form class="grade-formulario" id="form-desafio">
+                    <label class="campo">
+                        <span>Nome</span>
+                        <input type="text" name="nome" placeholder="Ex.: Desafio de Matemática" required>
+                    </label>
+                    <label class="campo">
+                        <span>Dificuldade</span>
+                        <input type="text" name="dificuldade" placeholder="Ex.: Fácil" required>
+                    </label>
+                    <label class="campo">
+                        <span>Pontuação</span>
+                        <input type="number" name="pontuacao" placeholder="Ex.: 100" required>
+                    </label>
+                    <label class="campo">
+                        <span>Quantidade de questões</span>
+                        <input type="number" name="quantidade_questoes" placeholder="Ex.: 5">
+                    </label>
+                    <button type="submit">Salvar desafio</button>
+                </form>
+                <div id="mensagem-desafio" class="resultado" style="display:none"></div>
+                <form class="grade-formulario" id="form-desafio-atualizar" style="margin-top: 1.5rem;">
+                    <label class="campo">
+                        <span>ID do desafio</span>
+                        <input type="number" id="desafio-id-atualizar" placeholder="Ex.: 1" required>
+                    </label>
+                    <label class="campo">
+                        <span>Novo nome</span>
+                        <input type="text" id="desafio-nome-atualizar" placeholder="Deixe em branco para não alterar">
+                    </label>
+                    <label class="campo">
+                        <span>Nova dificuldade</span>
+                        <input type="text" id="desafio-dificuldade-atualizar" placeholder="Deixe em branco para não alterar">
+                    </label>
+                    <label class="campo">
+                        <span>Nova pontuação</span>
+                        <input type="number" id="desafio-pontuacao-atualizar" placeholder="Deixe em branco para não alterar">
+                    </label>
+                    <label class="campo">
+                        <span>Quantidade de questões</span>
+                        <input type="number" id="desafio-quantidade-atualizar" placeholder="Deixe em branco para não alterar">
+                    </label>
+                    <button type="submit">Atualizar desafio</button>
+                </form>
+                <div id="mensagem-desafio-atualizar" class="resultado" style="display:none"></div>
+                <form class="grade-formulario" id="form-desafio-deletar" style="margin-top: 1.5rem;">
+                    <label class="campo">
+                        <span>ID do desafio</span>
+                        <input type="number" id="desafio-id-deletar" placeholder="Ex.: 1" required>
+                    </label>
+                    <button type="submit">Excluir desafio</button>
+                </form>
+                <div id="mensagem-desafio-deletar" class="resultado" style="display:none"></div>
+                <div class="resultado" style="margin-top: 1rem; padding: 0; border: none; overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; text-align:left;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--borda);">
+                                <th style="padding:0.7rem">ID</th>
+                                <th style="padding:0.7rem">Nome</th>
+                                <th style="padding:0.7rem">Dificuldade</th>
+                                <th style="padding:0.7rem">Pontos</th>
+                                <th style="padding:0.7rem">Questões</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-desafios"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="voltar.js"></script>
+<script src="desafios.js"></script>
 </body>
 </html>

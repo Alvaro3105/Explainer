@@ -1,3 +1,4 @@
+from models.database import db
 from datetime import datetime
 from models.model_aluno_desafio import AlunoDesafio
 from models.model_aluno import Aluno
@@ -11,7 +12,7 @@ class RegistrarAlunoDesafioService:
         if not id_aluno or not id_desafio:
             raise ValueError("Os campos 'id_aluno' e 'id_desafio' são obrigatórios.")
 
-        if not Aluno.query.get(id_aluno):
+        if not db.session.get(Aluno, id_aluno):
             raise ValueError("Aluno não encontrado.")
         if not Desafio.buscar_por_id(id_desafio):
             raise ValueError("Desafio não encontrado.")

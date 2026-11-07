@@ -1,3 +1,4 @@
+from models.database import db
 from models.model_ranking import Ranking
 from models.model_aluno import Aluno
 
@@ -6,7 +7,7 @@ class CriarRankingService:
         if not dados.get("id_aluno"):
             raise ValueError("O campo 'id_aluno' é obrigatório.")
 
-        if not Aluno.query.get(dados["id_aluno"]):
+        if not db.session.get(Aluno, dados["id_aluno"]):
             raise ValueError("O aluno informado não existe.")
 
         ranking = Ranking(

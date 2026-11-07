@@ -1,0 +1,120 @@
+classDiagram
+  direction LR
+  class Aluno {
+    -Integer id_aluno
+    -String nome
+    -String email
+    -String senha
+    -Date data_nascimento
+    -Integer pontos
+    -Integer foguinho
+    -String nick
+    -Integer minutos_ativos
+    -String ultimo_dia_ativo
+    -Integer sequencia_atual
+    -Integer melhor_sequencia
+    -Float ultimo_heartbeat
+    -Integer segundos_pendentes
+    -DateTime termos_aceitos_em
+    -String versao_termos
+    +salvar()
+    +atualizar(nome, email, senha, data_nascimento, pontos, foguinho)
+    +atualizar_foguinho(dias)
+    +adicionar_pontos(pontuacao)
+    +deletar()
+    +buscar_por_email(email)
+    +to_dict()
+  }
+  class Tema {
+    -Integer id_tema
+    -String materia
+    -String nome
+    +salvar()
+    +atualizar(materia, nome)
+    +deletar()
+    +buscar_por_id(id_tema)
+    +to_dict()
+  }
+  class Questao {
+    -Integer id_questao
+    -Text enunciado
+    -String alternativa_correta
+    -Integer id_tema
+    -Text alternativas_json
+    -Text explicacao
+    +salvar()
+    +atualizar(enunciado, alternativa_correta, id_tema)
+    +deletar()
+    +buscar_por_id(id_questao)
+    +to_dict()
+  }
+  class Desafio {
+    -Integer id_desafio
+    -String nome
+    -String dificuldade
+    -Integer pontuacao
+    -Integer quantidade_questoes
+    -Date data_criacao
+    -Integer id_tema
+    -Integer id_aluno
+    -Integer nivel_mapa
+    -Boolean origem_ia
+    +salvar()
+    +atualizar(nome, dificuldade, quantidade_questoes)
+    +deletar()
+    +buscar_por_nome(nome)
+    +buscar_por_id(id_desafio)
+    +to_dict()
+  }
+  class DesafioQuestao {
+    -Integer id_desafio
+    -Integer id_questao
+    +salvar()
+    +deletar()
+    +to_dict()
+  }
+  class AlunoDesafio {
+    -Integer id_aluno
+    -Integer id_desafio
+    -Date data_realizacao
+    -Integer pontuacao_obtida
+    -Boolean concluido
+    +salvar()
+    +atualizar(data_realizacao, pontuacao_obtida, concluido)
+    +deletar()
+    +to_dict()
+  }
+  class RespostaDesafio {
+    -Integer id_resposta
+    -Integer id_aluno
+    -Integer id_desafio
+    -Integer id_questao
+    -String alternativa_escolhida
+    -Boolean correta
+    -Integer pontos_ganhos
+    -Integer segundos_gastos
+    -DateTime data_resposta
+    +to_dict()
+  }
+  class Ranking {
+    -Integer id_ranking
+    -Integer classificacao
+    -Integer pontos
+    -Integer id_aluno
+    +salvar()
+    +atualizar(classificacao, pontos)
+    +deletar()
+    +buscar_por_id(id_ranking)
+    +to_dict()
+  }
+  Tema "1" -- "0..*" Questao : possui
+  Tema "0..1" -- "0..*" Desafio : é tema de
+  Aluno "0..1" -- "0..*" Desafio : joga
+  Desafio "1" -- "0..*" DesafioQuestao : contém
+  Questao "1" -- "0..*" DesafioQuestao : pertence
+  Aluno "1" -- "0..*" AlunoDesafio : conclui
+  Desafio "1" -- "0..*" AlunoDesafio : é concluído em
+  Aluno "1" -- "0..*" RespostaDesafio : responde
+  Desafio "1" -- "0..*" RespostaDesafio : recebe
+  Questao "1" -- "0..*" RespostaDesafio : é respondida em
+  Aluno "1" -- "0..*" Ranking : possui (legado)

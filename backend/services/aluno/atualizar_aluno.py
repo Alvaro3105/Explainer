@@ -1,8 +1,8 @@
 from datetime import date
 
-from werkzeug.security import generate_password_hash
-
+from models.database import db
 from models.model_aluno import Aluno
+from werkzeug.security import generate_password_hash
 
 
 class AtualizarAlunoService:
@@ -19,26 +19,24 @@ class AtualizarAlunoService:
         raise ValueError("A data de nascimento está em um formato inválido.")
 
     def executar(self, aluno_id, dados):
-        aluno = Aluno.query.get(aluno_id)
+        aluno = db.session.get(Aluno, aluno_id)
+
         if aluno is None:
             return None
 
         novo_email = dados.get("email")
         if novo_email:
-            novo_email = novo_email.strip().lower()
             aluno_com_email = Aluno.buscar_por_email(novo_email)
+
             if aluno_com_email and aluno_com_email.id_aluno != aluno.id_aluno:
                 raise ValueError("Já existe outro aluno cadastrado com este e-mail.")
 
-        senha = dados.get("senha")
-        senha_hash = generate_password_hash(senha) if senha else None
-
         aluno.atualizar(
             nome=dados.get("nome"),
-            email=novo_email,
-            senha=senha_hash,
+            email=dados.get("email"),
+            senha=generate_password_hash(dados["senha"]) if dados.get("senha") else None,
             data_nascimento=self._normalizar_data_nascimento(dados.get("data_nascimento")),
             pontos=dados.get("pontos"),
-            foguinho=dados.get("foguinho"),
+            foguinho=dados.get("foguinho")
         )
         return aluno.to_dict()

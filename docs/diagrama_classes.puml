@@ -1,0 +1,144 @@
+@startuml
+' Gerado a partir de backend/models — reflete o código atual do ExplAIner.
+hide empty members
+
+class Aluno {
+  - id_aluno : Integer
+  - nome : String
+  - email : String
+  - senha : String
+  - data_nascimento : Date
+  - pontos : Integer
+  - foguinho : Integer
+  - nick : String
+  - minutos_ativos : Integer
+  - ultimo_dia_ativo : String
+  - sequencia_atual : Integer
+  - melhor_sequencia : Integer
+  - ultimo_heartbeat : Float
+  - segundos_pendentes : Integer
+  - termos_aceitos_em : DateTime
+  - versao_termos : String
+  --
+  + salvar()
+  + atualizar(nome, email, senha, data_nascimento, pontos, foguinho)
+  + atualizar_foguinho(dias)
+  + adicionar_pontos(pontuacao)
+  + deletar()
+  + buscar_por_email(email)
+  + to_dict()
+}
+
+class Tema {
+  - id_tema : Integer
+  - materia : String
+  - nome : String
+  --
+  + salvar()
+  + atualizar(materia, nome)
+  + deletar()
+  + buscar_por_id(id_tema)
+  + to_dict()
+}
+
+class Questao {
+  - id_questao : Integer
+  - enunciado : Text
+  - alternativa_correta : String
+  - id_tema : Integer
+  - alternativas_json : Text
+  - explicacao : Text
+  --
+  + salvar()
+  + atualizar(enunciado, alternativa_correta, id_tema)
+  + deletar()
+  + buscar_por_id(id_questao)
+  + to_dict()
+}
+
+class Desafio {
+  - id_desafio : Integer
+  - nome : String
+  - dificuldade : String
+  - pontuacao : Integer
+  - quantidade_questoes : Integer
+  - data_criacao : Date
+  - id_tema : Integer
+  - id_aluno : Integer
+  - nivel_mapa : Integer
+  - origem_ia : Boolean
+  --
+  + salvar()
+  + atualizar(nome, dificuldade, quantidade_questoes)
+  + deletar()
+  + buscar_por_nome(nome)
+  + buscar_por_id(id_desafio)
+  + to_dict()
+}
+
+class DesafioQuestao {
+  - id_desafio : Integer
+  - id_questao : Integer
+  --
+  + salvar()
+  + deletar()
+  + to_dict()
+}
+
+class AlunoDesafio {
+  - id_aluno : Integer
+  - id_desafio : Integer
+  - data_realizacao : Date
+  - pontuacao_obtida : Integer
+  - concluido : Boolean
+  --
+  + salvar()
+  + atualizar(data_realizacao, pontuacao_obtida, concluido)
+  + deletar()
+  + to_dict()
+}
+
+class RespostaDesafio {
+  - id_resposta : Integer
+  - id_aluno : Integer
+  - id_desafio : Integer
+  - id_questao : Integer
+  - alternativa_escolhida : String
+  - correta : Boolean
+  - pontos_ganhos : Integer
+  - segundos_gastos : Integer
+  - data_resposta : DateTime
+  --
+  + to_dict()
+}
+
+class Ranking {
+  - id_ranking : Integer
+  - classificacao : Integer
+  - pontos : Integer
+  - id_aluno : Integer
+  --
+  + salvar()
+  + atualizar(classificacao, pontos)
+  + deletar()
+  + buscar_por_id(id_ranking)
+  + to_dict()
+}
+
+Tema "1" -- "0..*" Questao : possui
+Tema "0..1" -- "0..*" Desafio : é tema de
+Aluno "0..1" -- "0..*" Desafio : joga
+Desafio "1" -- "0..*" DesafioQuestao : contém
+Questao "1" -- "0..*" DesafioQuestao : pertence
+Aluno "1" -- "0..*" AlunoDesafio : conclui
+Desafio "1" -- "0..*" AlunoDesafio : é concluído em
+Aluno "1" -- "0..*" RespostaDesafio : responde
+Desafio "1" -- "0..*" RespostaDesafio : recebe
+Questao "1" -- "0..*" RespostaDesafio : é respondida em
+Aluno "1" -- "0..*" Ranking : possui (legado)
+
+note bottom of Ranking
+  Tabela legada: o ranking do jogo é
+  calculado pelos pontos do Aluno.
+end note
+@enduml

@@ -25,7 +25,7 @@ class Ranking(db.Model):
 
     @staticmethod
     def buscar_por_id(id_ranking):
-        return Ranking.query.get(id_ranking)
+        return db.session.get(Ranking, id_ranking)
 
     def to_dict(self):
         return {

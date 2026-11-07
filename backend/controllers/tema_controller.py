@@ -52,6 +52,8 @@ def deletar_tema(id_tema):
         if not service.executar(id_tema):
             return jsonify({"erro": "Tema não encontrado."}), 404
         return "", 204
+    except ValueError as erro:
+        return jsonify({"erro": str(erro)}), 409
     except SQLAlchemyError:
         db.session.rollback()
         return jsonify({"erro": "Erro ao deletar tema."}), 500

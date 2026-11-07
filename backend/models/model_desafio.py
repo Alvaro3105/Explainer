@@ -1,5 +1,9 @@
 from .database import db
-from datetime import datetime
+
+
+# Desafios de revisão ("Refazer") são gravados com este prefixo no nome.
+PREFIXO_REVISAO = "[REFAZER] "
+
 
 class Desafio(db.Model):
     __tablename__ = "desafio"
@@ -10,6 +14,10 @@ class Desafio(db.Model):
     pontuacao = db.Column(db.Integer, nullable=False)
     quantidade_questoes = db.Column(db.Integer, nullable=True)
     data_criacao = db.Column(db.Date)
+    id_tema = db.Column(db.Integer, db.ForeignKey("Tema.id_tema"), nullable=True)
+    id_aluno = db.Column(db.Integer, db.ForeignKey("Aluno.id_aluno"), nullable=True)
+    nivel_mapa = db.Column(db.Integer, nullable=False, default=1)
+    origem_ia = db.Column(db.Boolean, nullable=False, default=False)
 
     def salvar(self):
         db.session.add(self)
@@ -37,7 +45,7 @@ class Desafio(db.Model):
     
     @staticmethod
     def buscar_por_id(id_desafio):
-        return Desafio.query.get(id_desafio)
+        return db.session.get(Desafio, id_desafio)
 
     def to_dict(self):
         return {
@@ -47,4 +55,8 @@ class Desafio(db.Model):
             "pontuacao": self.pontuacao,
             "quantidade_questoes": self.quantidade_questoes,
             "data_criacao": self.data_criacao.isoformat() if self.data_criacao else None,
+            "id_tema": self.id_tema,
+            "id_aluno": self.id_aluno,
+            "nivel_mapa": self.nivel_mapa or 1,
+            "origem_ia": bool(self.origem_ia),
         }
