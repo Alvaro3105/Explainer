@@ -75,6 +75,58 @@ O projeto é organizado com `backend/`, `frontend/` e `tests/` diretamente na ra
 
 Aplicação web de estudo construída com Flask, SQLite, HTML, CSS e JavaScript. A nova área do estudante fica na rota `/`; as páginas de administração CRUD que já existiam continuam disponíveis pelos arquivos HTML originais.
 
+## Casos de uso implementados
+
+Os casos de uso abaixo descrevem os principais fluxos disponíveis na área do estudante do ExplAIner.
+
+### 1. Gerar uma jornada de estudos
+
+**Objetivo:** permitir que o estudante personalize uma sequência de desafios de acordo com o conteúdo que deseja estudar e com o tempo disponível.
+
+**Fluxo:** o estudante seleciona primeiro a matéria e depois um tema, escolhe a quantidade de questões por desafio (5, 10, 15 ou 20) e define a dificuldade inicial (Fácil, Médio ou Difícil). Ao confirmar, o sistema prepara as questões e apresenta a jornada em um mapa dividido em fases. A geração utiliza a integração opcional com a OpenAI quando há uma chave configurada; sem ela, o sistema seleciona questões do banco local.
+
+**Telas:** **Aprender — Monte sua jornada** (seleção de matéria, tema, quantidade e dificuldade) e **Mapa do desafio** (fases e questões disponíveis).
+
+### 2. Responder uma questão e receber correção
+
+**Objetivo:** permitir que o estudante resolva questões de múltipla escolha e receba retorno imediato sobre seu desempenho.
+
+**Fluxo:** o estudante abre a questão pelo mapa, escolhe uma alternativa e envia a resposta. O servidor valida se a questão pertence ao desafio do aluno e se está sendo respondida na ordem correta. Em seguida, informa se a resposta está certa, apresenta a alternativa correta e uma explicação, calcula os pontos e salva a resposta. O mapa identifica cada questão respondida com ✓ para acerto ou ✗ para erro.
+
+**Telas:** **Mapa do desafio**, **Janela da questão** e **Mapa com o resultado da resposta**.
+
+### 3. Concluir uma fase e avançar na jornada
+
+**Objetivo:** organizar a progressão do estudante em etapas, com dificuldade crescente e regras de pontuação.
+
+**Fluxo:** depois de responder todas as questões da fase, o estudante solicita sua conclusão. O sistema registra o resultado e aplica os bônus previstos: 25 pontos por fase perfeita, 10 pontos pela conclusão da fase e 50 pontos ao completar a jornada. A dificuldade sobe um nível a cada fase concluída, até chegar a Difícil. Na última fase, o servidor considera os erros de toda a jornada: se forem iguais ou superiores a 70% das questões, a jornada é reprovada, seus pontos são retirados e suas fases são desfeitas.
+
+**Telas:** **Mapa do desafio** (ação para concluir a fase), **Resumo/feedback da fase** e **Mapa da próxima fase**.
+
+### 4. Retomar um desafio ou continuar uma jornada
+
+**Objetivo:** permitir que o estudante interrompa o estudo e retorne ao ponto em que parou, sem perder as respostas já registradas.
+
+**Fluxo:** ao entrar novamente, o sistema consulta o desafio ativo e restaura a fase, as questões, as alternativas escolhidas e os resultados já salvos. Se todas as questões foram respondidas, mas a fase ainda não foi concluída, a interface oferece a opção de concluir a fase. Se uma fase já foi concluída e a próxima ainda não foi iniciada, o painel apresenta **Continuar jornada**, recuperando a próxima etapa a partir do histórico do servidor.
+
+**Telas:** **Aprender** (botão **Continuar desafio** ou **Continuar jornada**) e **Mapa do desafio** restaurado.
+
+### 5. Acompanhar o progresso e a classificação
+
+**Objetivo:** mostrar ao estudante sua evolução, sua constância de estudo e sua posição em relação aos demais participantes.
+
+**Fluxo:** o sistema reúne pontos, fases concluídas, questões respondidas, precisão das respostas e tempo ativo. A sequência diária aumenta quando o estudante mantém atividade em dias consecutivos e volta a 1 após um dia sem estudar. O ranking considera apenas alunos que já responderam ao menos uma questão e ordena os participantes por pontos, com critérios de desempate. O histórico apresenta os 30 registros mais recentes de desafios concluídos.
+
+**Telas:** **Aprender** (resumo, sequência diária e prévia do ranking), **Ranking** (classificação geral) e **Meu progresso** (indicadores e histórico de desafios).
+
+### Funcionalidades complementares
+
+- **Cadastro e acesso:** criação de conta com e-mail, senha e nick público; o cadastro exige o aceite dos Termos de Uso e do Termo de Consentimento.
+- **Registro do consentimento:** o sistema registra a data/hora e a versão dos termos aceitos; a revogação é realizada pela exclusão da conta.
+- **Refazer desafio:** permite revisar as mesmas questões de um desafio concluído, na mesma ordem, sem conceder pontos ou bônus.
+- **Perfil:** permite alterar o nick exibido no ranking.
+
+
 ## Ajustes da versão 12 — ações do desafio, mapa e conta
 
 - O botão verde do topo agora aparece somente quando existe um desafio em andamento e serve para continuar o desafio salvo.
