@@ -6,6 +6,7 @@ from .database import db
 # aumente a versão: quem aceitou uma versão anterior precisa aceitar de novo.
 VERSAO_TERMOS_ATUAL = "1.0"
 
+
 class Aluno(db.Model):
     __tablename__ = "Aluno"  # Nome idêntico ao SQL
 
@@ -46,7 +47,7 @@ class Aluno(db.Model):
             self.pontos = pontos
         if foguinho is not None:
             self.foguinho = foguinho
-            
+
         db.session.commit()
 
     def atualizar_foguinho(self, dias=1):

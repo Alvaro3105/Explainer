@@ -1,5 +1,6 @@
 from .database import db
 
+
 class Tema(db.Model):
     __tablename__ = "Tema"
 

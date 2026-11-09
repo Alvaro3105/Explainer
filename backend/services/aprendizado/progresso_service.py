@@ -29,8 +29,8 @@ class ProgressoService:
             segundos = max(0, min(int(segundos_informados or 0), 120))
         except (TypeError, ValueError):
             raise ErroDeNegocio("Tempo inválido.")
-        # Só credita o tempo que realmente passou desde o heartbeat anterior: antes, chamar a
-        # rota várias vezes seguidas somava 2 minutos a cada chamada e inflava o ranking.
+        # Só credita o tempo que realmente passou desde o heartbeat anterior. Assim, chamar
+        # a rota várias vezes seguidas não aumenta o tempo ativo exibido no ranking.
         # O controle fica no banco (não na sessão), porque o cookie de sessão pode ser reenviado.
         agora = time.time()
         if aluno.ultimo_heartbeat:

@@ -14,6 +14,7 @@ ROTULOS_DIFICULDADE = {"Normal": "Médio"}
 def rotulo_dificuldade(dificuldade):
     return ROTULOS_DIFICULDADE.get(dificuldade, dificuldade)
 
+
 # Banco demonstrativo usado quando OPENAI_API_KEY não está configurada.
 # As questões são agrupadas por área; para uso escolar real, configure a API de IA.
 BANCO_LOCAL = {
@@ -242,8 +243,8 @@ BANCO_TEMATICO = {
         ("Qual relação descreve corretamente neurônios e sinapses?", ["Sinapses permitem comunicação entre células nervosas", "Sinapses filtram a urina", "Neurônios produzem bile", "Neurônios são ossos"], "A", "Sinapses são regiões de comunicação entre neurônios ou entre neurônios e outras células."),
         ("Por que as articulações são importantes para o movimento?", ["Permitem conexão e movimento relativo entre ossos", "Produzem glóbulos vermelhos em todos os casos", "Bombeiam sangue", "Fazem a digestão química"], "A", "As articulações conectam ossos e permitem movimentos de diferentes amplitudes."),
     ],
-    # Os bancos abaixo cobrem os temas do catálogo inicial (app.py) que não tinham questões
-    # locais: sem eles, quem escolhia esses temas sem OPENAI_API_KEY recebia erro.
+    # Os bancos abaixo garantem que todos os temas do catálogo inicial (app.py) tenham
+    # questões locais, mesmo sem OPENAI_API_KEY.
     "do 1º grau": [
         ("Resolva: x + 7 = 15.", ["6", "7", "8", "22"], "C", "Subtraindo 7 dos dois membros: x = 15 − 7 = 8."),
         ("Resolva: 2x = 18.", ["6", "9", "16", "36"], "B", "Dividindo os dois membros por 2: x = 9."),
@@ -337,6 +338,7 @@ BANCO_TEMATICO = {
 # Grafias alternativas que as pessoas costumam usar ao cadastrar o tema.
 BANCO_TEMATICO["primeiro grau"] = BANCO_TEMATICO["do 1º grau"]
 BANCO_TEMATICO["do 1o grau"] = BANCO_TEMATICO["do 1º grau"]
+
 
 def _gerar_local(materia, tema, quantidade, dificuldade="Normal", excluir_enunciados=None):
     nome = str(materia or "").strip().casefold()

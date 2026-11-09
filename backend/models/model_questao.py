@@ -2,6 +2,7 @@ import json
 
 from .database import db
 
+
 class Questao(db.Model):
     __tablename__ = "Questao"
 

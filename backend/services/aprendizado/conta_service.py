@@ -150,8 +150,8 @@ class ContaService:
         if not senha_confere(aluno.senha, str(senha or "")):
             raise ErroDeNegocio("Senha incorreta. A conta não foi excluída.", 403)
         try:
-            # Remove primeiro tudo o que pertence ao aluno (inclusive as questões dos desafios
-            # dele, que antes ficavam órfãs) para respeitar as chaves estrangeiras.
+            # Remove primeiro tudo o que pertence ao aluno (inclusive as questões dos
+            # desafios dele) para respeitar as chaves estrangeiras.
             remover_aluno(aluno)
             Transacao.confirmar()
         except SQLAlchemyError:

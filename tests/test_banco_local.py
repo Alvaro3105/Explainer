@@ -23,7 +23,7 @@ def catalogo_inicial():
 
 class TestBancoLocal(unittest.TestCase):
     def test_todo_tema_do_catalogo_gera_20_questoes_sem_ia(self):
-        # Antes, 4 dos 18 temas criados no primeiro uso davam erro sem chave de IA.
+        # Todo tema criado no primeiro uso precisa funcionar sem chave de IA.
         for materia, temas in catalogo_inicial().items():
             for tema in temas:
                 with self.subTest(materia=materia, tema=tema):

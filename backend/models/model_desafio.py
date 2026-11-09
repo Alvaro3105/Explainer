@@ -10,7 +10,7 @@ class Desafio(db.Model):
 
     id_desafio = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String(100), nullable=False)
-    dificuldade = db.Column(db.String(120), nullable=False) 
+    dificuldade = db.Column(db.String(120), nullable=False)
     pontuacao = db.Column(db.Integer, nullable=False)
     quantidade_questoes = db.Column(db.Integer, nullable=True)
     data_criacao = db.Column(db.Date)
@@ -42,7 +42,7 @@ class Desafio(db.Model):
     @staticmethod
     def buscar_por_nome(nome):
         return Desafio.query.filter_by(nome=nome).first()
-    
+
     @staticmethod
     def buscar_por_id(id_desafio):
         return db.session.get(Desafio, id_desafio)

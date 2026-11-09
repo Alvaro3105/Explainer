@@ -1,5 +1,6 @@
 from .database import db
 
+
 class DesafioQuestao(db.Model):
     __tablename__ = "desafio_questao"
 

@@ -14,16 +14,12 @@ const state = {
   modoRevisao: false,
   questoesRespondidas: new Set(),
   resultadoQuestoes: new Map(),   // índice da questão -> true (acertou) / false (errou)
-  questoesCorretas: 0,
   acertosSeguidos: 0,
-  pontosDuranteDesafio: 0,
-  pontosAntesDoDesafio: 0,
   inicioQuestao: 0,
   heartbeat: null,
   toastTimeout: null,
   configuracaoBase: null,
   revisao: null,          // { lista: [desafios concluídos], pos: índice atual } durante o "refazer"
-  desafioAtivoId: null,   // id do desafio em andamento no servidor (ou null)
   faseAtiva: 1,           // fase (1, 2, 3…) do desafio em andamento: define a cor do espaço
   jornadaReprovada: false,
 };
@@ -405,7 +401,7 @@ function mostrarTelaAutenticacao() {
   // Ao sair ou trocar de conta, nada do desafio da conta anterior pode continuar na página.
   Object.assign(state, {
     desafio: null, temaAtual: null, questoes: [], configuracaoBase: null, revisao: null,
-    modoRevisao: false, jornadaReprovada: false, faseConcluida: false, desafioAtivoId: null,
+    modoRevisao: false, jornadaReprovada: false, faseConcluida: false,
     proximaFasePendente: null, questoesRespondidas: new Set(), resultadoQuestoes: new Map(),
   });
   window.__historicoDesafios = [];
@@ -445,7 +441,6 @@ function atualizarIdentidade() {
   atualizarSequenciaSemanal();
   elemento('profile-nick').value = nick;
   atualizarStatusDosTermos();
-  atualizarIdentidadeRanking();
 }
 
 function atualizarSequenciaSemanal() {
@@ -462,14 +457,6 @@ function atualizarSequenciaSemanal() {
       ? `${sequencia} ${sequencia === 1 ? 'dia seguido' : 'dias seguidos'} estudando. Continue para manter seu foguinho aceso.`
       : 'Acesse diariamente para manter seu foguinho aceso.';
   }
-}
-
-function atualizarIdentidadeRanking() {
-  if (!state.aluno) return;
-  const nick = state.aluno.nick || state.aluno.nome || 'Estudante';
-  const inicial = nick.trim().charAt(0).toUpperCase() || 'E';
-  elemento('sidebar-avatar').textContent = inicial;
-  elemento('top-avatar').textContent = inicial;
 }
 
 function atualizarPainelPerfil() {
@@ -660,10 +647,6 @@ function dificuldadeBaseDaFase(dificuldadeAtual, fase) {
   return ESCADA_DIFICULDADE[Math.max(atual - avanco, 0)];
 }
 
-function fasesConcluidasDoTema(idTema) {
-  return (window.__historicoDesafios || []).filter((item) => item.concluido && Number(item.id_tema) === Number(idTema)).length;
-}
-
 // Zera TODO o estado do desafio em um só lugar, para que nada de um desafio anterior (respondidas,
 // modo revisão, jornada…) vaze para o próximo.
 function iniciarEstadoDesafio(dados, { modoMapa = true, modoRevisao = false, configuracao = null, revisao = null, respondidas = null, acertos = null, concluido = false } = {}) {
@@ -679,10 +662,7 @@ function iniciarEstadoDesafio(dados, { modoMapa = true, modoRevisao = false, con
   state.revisao = revisao;
   state.jornadaReprovada = false;
   state.questoesRespondidas = new Set();
-  state.questoesCorretas = 0;
   state.acertosSeguidos = 0;
-  state.pontosDuranteDesafio = 0;
-  state.pontosAntesDoDesafio = Number(state.aluno?.pontos || 0);
   state.configuracaoBase = configuracao;
   state.resultadoQuestoes = new Map();
   if (respondidas) {
@@ -693,7 +673,6 @@ function iniciarEstadoDesafio(dados, { modoMapa = true, modoRevisao = false, con
     state.questoes.forEach((q, i) => { if (String(q.id_questao) in acertos) state.resultadoQuestoes.set(i, Boolean(acertos[String(q.id_questao)])); });
   }
   if (!modoRevisao) {
-    state.desafioAtivoId = state.desafio.id_desafio;
     state.faseAtiva = state.desafio.nivel_mapa || 1;
     salvarJornada(state.desafio.id_desafio, configuracao);
   }
@@ -740,7 +719,6 @@ async function atualizarBotoesDesafio() {
       api('/api/learning/history')
     ]);
     window.__historicoDesafios = historico.historico || [];
-    state.desafioAtivoId = ativo.ativo ? ativo.desafio.id_desafio : null;
     state.faseAtiva = ativo.ativo ? (ativo.desafio.nivel_mapa || 1) : 0;
     // "Refazer" sempre começa pelo desafio 1 do último tema concluído.
     const ultimo = window.__historicoDesafios
@@ -1288,8 +1266,6 @@ elemento('next-question').addEventListener('click', async () => {
       body: { id_questao: questao.id_questao, alternativa: state.alternativaSelecionada, segundos_gastos: segundosGastos },
     });
     state.respostaEnviada = true;
-    state.pontosDuranteDesafio += resultado.pontos_ganhos || 0;
-    if (resultado.correta) state.questoesCorretas += 1;
     if (state.modoMapa) state.questoesRespondidas.add(state.indiceQuestao);
     state.resultadoQuestoes.set(state.indiceQuestao, Boolean(resultado.correta));
     state.aluno.pontos = resultado.pontos_totais;
@@ -1413,7 +1389,6 @@ async function tratarJornadaReprovada(resultado) {
   atualizarIdentidade();
   atualizarPainelPerfil();
   elemento('quiz-xp-total').textContent = formatarNumero(state.aluno.pontos || 0);
-  state.desafioAtivoId = null;
   state.faseAtiva = 0;
   await atualizarPainel();
   await atualizarBotoesDesafio();
@@ -1866,7 +1841,7 @@ elemento('account-popover').addEventListener('click', async (evento) => {
       sim: 'Continuar', nao: 'Cancelar', icone: 'fa-trash',
     });
     if (!confirmou) return;
-    // Campo de senha mascarado no modal (o window.prompt exibia a senha em texto puro).
+    // A senha é pedida num campo mascarado do próprio modal, para não aparecer na tela.
     const senha = await perguntar({
       titulo: 'Confirme com sua senha',
       texto: 'Por segurança, digite sua senha para excluir a conta.',
