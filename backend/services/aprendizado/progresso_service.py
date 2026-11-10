@@ -1,4 +1,3 @@
-"""Casos de uso de acompanhamento: progresso, tempo ativo, ranking e histórico."""
 import time
 
 from repositories.aluno_desafio_repository import AlunoDesafioRepository
@@ -29,16 +28,15 @@ class ProgressoService:
             segundos = max(0, min(int(segundos_informados or 0), 120))
         except (TypeError, ValueError):
             raise ErroDeNegocio("Tempo inválido.")
-        # Só credita o tempo que realmente passou desde o heartbeat anterior. Assim, chamar
-        # a rota várias vezes seguidas não aumenta o tempo ativo exibido no ranking.
-        # O controle fica no banco (não na sessão), porque o cookie de sessão pode ser reenviado.
+        # Só conta o tempo que passou de verdade desde a última chamada, para chamadas
+        # seguidas não aumentarem o tempo ativo. O controle fica no banco, não na sessão.
         agora = time.time()
         if aluno.ultimo_heartbeat:
             segundos = min(segundos, max(0, int(agora - aluno.ultimo_heartbeat)))
         else:
             segundos = min(segundos, 60)
         aluno.ultimo_heartbeat = agora
-        # Minutos inteiros no total; o resto fica guardado para o próximo heartbeat.
+        # Soma minutos inteiros; os segundos que sobram ficam para a próxima chamada.
         pendentes = (aluno.segundos_pendentes or 0) + segundos
         aluno.minutos_ativos = (aluno.minutos_ativos or 0) + pendentes // 60
         aluno.segundos_pendentes = pendentes % 60
@@ -47,7 +45,6 @@ class ProgressoService:
         return {"minutos_ativos": aluno.minutos_ativos, "sequencia_atual": aluno.sequencia_atual}
 
     def ranking(self, aluno_atual, limite=20):
-        """Ranking global (só quem já respondeu questões). As consultas são SQL no AlunoRepository."""
         limite = max(1, min(int(limite or 20), 100))
         resultado = [{
             "posicao": posicao,
@@ -61,7 +58,7 @@ class ProgressoService:
         if aluno_atual:
             posicao_atual = next((item["posicao"] for item in resultado if item["id_aluno"] == aluno_atual.id_aluno), None)
             if posicao_atual is None and AlunoRepository.participa_do_ranking(aluno_atual.id_aluno):
-                # Fora do topo: conta quem vem antes do usuário, na mesma ordem do topo.
+                # Fora do topo: conta quantos alunos estão na frente.
                 posicao_atual = AlunoRepository.quantos_a_frente(
                     aluno_atual.pontos or 0, aluno_atual.nome, aluno_atual.id_aluno) + 1
         return {"itens": resultado, "posicao_usuario": posicao_atual,

@@ -1,17 +1,19 @@
-from models.model_desafio import Desafio
+from repositories.desafio_repository import DesafioRepository
+from repositories.transacao import Transacao
+from services.atualizacao import aplicar_campos
 
 
 class AtualizarDesafioService:
-    def executar(self, desafio_id, dados):
-        desafio = Desafio.buscar_por_id(desafio_id)
 
+    def executar(self, desafio_id, dados):
+        desafio = DesafioRepository.buscar_por_id(desafio_id)
         if desafio is None:
             return None
 
-        desafio.atualizar(
-            nome=dados.get("nome"),
-            dificuldade=dados.get("dificuldade"),
-            quantidade_questoes=dados.get("quantidade_questoes")
-        )
-
+        aplicar_campos(desafio, {
+            "nome": dados.get("nome"),
+            "dificuldade": dados.get("dificuldade"),
+            "quantidade_questoes": dados.get("quantidade_questoes"),
+        })
+        Transacao.confirmar()
         return desafio.to_dict()

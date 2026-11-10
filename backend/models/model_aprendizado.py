@@ -3,7 +3,7 @@ from .database import db
 
 
 def _agora_utc():
-    # datetime.utcnow() está obsoleto; mantém o valor "ingênuo" em UTC já usado na coluna.
+    # datetime.utcnow() está obsoleto; aqui o valor continua em UTC, sem fuso.
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 

@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
 
-from models.database import db
 from services.questao.atualizar_questao import AtualizarQuestaoService
 from services.questao.criar_questao import CriarQuestaoService
 from services.questao.deletar_questao import DeletarQuestaoService
@@ -21,7 +20,6 @@ def criar_questao():
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 400
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao salvar questão no banco de dados."}), 500
 
 
@@ -46,7 +44,6 @@ def atualizar_questao(id_questao):
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 400
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao atualizar questão."}), 500
 
 
@@ -60,7 +57,6 @@ def deletar_questao(id_questao):
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 409
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao deletar questão."}), 500
 
 

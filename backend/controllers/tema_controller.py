@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
-from models.database import db
 
 from services.tema.criar_tema import CriarTemaService
 from services.tema.listar_tema import ListarTemasService
@@ -20,7 +19,6 @@ def criar_tema():
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 400
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao salvar tema no banco de dados."}), 500
 
 
@@ -45,7 +43,6 @@ def atualizar_tema(id_tema):
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 400
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao atualizar tema."}), 500
 
 
@@ -59,5 +56,4 @@ def deletar_tema(id_tema):
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 409
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao deletar tema."}), 500

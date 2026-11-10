@@ -1,17 +1,14 @@
-from models.database import db
-from models.model_aluno import Aluno
+from repositories.aluno_repositories import AlunoRepository
+from repositories.transacao import Transacao
 from services.exclusao import remover_aluno
 
 
 class DeletarAlunoService:
 
     def executar(self, aluno_id):
-        aluno = db.session.get(Aluno, aluno_id)
-
+        aluno = AlunoRepository.buscar_por_id(aluno_id)
         if aluno is None:
             return False
-        # Apaga também respostas, conclusões, ranking e desafios do aluno,
-        # para não deixar registros apontando para uma conta que não existe mais.
         remover_aluno(aluno)
-        db.session.commit()
+        Transacao.confirmar()
         return True

@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
-from models.database import db
 
 from services.ranking.criar_ranking import CriarRankingService
 from services.ranking.listar_ranking import ListarRankingService
@@ -20,7 +19,6 @@ def criar_ranking():
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 400
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao criar registro de ranking."}), 500
 
 
@@ -45,7 +43,6 @@ def atualizar_ranking(id_ranking):
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 400
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao atualizar ranking."}), 500
 
 
@@ -57,5 +54,4 @@ def deletar_ranking(id_ranking):
             return jsonify({"erro": "Registro de ranking não encontrado."}), 404
         return "", 204
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao deletar registro de ranking."}), 500

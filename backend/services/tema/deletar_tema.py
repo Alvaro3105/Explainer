@@ -1,15 +1,15 @@
-from models.model_desafio import Desafio
-from models.model_questao import Questao
-from models.model_tema import Tema
+from repositories.tema_repository import TemaRepository
+from repositories.transacao import Transacao
 
 
 class DeletarTemaService:
+
     def executar(self, id_tema):
-        tema = Tema.buscar_por_id(id_tema)
+        tema = TemaRepository.buscar_por_id(id_tema)
         if not tema:
             return False
-        # Questões e desafios apontam para o tema; apagá-lo deixaria esses registros órfãos.
-        if Questao.query.filter_by(id_tema=id_tema).first() or Desafio.query.filter_by(id_tema=id_tema).first():
+        if TemaRepository.possui_vinculos(id_tema):
             raise ValueError("Este tema tem questões ou desafios vinculados e não pode ser excluído.")
-        tema.deletar()
+        TemaRepository.remover(tema)
+        Transacao.confirmar()
         return True

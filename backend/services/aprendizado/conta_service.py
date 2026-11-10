@@ -1,4 +1,3 @@
-"""Casos de uso da conta: cadastrar, entrar, excluir a conta e trocar o nick."""
 import hmac
 import re
 import threading
@@ -14,16 +13,16 @@ from repositories.transacao import Transacao
 from services.aprendizado.erros import ErroDeNegocio
 from services.exclusao import remover_aluno
 
-# Hash calculado uma vez: usado para gastar o mesmo tempo quando o e-mail não existe,
-# para que a demora da resposta não revele quais e-mails têm conta.
+# Hash usado quando o e-mail não existe, para o login demorar o mesmo tempo
+# e ninguém descobrir pela demora quais e-mails têm conta.
 _HASH_FICTICIO = generate_password_hash("senha-ficticia-para-tempo-constante")
 
-# Limite de tentativas de login: após LIMITE_FALHAS_LOGIN erros na janela, bloqueia por um
-# tempo (por e-mail + IP, e por IP). Fica em memória do processo: suficiente para um servidor
-# único; com vários processos, cada um conta separadamente.
+# Limite de tentativas de login: depois de 5 erros em 15 minutos, bloqueia por um tempo.
+# A contagem é por e-mail e IP, e também só por IP. Fica na memória do servidor,
+# então vale para um servidor só.
 LIMITE_FALHAS_LOGIN = 5
 LIMITE_FALHAS_POR_IP = 20
-JANELA_FALHAS_LOGIN = 15 * 60  # segundos
+JANELA_FALHAS_LOGIN = 15 * 60
 _falhas_login = {}
 _trava_falhas = threading.Lock()
 
@@ -38,7 +37,6 @@ def _falhas_recentes(chave, agora):
 
 
 def _login_bloqueado(email, ip):
-    """Devolve os segundos de espera se o login estiver bloqueado, ou 0."""
     agora = time.monotonic()
     with _trava_falhas:
         espera = 0
@@ -62,10 +60,6 @@ def _limpar_falhas_login(email, ip):
 
 
 def senha_confere(senha_armazenada, senha_informada):
-    """Confere a senha contra o hash (pbkdf2/scrypt do Werkzeug).
-
-    Contas muito antigas guardavam a senha em texto puro; elas ainda entram (com comparação
-    em tempo constante) e o login converte a senha para hash na hora."""
     senha_armazenada = senha_armazenada or ""
     if senha_armazenada.startswith(("pbkdf2:", "scrypt:")):
         try:
@@ -77,11 +71,14 @@ def senha_confere(senha_armazenada, senha_informada):
 
 class ContaService:
 
+    def aluno_da_sessao(self, id_aluno):
+        return AlunoRepository.buscar_por_id(id_aluno)
+
     def registrar(self, dados):
-        nome = str(dados.get("nome", "")).strip()
-        nick = str(dados.get("nick", "")).strip()
-        email = str(dados.get("email", "")).strip().lower()
-        senha = str(dados.get("senha", ""))
+        nome = str(dados.get("nome") or "").strip()
+        nick = str(dados.get("nick") or "").strip()
+        email = str(dados.get("email") or "").strip().lower()
+        senha = str(dados.get("senha") or "")
         if not nome or not email or not senha:
             raise ErroDeNegocio("Preencha nome, e-mail e senha.")
         if not re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email):
@@ -115,9 +112,6 @@ class ContaService:
         try:
             AlunoRepository.adicionar(aluno)
             Transacao.confirmar()
-        except ValueError:
-            Transacao.desfazer()
-            raise ErroDeNegocio("A data de nascimento é inválida.")
         except IntegrityError:
             Transacao.desfazer()
             raise ErroDeNegocio("Já existe uma conta com este e-mail.", 409)
@@ -134,7 +128,7 @@ class ContaService:
                                 429, cabecalhos={"Retry-After": str(espera)})
         aluno = AlunoRepository.buscar_por_email(email)
         if aluno is None:
-            check_password_hash(_HASH_FICTICIO, senha)  # mesmo custo de uma conta existente
+            check_password_hash(_HASH_FICTICIO, senha)  # gasta o mesmo tempo de uma conta que existe
             _registrar_falha_login(email, ip)
             raise ErroDeNegocio("E-mail ou senha incorretos.", 401)
         if not senha_confere(aluno.senha, senha):
@@ -142,7 +136,7 @@ class ContaService:
             raise ErroDeNegocio("E-mail ou senha incorretos.", 401)
         _limpar_falhas_login(email, ip)
         if not (aluno.senha or "").startswith(("pbkdf2:", "scrypt:")):
-            aluno.senha = generate_password_hash(senha)  # migra senha antiga em texto puro
+            aluno.senha = generate_password_hash(senha)  # senha antiga em texto puro vira hash
         Transacao.confirmar()
         return aluno
 
@@ -150,8 +144,7 @@ class ContaService:
         if not senha_confere(aluno.senha, str(senha or "")):
             raise ErroDeNegocio("Senha incorreta. A conta não foi excluída.", 403)
         try:
-            # Remove primeiro tudo o que pertence ao aluno (inclusive as questões dos
-            # desafios dele) para respeitar as chaves estrangeiras.
+            # Apaga primeiro tudo o que é do aluno, por causa das chaves estrangeiras.
             remover_aluno(aluno)
             Transacao.confirmar()
         except SQLAlchemyError:
@@ -159,14 +152,13 @@ class ContaService:
             raise ErroDeNegocio("Não foi possível excluir a conta. Nenhum dado foi alterado.", 500)
 
     def aceitar_termos(self, aluno):
-        """Contas criadas antes dos termos (ou de uma versão nova) aceitam pelo próprio app."""
         self._registrar_aceite(aluno)
         Transacao.confirmar()
         return aluno
 
     @staticmethod
     def _registrar_aceite(aluno):
-        # A decisão do usuário fica registrada no banco: data/hora (UTC) e versão aceita.
+        # Guarda no banco quando o aluno aceitou os termos e qual versão.
         aluno.termos_aceitos_em = datetime.now(timezone.utc).replace(tzinfo=None)
         aluno.versao_termos = VERSAO_TERMOS_ATUAL
 

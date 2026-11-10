@@ -1,12 +1,8 @@
-from models.database import db
-from models.model_aluno import Aluno
+from repositories.aluno_repositories import AlunoRepository
 
 
 class BuscarAlunoPorIdService:
 
     def executar(self, aluno_id):
-        aluno = db.session.get(Aluno, aluno_id)
-        if aluno is None:
-            return None
-
-        return aluno.to_dict()
+        aluno = AlunoRepository.buscar_por_id(aluno_id)
+        return aluno.to_dict() if aluno else None

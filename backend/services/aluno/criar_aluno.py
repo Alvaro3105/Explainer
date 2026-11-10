@@ -1,39 +1,30 @@
-from datetime import date
+from werkzeug.security import generate_password_hash
 
 from models.model_aluno import Aluno
-from werkzeug.security import generate_password_hash
+from repositories.aluno_repositories import AlunoRepository
+from repositories.transacao import Transacao
+from services.atualizacao import converter_data
 
 
 class CriarAlunoService:
-    def _normalizar_data_nascimento(self, valor):
-        if valor in (None, ""):
-            return None
-        if isinstance(valor, date):
-            return valor
-        if isinstance(valor, str):
-            try:
-                return date.fromisoformat(valor)
-            except ValueError as erro:
-                raise ValueError("A data de nascimento deve estar no formato YYYY-MM-DD.") from erro
-        raise ValueError("A data de nascimento está em um formato inválido.")
 
     def executar(self, dados):
-        campos_obrigatorios = ["nome", "email", "senha"]
-
-        for campo in campos_obrigatorios:
+        for campo in ("nome", "email", "senha"):
             if not dados.get(campo):
                 raise ValueError(f"O campo '{campo}' é obrigatório.")
 
-        aluno_existente = Aluno.buscar_por_email(dados["email"])
-        if aluno_existente:
+        nome = str(dados["nome"]).strip()
+        email = str(dados["email"]).strip().lower()
+        if AlunoRepository.buscar_por_email(email):
             raise ValueError("Já existe um aluno cadastrado com este e-mail.")
 
         aluno = Aluno(
-            nome=dados["nome"],
-            email=dados["email"],
-            senha=generate_password_hash(dados["senha"]),
-            data_nascimento=self._normalizar_data_nascimento(dados.get("data_nascimento")),
-            nick=(dados.get("nick") or dados["nome"]).strip()[:40],
+            nome=nome,
+            email=email,
+            senha=generate_password_hash(str(dados["senha"])),
+            data_nascimento=converter_data(dados.get("data_nascimento"), "A data de nascimento"),
+            nick=str(dados.get("nick") or nome).strip()[:40],
         )
-        aluno.salvar()
+        AlunoRepository.adicionar(aluno)
+        Transacao.confirmar()
         return aluno.to_dict()

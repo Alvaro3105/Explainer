@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
-from models.database import db
 
 from services.aluno_desafio.registrar_aluno_desafio import RegistrarAlunoDesafioService
 from services.aluno_desafio.atualizar_aluno_desafio import AtualizarAlunoDesafioService
@@ -19,7 +18,6 @@ def registrar_desafio():
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 400
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao registrar desafio para o aluno."}), 500
 
 
@@ -45,5 +43,4 @@ def atualizar_progresso(id_aluno, id_desafio):
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 400
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao atualizar progresso do desafio."}), 500

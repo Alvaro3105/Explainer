@@ -1,32 +1,16 @@
-from sqlalchemy import text
-
 from models.database import db
 from models.model_desafio_questao import DesafioQuestao
 
 
 class DesafioQuestaoRepository:
-    """Vínculo entre desafios e questões (tabela desafio_questao)."""
 
     @staticmethod
-    def listar_questoes_desafio(id_desafio):
-        sql = text("""
-            SELECT q.*
-            FROM Questao q
-            JOIN desafio_questao dq
-                ON dq.id_questao = q.id_questao
-            WHERE dq.id_desafio = :id_desafio
-        """)
-
-        resultado = db.session.execute(
-            sql,
-            {"id_desafio": id_desafio}
-        )
-
-        return [dict(linha) for linha in resultado.mappings().all()]
+    def buscar(id_desafio, id_questao):
+        return DesafioQuestao.query.filter_by(id_desafio=id_desafio, id_questao=id_questao).first()
 
     @staticmethod
     def relacoes_ordenadas(id_desafio):
-        """Sempre na mesma ordem (a ordem em que as questões foram criadas): bolinha 1, 2, 3..."""
+        """Sempre na ordem em que as questões foram criadas (bolinha 1, 2, 3)."""
         return (DesafioQuestao.query.filter_by(id_desafio=id_desafio)
                 .order_by(DesafioQuestao.id_questao.asc()).all())
 
@@ -40,7 +24,7 @@ class DesafioQuestaoRepository:
 
     @staticmethod
     def pertence(id_desafio, id_questao):
-        return DesafioQuestao.query.filter_by(id_desafio=id_desafio, id_questao=id_questao).first() is not None
+        return DesafioQuestaoRepository.buscar(id_desafio, id_questao) is not None
 
     @staticmethod
     def questao_em_uso(id_questao):
@@ -48,7 +32,13 @@ class DesafioQuestaoRepository:
 
     @staticmethod
     def vincular(id_desafio, id_questao):
-        db.session.add(DesafioQuestao(id_desafio=id_desafio, id_questao=id_questao))
+        relacao = DesafioQuestao(id_desafio=id_desafio, id_questao=id_questao)
+        db.session.add(relacao)
+        return relacao
+
+    @staticmethod
+    def remover(relacao):
+        db.session.delete(relacao)
 
     @staticmethod
     def remover_do_desafio(id_desafio):

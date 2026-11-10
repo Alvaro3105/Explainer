@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
 
-from models.database import db
 from services.desafio.atualizar_desafio import AtualizarDesafioService
 from services.desafio.buscar_por_nome_desafio import BuscarDesafiosPorNomeService
 from services.desafio.criar_desafio import CriarDesafioService
@@ -23,7 +22,6 @@ def criar_desafio():
         return jsonify({"erro": str(erro)}), 400
 
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao salvar desafio no banco de dados."}), 500
 
 
@@ -78,7 +76,6 @@ def atualizar_desafio(desafio_id):
         return jsonify({"erro": str(erro)}), 400
 
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao atualizar desafio no banco de dados."}), 500
 
 
@@ -94,5 +91,4 @@ def deletar_desafio(desafio_id):
         return "", 204
 
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao deletar desafio no banco de dados."}), 500

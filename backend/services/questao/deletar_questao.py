@@ -1,16 +1,17 @@
-from models.model_aprendizado import RespostaDesafio
-from models.model_desafio_questao import DesafioQuestao
-from models.model_questao import Questao
+from repositories.desafio_questao_repository import DesafioQuestaoRepository
+from repositories.questao_repository import QuestaoRepository
+from repositories.resposta_repository import RespostaRepository
+from repositories.transacao import Transacao
 
 
 class DeletarQuestaoService:
+
     def executar(self, id_questao):
-        questao = Questao.buscar_por_id(id_questao)
+        questao = QuestaoRepository.buscar_por_id(id_questao)
         if not questao:
             return False
-        # Uma questão usada em desafio ou já respondida faz parte do histórico de alguém.
-        if (DesafioQuestao.query.filter_by(id_questao=id_questao).first()
-                or RespostaDesafio.query.filter_by(id_questao=id_questao).first()):
+        if DesafioQuestaoRepository.questao_em_uso(id_questao) or RespostaRepository.questao_respondida(id_questao):
             raise ValueError("Esta questão faz parte de um desafio e não pode ser excluída. Remova-a do desafio primeiro.")
-        questao.deletar()
+        QuestaoRepository.remover(questao)
+        Transacao.confirmar()
         return True

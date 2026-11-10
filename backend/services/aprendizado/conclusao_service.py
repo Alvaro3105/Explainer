@@ -1,6 +1,3 @@
-"""Caso de uso: concluir a fase (bônus, fim da jornada e reprovação por excesso de erros)."""
-from datetime import date
-
 from models.model_aluno_desafio import AlunoDesafio
 from repositories.aluno_desafio_repository import AlunoDesafioRepository
 from repositories.desafio_questao_repository import DesafioQuestaoRepository
@@ -12,7 +9,7 @@ from services.aprendizado.erros import ErroDeNegocio
 from services.aprendizado.progresso_service import ProgressoService
 from services.aprendizado.regras import (
     BONUS_CONCLUSAO_FASE, BONUS_CONCLUSAO_JORNADA, BONUS_PERFEITO, LIMITE_ERROS_JORNADA,
-    atualizar_sequencia_diaria, eh_revisao, fases_da_jornada,
+    atualizar_sequencia_diaria, eh_revisao, fases_da_jornada, hoje,
 )
 from services.exclusao import remover_desafio
 
@@ -30,7 +27,6 @@ class ConclusaoService:
         pontos_base = sum(resposta.pontos_ganhos for resposta in respostas)
         registro = AlunoDesafioRepository.buscar(aluno.id_aluno, id_desafio)
         if registro and registro.concluido:
-            # Concluir de novo não paga os bônus outra vez.
             return {
                 "concluido": True,
                 "ja_concluido": True,
@@ -47,7 +43,7 @@ class ConclusaoService:
             registro = AlunoDesafio(id_aluno=aluno.id_aluno, id_desafio=id_desafio)
             AlunoDesafioRepository.adicionar(registro)
 
-        # Última fase da jornada: confere o aproveitamento de TODAS as fases juntas.
+        # Última fase da jornada: confere o aproveitamento de todas as fases juntas.
         jornada_concluida = False
         aproveitamento = None
         if not eh_revisao(desafio) and (desafio.nivel_mapa or 1) == fases_da_jornada(desafio.quantidade_questoes):
@@ -83,7 +79,7 @@ class ConclusaoService:
                 bonus_jornada = BONUS_CONCLUSAO_JORNADA
         bonus = bonus_perfeito + bonus_conclusao + bonus_jornada
         aluno.pontos = (aluno.pontos or 0) + bonus
-        registro.data_realizacao = date.today()
+        registro.data_realizacao = hoje()
         registro.pontuacao_obtida = pontos_base + bonus
         registro.concluido = True
         atualizar_sequencia_diaria(aluno)
@@ -104,7 +100,7 @@ class ConclusaoService:
 
     @staticmethod
     def _cadeia_da_jornada(aluno, desafio):
-        """Fases da jornada que termina em `desafio` (fase 1 ... fase atual), em ordem."""
+        """Fases da jornada que termina em `desafio`, da fase 1 até a atual."""
         cadeia = [desafio]
         esperado = (desafio.nivel_mapa or 1) - 1
         for anterior in DesafioRepository.anteriores_no_tema(aluno.id_aluno, desafio.id_tema, desafio.id_desafio):
@@ -119,13 +115,12 @@ class ConclusaoService:
 
     @staticmethod
     def _reprovar_jornada(aluno, cadeia):
-        """Desfaz a jornada inteira: apaga fases e revisões, e tira os pontos que ela havia rendido."""
         pontos_perdidos = 0
         for desafio in cadeia:
             registro = AlunoDesafioRepository.buscar(aluno.id_aluno, desafio.id_desafio)
             if registro and registro.concluido:
                 pontos_perdidos += registro.pontuacao_obtida or 0
-            else:  # fase atual: só os pontos das respostas
+            else:
                 pontos_perdidos += sum(r.pontos_ganhos for r in RespostaRepository.listar(aluno.id_aluno, desafio.id_desafio))
         ids_questoes = {id_q for d in cadeia for id_q in DesafioQuestaoRepository.ids_questoes(d.id_desafio)}
         for revisao in DesafioRepository.listar_do_aluno(aluno.id_aluno):
@@ -133,7 +128,7 @@ class ConclusaoService:
                 remover_desafio(revisao)
         for desafio in cadeia:
             remover_desafio(desafio)
-        pontos_perdidos = max(0, pontos_perdidos)  # nunca devolve pontos por causa de penalidades acumuladas
+        pontos_perdidos = max(0, pontos_perdidos)  # nunca devolve pontos
         antes = aluno.pontos or 0
         aluno.pontos = max(0, antes - pontos_perdidos)
         return antes - aluno.pontos

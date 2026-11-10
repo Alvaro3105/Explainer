@@ -1,13 +1,7 @@
-"""Rotas da área do estudante.
-
-O Controller só cuida do HTTP: lê a requisição, pega o aluno da sessão, chama o Service do
-caso de uso e devolve JSON. Regras de negócio ficam nos Services; consultas, nos Repositories.
-"""
 from functools import wraps
 
 from flask import Blueprint, jsonify, request, session
 
-from repositories.aluno_repositories import AlunoRepository
 from services.aprendizado.conclusao_service import ConclusaoService
 from services.aprendizado.conta_service import ContaService
 from services.aprendizado.desafio_service import DesafioService
@@ -19,11 +13,12 @@ aprendizado_controller = Blueprint("aprendizado_controller", __name__)
 
 
 def aluno_logado():
-    return AlunoRepository.buscar_por_id(session.get("aluno_id"))
+    return ContaService().aluno_da_sessao(session.get("aluno_id"))
 
 
 def _dados():
-    return request.get_json(silent=True) or {}
+    dados = request.get_json(silent=True)
+    return dados if isinstance(dados, dict) else {}
 
 
 def _iniciar_sessao(aluno):
@@ -32,7 +27,7 @@ def _iniciar_sessao(aluno):
 
 
 def rota(exige_login=True):
-    """Converte ErroDeNegocio em resposta HTTP e, se pedido, injeta o aluno logado (ou 401)."""
+    """Transforma ErroDeNegocio em resposta HTTP e entrega o aluno logado para a rota (ou 401)."""
     def decorador(funcao):
         @wraps(funcao)
         def envolvida(*args, **kwargs):
@@ -50,7 +45,7 @@ def rota(exige_login=True):
     return decorador
 
 
-# ---------- conta ----------
+# Rotas da conta
 
 @aprendizado_controller.post("/api/auth/register")
 @rota(exige_login=False)
@@ -103,7 +98,7 @@ def atualizar_perfil(aluno):
     return jsonify({"aluno": aluno.to_dict()})
 
 
-# ---------- desafios ----------
+# Rotas dos desafios
 
 @aprendizado_controller.get("/api/learning/catalog")
 @rota(exige_login=False)
@@ -141,7 +136,7 @@ def concluir_desafio(aluno, id_desafio):
     return jsonify(ConclusaoService().concluir(aluno, id_desafio))
 
 
-# ---------- acompanhamento ----------
+# Rotas de acompanhamento
 
 @aprendizado_controller.post("/api/learning/activity")
 @rota()

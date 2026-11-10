@@ -1,7 +1,7 @@
-from models.model_desafio import Desafio
+from repositories.desafio_repository import DesafioRepository
 
 
 class ListarDesafiosService:
+
     def executar(self):
-        desafios = Desafio.query.all()
-        return [desafio.to_dict() for desafio in desafios]
+        return [desafio.to_dict() for desafio in DesafioRepository.listar()]

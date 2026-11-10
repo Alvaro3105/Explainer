@@ -1,9 +1,7 @@
-from models.model_aluno import Aluno
+from repositories.aluno_repositories import AlunoRepository
 
 
 class ListarAlunosService:
 
     def executar(self):
-        alunos = Aluno.query.all()
-
-        return [aluno.to_dict() for aluno in alunos]
+        return [aluno.to_dict() for aluno in AlunoRepository.listar()]

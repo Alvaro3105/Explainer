@@ -8,13 +8,13 @@ class QuestaoRepository:
 
     @staticmethod
     def verificar_resposta(id_questao, alternativa):
-        questao = Questao.buscar_por_id(id_questao)
+        questao = QuestaoRepository.buscar_por_id(id_questao)
 
         if questao is None:
             return None
 
-        # A coluna do gabarito aceita nulo, e a alternativa pode chegar como número:
-        # por isso o gabarito é verificado e os dois lados são convertidos para texto.
+        # O gabarito pode estar vazio e a alternativa pode chegar como número,
+        # por isso os dois lados viram texto antes de comparar.
         if not questao.alternativa_correta:
             raise ValueError("Esta questão ainda não tem alternativa correta cadastrada.")
         return questao.alternativa_correta.strip().upper() == str(alternativa).strip().upper()
@@ -24,9 +24,20 @@ class QuestaoRepository:
         return db.session.get(Questao, id_questao) if id_questao else None
 
     @staticmethod
+    def listar():
+        return Questao.query.all()
+
+    @staticmethod
+    def listar_do_desafio(id_desafio):
+        return (Questao.query
+                .join(DesafioQuestao, DesafioQuestao.id_questao == Questao.id_questao)
+                .filter(DesafioQuestao.id_desafio == id_desafio)
+                .order_by(Questao.id_questao.asc()).all())
+
+    @staticmethod
     def adicionar(questao):
         db.session.add(questao)
-        db.session.flush()  # gera o id_questao para o vínculo com o desafio
+        db.session.flush()
 
     @staticmethod
     def remover(questao):
@@ -34,7 +45,6 @@ class QuestaoRepository:
 
     @staticmethod
     def enunciados_ja_vistos(id_aluno, id_tema, dificuldade):
-        """Enunciados que o aluno já recebeu neste tema e dificuldade (fora das revisões)."""
         linhas = (db.session.query(Questao.enunciado)
                   .join(DesafioQuestao, DesafioQuestao.id_questao == Questao.id_questao)
                   .join(Desafio, Desafio.id_desafio == DesafioQuestao.id_desafio)

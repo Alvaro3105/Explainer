@@ -1,16 +1,14 @@
-from models.database import db
-from models.model_desafio import Desafio
+from repositories.desafio_repository import DesafioRepository
+from repositories.transacao import Transacao
 from services.exclusao import remover_desafio
 
 
 class DeletarDesafioService:
-    def executar(self, desafio_id):
-        desafio = Desafio.buscar_por_id(desafio_id)
 
+    def executar(self, desafio_id):
+        desafio = DesafioRepository.buscar_por_id(desafio_id)
         if desafio is None:
             return False
-        # Apaga também respostas, conclusões e vínculos com questões,
-        # para não deixar registros apontando para um desafio que não existe mais.
         remover_desafio(desafio)
-        db.session.commit()
+        Transacao.confirmar()
         return True

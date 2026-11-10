@@ -1,14 +1,13 @@
-from models.model_desafio_questao import DesafioQuestao
+from repositories.desafio_questao_repository import DesafioQuestaoRepository
+from repositories.transacao import Transacao
 
 
 class RemoverQuestaoDesafioService:
-    def executar(self, id_desafio, id_questao):
-        relacao = DesafioQuestao.query.filter_by(
-            id_desafio=id_desafio, id_questao=id_questao
-        ).first()
 
+    def executar(self, id_desafio, id_questao):
+        relacao = DesafioQuestaoRepository.buscar(id_desafio, id_questao)
         if not relacao:
             return False
-
-        relacao.deletar()
+        DesafioQuestaoRepository.remover(relacao)
+        Transacao.confirmar()
         return True

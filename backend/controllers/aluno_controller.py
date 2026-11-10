@@ -7,7 +7,6 @@ from services.aluno.listar_aluno import ListarAlunosService
 from services.aluno.buscar_por_id import BuscarAlunoPorIdService
 from services.aluno.atualizar_aluno import AtualizarAlunoService
 from services.aluno.deletar_aluno import DeletarAlunoService
-from models.database import db
 
 aluno_controller = Blueprint("aluno_controller", __name__)
 
@@ -24,7 +23,6 @@ def criar_aluno():
         return jsonify({"erro": str(erro)}), 400
 
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao salvar aluno no banco de dados."}), 500
 
 
@@ -68,7 +66,6 @@ def atualizar_aluno(aluno_id):
         return jsonify({"erro": str(erro)}), 400
 
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao atualizar aluno no banco de dados."}), 500
 
 
@@ -84,7 +81,6 @@ def deletar_aluno(aluno_id):
         return "", 204
 
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao deletar aluno no banco de dados."}), 500
 
 
@@ -97,5 +93,4 @@ def buscar_ranking_alunos():
         return jsonify(ranking), 200
 
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao buscar o ranking de alunos no banco de dados."}), 500

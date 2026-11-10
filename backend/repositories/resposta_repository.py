@@ -3,7 +3,6 @@ from models.model_aprendizado import RespostaDesafio
 
 
 class RespostaRepository:
-    """Respostas que cada aluno deu às questões de um desafio."""
 
     @staticmethod
     def listar(id_aluno, id_desafio):

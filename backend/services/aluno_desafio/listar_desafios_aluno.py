@@ -1,7 +1,7 @@
-from models.model_aluno_desafio import AlunoDesafio
+from repositories.aluno_desafio_repository import AlunoDesafioRepository
 
 
 class ListarDesafiosAlunoService:
+
     def executar(self, id_aluno):
-        historico = AlunoDesafio.query.filter_by(id_aluno=id_aluno).all()
-        return [h.to_dict() for h in historico]
+        return [registro.to_dict() for registro in AlunoDesafioRepository.listar_desafios_aluno(id_aluno)]

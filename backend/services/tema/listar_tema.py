@@ -1,7 +1,7 @@
-from models.model_tema import Tema
+from repositories.tema_repository import TemaRepository
 
 
 class ListarTemasService:
+
     def executar(self):
-        temas = Tema.query.all()
-        return [t.to_dict() for t in temas]
+        return [tema.to_dict() for tema in TemaRepository.listar()]

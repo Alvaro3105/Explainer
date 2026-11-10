@@ -1,7 +1,7 @@
-from models.model_questao import Questao
+from repositories.questao_repository import QuestaoRepository
 
 
 class ListarQuestoesService:
+
     def executar(self):
-        questoes = Questao.query.all()
-        return [q.to_dict() for q in questoes]
+        return [questao.to_dict() for questao in QuestaoRepository.listar()]

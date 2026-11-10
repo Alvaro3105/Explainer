@@ -1,10 +1,9 @@
 from models.database import db
 from models.model_aluno_desafio import AlunoDesafio
-from models.model_desafio import Desafio
+from models.model_desafio import PREFIXO_REVISAO, Desafio
 
 
 class AlunoDesafioRepository:
-    """Registro de conclusão de cada desafio pelo aluno (tabela aluno_desafio)."""
 
     @staticmethod
     def buscar(id_aluno, id_desafio):
@@ -27,13 +26,14 @@ class AlunoDesafioRepository:
     @staticmethod
     def contar_concluidos(id_aluno):
         return (Desafio.query.join(AlunoDesafio, AlunoDesafio.id_desafio == Desafio.id_desafio)
-                .filter(AlunoDesafio.id_aluno == id_aluno, AlunoDesafio.concluido.is_(True))
+                .filter(AlunoDesafio.id_aluno == id_aluno, AlunoDesafio.concluido.is_(True),
+                        ~Desafio.nome.startswith(PREFIXO_REVISAO))
                 .count())
 
     @staticmethod
     def historico(id_aluno, limite=30):
         return (AlunoDesafio.query.filter_by(id_aluno=id_aluno)
-                .order_by(AlunoDesafio.data_realizacao.desc().nullslast())
+                .order_by(AlunoDesafio.data_realizacao.desc(), AlunoDesafio.id_desafio.desc())
                 .limit(limite).all())
 
     @staticmethod

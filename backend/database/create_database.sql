@@ -1,8 +1,3 @@
--- Esquema do ExplAIner para MySQL, espelhando os models SQLAlchemy em backend/models.
--- Os nomes das tabelas respeitam maiúsculas/minúsculas dos models ("Aluno", "desafio"...),
--- porque o MySQL no Linux diferencia os dois.
--- Com SQLite (padrão), este arquivo não é necessário: o app cria e migra as tabelas sozinho.
-
 CREATE DATABASE IF NOT EXISTS ExplAIner CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 USE ExplAIner;
@@ -101,7 +96,6 @@ CREATE TABLE IF NOT EXISTS Ranking (
     id_aluno INT NOT NULL,
     FOREIGN KEY (id_aluno) REFERENCES Aluno(id_aluno)
 ) ENGINE=InnoDB;
-
 
 DROP PROCEDURE IF EXISTS sp_ranking_alunos;
 

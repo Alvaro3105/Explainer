@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify
 from sqlalchemy.exc import SQLAlchemyError
-from models.database import db
 
 from services.desafio_questao.adicionar_questao_desafio import AdicionarQuestaoDesafioService
 from services.desafio_questao.listar_questoes_desafio import ListarQuestoesDesafioService
@@ -18,7 +17,6 @@ def adicionar_questao(id_desafio, id_questao):
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 400
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao vincular questão ao desafio."}), 500
 
 
@@ -40,5 +38,4 @@ def remover_questao(id_desafio, id_questao):
             return jsonify({"erro": "Vínculo não encontrado."}), 404
         return "", 204
     except SQLAlchemyError:
-        db.session.rollback()
         return jsonify({"erro": "Erro ao desvincular questão do desafio."}), 500

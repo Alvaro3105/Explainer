@@ -1,4 +1,3 @@
-"""Caso de uso: responder uma questão do desafio (correção, pontos e sequência diária)."""
 from sqlalchemy.exc import IntegrityError
 
 from models.model_aprendizado import RespostaDesafio
@@ -42,7 +41,6 @@ class RespostaService:
                 "pontos_ganhos": existente.pontos_ganhos,
                 "pontos_totais": aluno.pontos or 0,
             }
-        # As questões precisam ser respondidas na sequência (1, 2, 3...).
         ids_em_ordem = DesafioQuestaoRepository.ids_questoes(id_desafio)
         ja_respondidas = {r.id_questao for r in RespostaRepository.listar(aluno.id_aluno, id_desafio)}
         anteriores = ids_em_ordem[:ids_em_ordem.index(id_questao)] if id_questao in ids_em_ordem else []
@@ -50,7 +48,7 @@ class RespostaService:
             raise ErroDeNegocio("Responda as questões na ordem, começando pela primeira disponível.", 409)
         correta = alternativa == str(questao.alternativa_correta or "").upper()
         ganho = PONTOS_POR_DIFICULDADE.get(desafio.dificuldade, 10)
-        # Errar tira 25% do que valeria o acerto, sem deixar o total negativo; revisão não vale pontos.
+        # Errar tira 25% do que valeria o acerto, sem deixar o total negativo. Revisão não vale pontos.
         pontos = ganho if correta else -min(penalidade_por_erro(ganho), aluno.pontos or 0)
         if eh_revisao(desafio):
             pontos = 0
