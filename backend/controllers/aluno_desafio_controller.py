@@ -8,6 +8,7 @@ from services.aluno_desafio.listar_desafios_aluno import ListarDesafiosAlunoServ
 
 aluno_desafio_controller = Blueprint("aluno_desafio_controller", __name__)
 
+
 @aluno_desafio_controller.post("/alunos/desafios")
 def registrar_desafio():
     try:
@@ -21,6 +22,7 @@ def registrar_desafio():
         db.session.rollback()
         return jsonify({"erro": "Erro ao registrar desafio para o aluno."}), 500
 
+
 @aluno_desafio_controller.get("/alunos/<int:id_aluno>/desafios")
 def listar_desafios_do_aluno(id_aluno):
     try:
@@ -29,6 +31,7 @@ def listar_desafios_do_aluno(id_aluno):
         return jsonify(historico), 200
     except SQLAlchemyError:
         return jsonify({"erro": "Erro ao buscar histórico de desafios do aluno."}), 500
+
 
 @aluno_desafio_controller.put("/alunos/<int:id_aluno>/desafios/<int:id_desafio>")
 def atualizar_progresso(id_aluno, id_desafio):

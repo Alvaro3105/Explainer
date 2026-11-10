@@ -1,5 +1,6 @@
 from models.model_tema import Tema
 
+
 class CriarTemaService:
     def executar(self, dados):
         for campo in ["materia", "nome"]:

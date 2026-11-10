@@ -9,6 +9,7 @@ from services.tema.deletar_tema import DeletarTemaService
 
 tema_controller = Blueprint("tema_controller", __name__)
 
+
 @tema_controller.post("/temas")
 def criar_tema():
     try:
@@ -22,6 +23,7 @@ def criar_tema():
         db.session.rollback()
         return jsonify({"erro": "Erro ao salvar tema no banco de dados."}), 500
 
+
 @tema_controller.get("/temas")
 def listar_temas():
     try:
@@ -29,6 +31,7 @@ def listar_temas():
         return jsonify(service.executar()), 200
     except SQLAlchemyError:
         return jsonify({"erro": "Erro ao listar temas."}), 500
+
 
 @tema_controller.put("/temas/<int:id_tema>")
 def atualizar_tema(id_tema):
@@ -44,6 +47,7 @@ def atualizar_tema(id_tema):
     except SQLAlchemyError:
         db.session.rollback()
         return jsonify({"erro": "Erro ao atualizar tema."}), 500
+
 
 @tema_controller.delete("/temas/<int:id_tema>")
 def deletar_tema(id_tema):

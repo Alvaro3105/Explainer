@@ -1,12 +1,12 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
 
-from services.desafio.criar_desafio import CriarDesafioService
-from services.desafio.buscar_por_nome_desafio import BuscarDesafiosPorNomeService
-from models.model_desafio import Desafio
-from services.desafio.atualizar_desafio import AtualizarDesafioService
-from services.desafio.deletar_desafio import DeletarDesafioService
 from models.database import db
+from services.desafio.atualizar_desafio import AtualizarDesafioService
+from services.desafio.buscar_por_nome_desafio import BuscarDesafiosPorNomeService
+from services.desafio.criar_desafio import CriarDesafioService
+from services.desafio.deletar_desafio import DeletarDesafioService
+from services.desafio.listar_desafio import ListarDesafiosService
 
 desafio_controller = Blueprint("desafio_controller", __name__)
 
@@ -35,10 +35,10 @@ def listar_desafios():
             service = BuscarDesafiosPorNomeService()
             desafios = service.executar(nome)
             return jsonify(desafios), 200
-            
-        desafios = Desafio.query.all()
-        return jsonify([desafio.to_dict() for desafio in desafios]), 200
-        
+
+        service = ListarDesafiosService()
+        return jsonify(service.executar()), 200
+
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 400
     except SQLAlchemyError:
@@ -57,7 +57,7 @@ def buscar_desafio_por_nome(nome):
 
     except ValueError as erro:
         return jsonify({"erro": str(erro)}), 400
-        
+
     except SQLAlchemyError:
         return jsonify({"erro": "Erro ao buscar desafio no banco de dados."}), 500
 

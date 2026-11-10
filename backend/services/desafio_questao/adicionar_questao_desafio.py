@@ -2,6 +2,7 @@ from models.model_desafio_questao import DesafioQuestao
 from models.model_desafio import Desafio
 from models.model_questao import Questao
 
+
 class AdicionarQuestaoDesafioService:
     def executar(self, id_desafio, id_questao):
         if not Desafio.buscar_por_id(id_desafio):

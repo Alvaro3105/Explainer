@@ -1,6 +1,7 @@
 from models.model_questao import Questao
 from models.model_tema import Tema
 
+
 class CriarQuestaoService:
     def executar(self, dados):
         for campo in ["enunciado", "id_tema"]:

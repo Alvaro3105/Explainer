@@ -8,6 +8,7 @@ from services.desafio_questao.remover_questao_desafio import RemoverQuestaoDesaf
 
 desafio_questao_controller = Blueprint("desafio_questao_controller", __name__)
 
+
 @desafio_questao_controller.post("/desafios/<int:id_desafio>/questoes/<int:id_questao>")
 def adicionar_questao(id_desafio, id_questao):
     try:
@@ -20,6 +21,7 @@ def adicionar_questao(id_desafio, id_questao):
         db.session.rollback()
         return jsonify({"erro": "Erro ao vincular questão ao desafio."}), 500
 
+
 @desafio_questao_controller.get("/desafios/<int:id_desafio>/questoes")
 def listar_questoes_do_desafio(id_desafio):
     try:
@@ -28,6 +30,7 @@ def listar_questoes_do_desafio(id_desafio):
         return jsonify(questoes), 200
     except SQLAlchemyError:
         return jsonify({"erro": "Erro ao buscar questões do desafio."}), 500
+
 
 @desafio_questao_controller.delete("/desafios/<int:id_desafio>/questoes/<int:id_questao>")
 def remover_questao(id_desafio, id_questao):

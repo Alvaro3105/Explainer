@@ -1,4 +1,3 @@
-# controllers/aluno_controller.py
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -88,12 +87,13 @@ def deletar_aluno(aluno_id):
         db.session.rollback()
         return jsonify({"erro": "Erro ao deletar aluno no banco de dados."}), 500
 
+
 @aluno_controller.get("/alunos/ranking")
 def buscar_ranking_alunos():
     try:
         service = BuscarRankingAlunosService()
         ranking = service.executar()
-        
+
         return jsonify(ranking), 200
 
     except SQLAlchemyError:

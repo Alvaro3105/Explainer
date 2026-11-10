@@ -1,6 +1,7 @@
 from models.database import db
 from models.model_aluno import Aluno
 
+
 class BuscarAlunoPorIdService:
 
     def executar(self, aluno_id):

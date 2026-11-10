@@ -9,6 +9,7 @@ from services.ranking.deletar_ranking import DeletarRankingService
 
 ranking_controller = Blueprint("ranking_controller", __name__)
 
+
 @ranking_controller.post("/ranking")
 def criar_ranking():
     try:
@@ -22,6 +23,7 @@ def criar_ranking():
         db.session.rollback()
         return jsonify({"erro": "Erro ao criar registro de ranking."}), 500
 
+
 @ranking_controller.get("/ranking")
 def listar_ranking():
     try:
@@ -29,6 +31,7 @@ def listar_ranking():
         return jsonify(service.executar()), 200
     except SQLAlchemyError:
         return jsonify({"erro": "Erro ao listar ranking."}), 500
+
 
 @ranking_controller.put("/ranking/<int:id_ranking>")
 def atualizar_ranking(id_ranking):
@@ -44,6 +47,7 @@ def atualizar_ranking(id_ranking):
     except SQLAlchemyError:
         db.session.rollback()
         return jsonify({"erro": "Erro ao atualizar ranking."}), 500
+
 
 @ranking_controller.delete("/ranking/<int:id_ranking>")
 def deletar_ranking(id_ranking):

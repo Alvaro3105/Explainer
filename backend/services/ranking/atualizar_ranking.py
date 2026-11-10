@@ -1,5 +1,6 @@
 from models.model_ranking import Ranking
 
+
 class AtualizarRankingService:
     def executar(self, id_ranking, dados):
         ranking = Ranking.buscar_por_id(id_ranking)
@@ -11,4 +12,3 @@ class AtualizarRankingService:
             pontos=dados.get("pontos")
         )
         return ranking.to_dict()
-        

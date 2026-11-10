@@ -4,6 +4,7 @@ from models.model_aluno_desafio import AlunoDesafio
 from models.model_aluno import Aluno
 from models.model_desafio import Desafio
 
+
 class RegistrarAlunoDesafioService:
     def executar(self, dados):
         id_aluno = dados.get("id_aluno")

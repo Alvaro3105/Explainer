@@ -10,7 +10,8 @@ class DeletarAlunoService:
 
         if aluno is None:
             return False
-        # Apaga também respostas, conclusões, ranking e desafios do aluno (antes ficavam órfãos).
+        # Apaga também respostas, conclusões, ranking e desafios do aluno,
+        # para não deixar registros apontando para uma conta que não existe mais.
         remover_aluno(aluno)
         db.session.commit()
         return True

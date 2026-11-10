@@ -2,6 +2,7 @@ from models.database import db
 from models.model_ranking import Ranking
 from models.model_aluno import Aluno
 
+
 class CriarRankingService:
     def executar(self, dados):
         if not dados.get("id_aluno"):

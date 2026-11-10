@@ -1,5 +1,6 @@
 from models.model_desafio import Desafio
 
+
 class BuscarDesafiosPorNomeService:
     def executar(self, nome):
         if not nome or not nome.strip():

@@ -625,7 +625,7 @@ body.theme-light .toast{color:#1E2C32}
 .modal-card h2{font-size:21px;font-weight:800;margin-bottom:8px}
 .modal-card p{font-size:14.5px;line-height:1.55;color:var(--muted)}
 .modal-actions{display:flex;gap:12px;margin-top:22px}
-/* Campo de senha do modal (exclusão de conta): substitui o window.prompt, que mostrava a senha. */
+/* Campo de senha do modal de exclusão de conta (o texto digitado fica mascarado). */
 .modal-field{display:flex;flex-direction:column;gap:6px;margin-top:18px;text-align:left;font-size:13px;font-weight:700;color:var(--cor10)}
 .modal-field[hidden]{display:none}
 .modal-field input{min-height:46px;padding:0 14px;border-radius:12px;border:2px solid var(--line);background:var(--cor8);color:var(--cor10);font:inherit;font-weight:500}

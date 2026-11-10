@@ -1,8 +1,8 @@
 """Exclusões que respeitam as chaves estrangeiras.
 
-O SQLite não impõe chaves estrangeiras por padrão: apagar só a linha principal deixava
-respostas, registros de conclusão e vínculos "órfãos" (que continuavam contando no
-progresso e no ranking). No MySQL, a mesma exclusão falhava com erro de integridade.
+O SQLite não impõe chaves estrangeiras por padrão: apagar só a linha principal deixaria
+respostas, registros de conclusão e vínculos "órfãos" (que continuariam contando no
+progresso e no ranking). No MySQL, a mesma exclusão falharia com erro de integridade.
 Estas funções apagam primeiro os dependentes. Nenhuma faz commit: quem chama decide.
 """
 from repositories.aluno_desafio_repository import AlunoDesafioRepository

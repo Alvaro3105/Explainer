@@ -1,5 +1,6 @@
 from .database import db
 
+
 class Ranking(db.Model):
     __tablename__ = "Ranking"
 

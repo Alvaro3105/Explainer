@@ -13,8 +13,8 @@ class QuestaoRepository:
         if questao is None:
             return None
 
-        # Questões sem gabarito cadastrado (a coluna aceita nulo) ou alternativas enviadas
-        # como número quebravam com AttributeError e viravam erro 500.
+        # A coluna do gabarito aceita nulo, e a alternativa pode chegar como número:
+        # por isso o gabarito é verificado e os dois lados são convertidos para texto.
         if not questao.alternativa_correta:
             raise ValueError("Esta questão ainda não tem alternativa correta cadastrada.")
         return questao.alternativa_correta.strip().upper() == str(alternativa).strip().upper()

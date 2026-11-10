@@ -1,5 +1,6 @@
 from models.model_desafio import Desafio
 
+
 class CriarDesafioService:
     def executar(self, dados):
         campos_obrigatorios = ["nome", "dificuldade", "quantidade_questoes"]

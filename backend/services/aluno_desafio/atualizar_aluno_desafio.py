@@ -4,7 +4,7 @@ from models.model_aluno_desafio import AlunoDesafio
 
 
 def _converter_data(valor):
-    """O JSON traz a data como texto; a coluna Date só aceita objetos date (antes: erro 500)."""
+    """O JSON traz a data como texto, mas a coluna Date só aceita objetos date."""
     if valor in (None, ""):
         return None
     if isinstance(valor, date):

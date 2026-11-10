@@ -1,6 +1,7 @@
 from models.model_questao import Questao
 from models.model_tema import Tema
 
+
 class AtualizarQuestaoService:
     def executar(self, id_questao, dados):
         questao = Questao.buscar_por_id(id_questao)

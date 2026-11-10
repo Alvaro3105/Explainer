@@ -302,8 +302,8 @@ class TestRetomada(BaseApi):
             self.assertNotIn("alternativa_correta", questao)
 
     def test_tudo_respondido_sem_concluir_ainda_pode_ser_retomado(self):
-        # Antes, ao sair depois da última resposta e antes de "Concluir fase", o desafio sumia
-        # do "Continuar" e a jornada ficava presa.
+        # Cenário: o aluno responde a última questão e sai antes de "Concluir fase". O desafio
+        # precisa continuar no "Continuar"; senão a jornada fica presa.
         self.registrar("presa@exemplo.com")
         desafio = self.criar_desafio()
         self.responder(desafio, len(desafio["questoes"]))
@@ -367,7 +367,7 @@ class TestCorrecoesDaAuditoria(BaseApi):
         for _ in range(10):
             resposta = self.client.post("/api/learning/activity", json={"segundos": 120})
             self.assertEqual(200, resposta.status_code)
-        # Antes: 10 chamadas imediatas = 20 minutos. Agora só a primeira conta (até 60 s).
+        # 10 chamadas imediatas não podem virar 20 minutos: só a primeira conta (até 60 s).
         self.assertLessEqual(resposta.get_json()["minutos_ativos"], 1)
 
     def test_tempo_ativo_guarda_o_resto_dos_segundos(self):
@@ -383,7 +383,7 @@ class TestCorrecoesDaAuditoria(BaseApi):
             registro.ultimo_heartbeat = time.time() - 1000
             app_module.d.db.session.commit()
         resposta = self.client.post("/api/learning/activity", json={"segundos": 30}).get_json()
-        self.assertEqual(1, resposta["minutos_ativos"])  # antes: 30 s eram descartados → 0
+        self.assertEqual(1, resposta["minutos_ativos"])  # 30 s + 30 s = 1 minuto
 
     def test_excluir_conta_nao_deixa_questoes_orfas(self):
         from models.model_questao import Questao
@@ -452,7 +452,7 @@ class TestCorrecoesDaAuditoria(BaseApi):
             questao = Questao(enunciado="Sem gabarito", alternativa_correta=None, id_tema=tema.id_tema)
             app_module.d.db.session.add(questao)
             app_module.d.db.session.commit()
-            with self.assertRaises(ValueError):  # antes: AttributeError → erro 500
+            with self.assertRaises(ValueError):  # erro de validação, não erro 500
                 QuestaoRepository.verificar_resposta(questao.id_questao, "A")
             questao.alternativa_correta = "b"
             app_module.d.db.session.commit()
@@ -466,7 +466,7 @@ class TestCorrecoesDaAuditoria(BaseApi):
         with app_module.app.app_context():
             servico = AtualizarAlunoDesafioService()
             resultado = servico.executar(aluno["id_aluno"], desafio["desafio"]["id_desafio"], {"data_realizacao": "2026-01-15"})
-            self.assertEqual("2026-01-15", resultado["data_realizacao"])  # antes: erro 500
+            self.assertEqual("2026-01-15", resultado["data_realizacao"])  # texto vira date
             with self.assertRaises(ValueError):
                 servico.executar(aluno["id_aluno"], desafio["desafio"]["id_desafio"], {"data_realizacao": "15/01/2026"})
 

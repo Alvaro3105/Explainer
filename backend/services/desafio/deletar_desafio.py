@@ -9,7 +9,8 @@ class DeletarDesafioService:
 
         if desafio is None:
             return False
-        # Apaga também respostas, conclusões e vínculos com questões (antes ficavam órfãos).
+        # Apaga também respostas, conclusões e vínculos com questões,
+        # para não deixar registros apontando para um desafio que não existe mais.
         remover_desafio(desafio)
         db.session.commit()
         return True

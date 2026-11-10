@@ -1,5 +1,6 @@
 from models.model_tema import Tema
 
+
 class AtualizarTemaService:
     def executar(self, id_tema, dados):
         tema = Tema.buscar_por_id(id_tema)
