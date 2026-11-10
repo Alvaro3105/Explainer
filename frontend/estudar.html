@@ -1,278 +1,285 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#131F24">
   <title>ExplAIner — Aprenda em fases</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
   <link rel="icon" type="image/png" href="assets/logo-foguete.png">
   <link rel="stylesheet" href="estudar.css">
 </head>
 <body>
-  <div class="auth-screen" id="auth-screen">
-    <div class="auth-frame">
-      <section class="auth-presentation">
-        <a class="auth-brand" href="/"><span class="logo-circle"><img src="assets/logo-foguete.png" alt=""></span><span class="brand-title">Expl<span class="brand-ai">AI</span>ner</span></a>
-        <img class="auth-astro" src="assets/astronauta.png" alt="" aria-hidden="true">
-        <div class="auth-presentation-copy">
-          <div class="eyebrow"><span class="eyebrow-dot"></span> SEU PRÓXIMO NÍVEL COMEÇA AQUI</div>
+
+  <div class="tela-acesso" id="tela-acesso">
+    <div class="moldura-acesso">
+      <section class="apresentacao-acesso">
+        <a class="marca-acesso" href="/"><span class="circulo-logo"><img src="assets/logo-foguete.png" alt=""></span><span class="titulo-marca">Expl<span class="marca-ia">AI</span>ner</span></a>
+        <img class="astro-acesso" src="assets/astronauta.png" alt="" aria-hidden="true">
+        <div class="texto-apresentacao-acesso">
+          <div class="sobretitulo"><span class="ponto-sobretitulo"></span> SEU PRÓXIMO NÍVEL COMEÇA AQUI</div>
           <h1>Conhecimento que <span>vira conquista.</span></h1>
           <p>Transforme suas matérias em desafios curtos, avance no mapa e mantenha sua sequência de estudos.</p>
-          <div class="auth-benefits"><span>✓ Desafios personalizados</span><span>✓ Progresso salvo</span><span>✓ Ranking e sequência diária</span></div>
+          <div class="beneficios-acesso"><span>✓ Desafios personalizados</span><span>✓ Progresso salvo</span><span>✓ Ranking e sequência diária</span></div>
         </div>
       </section>
-      <section class="auth-card">
-        <div class="auth-heading"><div class="mini-kicker">ÁREA DO ESTUDANTE</div><h2 id="auth-title">Bom ter você de volta.</h2><p id="auth-subtitle">Entre para continuar sua jornada.</p></div>
-        <div class="auth-tabs" role="tablist" aria-label="Escolha como acessar"><button type="button" id="auth-tab-login" class="auth-tab active" data-auth-mode="login" role="tab" aria-selected="true" aria-controls="login-form">Entrar</button><button type="button" id="auth-tab-register" class="auth-tab" data-auth-mode="register" role="tab" aria-selected="false" aria-controls="register-form">Criar conta</button></div>
-        <form id="login-form" class="auth-form" aria-labelledby="auth-tab-login">
-          <label class="field"><input type="email" name="email" placeholder=" " autocomplete="email" required><span>E-mail</span></label>
-          <label class="field"><input type="password" name="senha" placeholder=" " autocomplete="current-password" required><span>Senha</span></label>
-          <button class="button button-primary button-wide" type="submit">Entrar na plataforma <span>→</span></button>
+      <section class="cartao-acesso">
+        <div class="cabecalho-acesso"><div class="mini-chamada">ÁREA DO ESTUDANTE</div><h2 id="titulo-acesso">Bom ter você de volta.</h2><p id="subtitulo-acesso">Entre para continuar sua jornada.</p></div>
+        <div class="abas-acesso" role="tablist" aria-label="Escolha como acessar"><button type="button" id="aba-acesso-login" class="aba-acesso ativo" data-modo-acesso="login" role="tab" aria-selected="true" aria-controls="formulario-login">Entrar</button><button type="button" id="aba-acesso-cadastro" class="aba-acesso" data-modo-acesso="cadastro" role="tab" aria-selected="false" aria-controls="formulario-cadastro">Criar conta</button></div>
+
+        <form id="formulario-login" class="formulario-acesso" aria-labelledby="aba-acesso-login">
+          <label class="campo"><input type="email" name="email" placeholder=" " autocomplete="email" required><span>E-mail</span></label>
+          <label class="campo"><input type="password" name="senha" placeholder=" " autocomplete="current-password" required><span>Senha</span></label>
+          <button class="botao botao-principal botao-largo" type="submit">Entrar na plataforma <span>→</span></button>
         </form>
-        <form id="register-form" class="auth-form" aria-labelledby="auth-tab-register" hidden>
-          <label class="field"><input type="text" name="nome" placeholder=" " autocomplete="name" maxlength="100" required><span>Nome completo</span></label>
-          <label class="field"><input type="text" name="nick" placeholder=" " maxlength="40" required><span>Seu nick <small>(aparece no ranking)</small></span></label>
-          <label class="field"><input type="email" name="email" placeholder=" " autocomplete="email" required><span>E-mail</span></label>
-          <label class="field"><input type="password" name="senha" placeholder=" " autocomplete="new-password" minlength="8" required><span>Senha <small>(mín. 8 caracteres)</small></span></label>
-          <label class="field field-date"><input type="date" name="data_nascimento"><span>Data de nascimento <small>(opcional)</small></span></label>
-          <label class="terms-check"><input type="checkbox" name="aceite_termos" required><span>Li e aceito os <a href="termos-de-uso.html" target="_blank" rel="noopener">Termos de Uso</a> e o <a href="termo-de-consentimento.html" target="_blank" rel="noopener">Termo de Consentimento</a>, incluindo o tratamento dos meus dados conforme a LGPD.</span></label>
-          <button class="button button-primary button-wide" type="submit">Criar minha conta <span>→</span></button>
+
+        <form id="formulario-cadastro" class="formulario-acesso" aria-labelledby="aba-acesso-cadastro" hidden>
+          <label class="campo"><input type="text" name="nome" placeholder=" " autocomplete="name" maxlength="100" required><span>Nome completo</span></label>
+          <label class="campo"><input type="text" name="nick" placeholder=" " maxlength="40" required><span>Seu nick <small>(aparece no ranking)</small></span></label>
+          <label class="campo"><input type="email" name="email" placeholder=" " autocomplete="email" required><span>E-mail</span></label>
+          <label class="campo"><input type="password" name="senha" placeholder=" " autocomplete="new-password" minlength="8" required><span>Senha <small>(mín. 8 caracteres)</small></span></label>
+          <label class="campo campo-data"><input type="date" name="data_nascimento"><span>Data de nascimento <small>(opcional)</small></span></label>
+          <label class="aceite-termos"><input type="checkbox" name="aceite_termos" required><span>Li e aceito os <a href="termos-de-uso.html" target="_blank" rel="noopener">Termos de Uso</a> e o <a href="termo-de-consentimento.html" target="_blank" rel="noopener">Termo de Consentimento</a>, incluindo o tratamento dos meus dados conforme a LGPD.</span></label>
+          <button class="botao botao-principal botao-largo" type="submit">Criar minha conta <span>→</span></button>
         </form>
-        <p id="auth-message" class="notice" role="status" hidden></p>
-        <p class="auth-terms">Ao continuar, seus pontos e seu progresso serão salvos nesta conta. Nunca compartilhe sua senha.</p>
+        <p id="mensagem-acesso" class="recado" role="status" hidden></p>
+        <p class="termos-acesso">Ao continuar, seus pontos e seu progresso serão salvos nesta conta. Nunca compartilhe sua senha.</p>
       </section>
     </div>
   </div>
 
-  <div class="app-layout" id="app-layout" hidden>
-    <div class="decoration" aria-hidden="true">
-      <img src="assets/deco-triangulo.svg" alt="" class="deco triangle">
-      <img src="assets/deco-circulo-claro.svg" alt="" class="deco ellipse">
-      <img src="assets/deco-x.svg" alt="" class="deco x-back">
-      <img src="assets/deco-bolas.svg" alt="" class="deco balls-back">
-      <img src="assets/deco-circulo-escuro.svg" alt="" class="deco ellipse-dark">
+  <div class="estrutura-app" id="estrutura-app" hidden>
+    <div class="decoracao" aria-hidden="true">
+      <img src="assets/deco-triangulo.svg" alt="" class="enfeite triangulo">
+      <img src="assets/deco-circulo-claro.svg" alt="" class="enfeite elipse">
+      <img src="assets/deco-x.svg" alt="" class="enfeite x-fundo">
+      <img src="assets/deco-bolas.svg" alt="" class="enfeite bolas-fundo">
+      <img src="assets/deco-circulo-escuro.svg" alt="" class="enfeite elipse-escura">
     </div>
-    <aside class="sidebar" id="sidebar">
-      <nav class="side-nav" aria-label="Navegação principal">
-        <button class="nav-item active" data-view="study"><i class="nav-icon ico-house fa-solid fa-house" aria-hidden="true"></i><span class="nav-text">Aprender</span></button>
-        <button class="nav-item" data-view="ranking"><i class="nav-icon ico-trophy fa-solid fa-trophy" aria-hidden="true"></i><span class="nav-text">Ranking</span></button>
-        <button class="nav-item" data-view="progress"><i class="nav-icon ico-user fa-solid fa-user" aria-hidden="true"></i><span class="nav-text">Meu progresso</span></button>
+
+    <aside class="barra-lateral" id="barra-lateral">
+      <nav class="nav-lateral" aria-label="Navegação principal">
+        <button class="item-nav ativo" data-visao="estudo"><i class="icone-nav ico-casa fa-solid fa-house" aria-hidden="true"></i><span class="texto-nav">Aprender</span></button>
+        <button class="item-nav" data-visao="ranking"><i class="icone-nav ico-trofeu fa-solid fa-trophy" aria-hidden="true"></i><span class="texto-nav">Ranking</span></button>
+        <button class="item-nav" data-visao="progresso"><i class="icone-nav ico-usuario fa-solid fa-user" aria-hidden="true"></i><span class="texto-nav">Meu progresso</span></button>
       </nav>
-      <div class="sidebar-spacer"></div>
-      <div class="sidebar-streak"><div class="streak-icon" aria-hidden="true"><i class="fa-solid fa-fire"></i></div><div><strong id="sidebar-streak">0 dias</strong><span>de sequência</span></div></div>
-      <div class="sidebar-account"><div class="avatar" id="sidebar-avatar">E</div><div class="account-copy"><strong id="sidebar-nick">Estudante</strong><span id="sidebar-email">Minha conta</span></div><button class="icon-button account-menu-trigger" id="logout-button" title="Opções da conta" aria-label="Abrir opções da conta" aria-expanded="false"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-        <div class="account-popover" id="account-popover" hidden role="menu" aria-label="Opções da conta">
-          <button type="button" data-account-action="logout" role="menuitem">Sair do site</button>
-          <button type="button" data-account-action="switch" role="menuitem">Utilizar outra conta</button>
-          <div class="account-menu-divider"></div>
-          <button type="button" class="danger-action" data-account-action="delete" role="menuitem">Excluir minha conta</button>
+      <div class="respiro-lateral"></div>
+      <div class="sequencia-lateral"><div class="icone-sequencia" aria-hidden="true"><i class="fa-solid fa-fire"></i></div><div><strong id="sequencia-lateral">0 dias</strong><span>de sequência</span></div></div>
+      <div class="conta-lateral"><div class="avatar" id="avatar-lateral">E</div><div class="texto-conta"><strong id="nick-lateral">Estudante</strong><span id="email-lateral">Minha conta</span></div><button class="botao-icone abrir-menu-conta" id="botao-conta" title="Opções da conta" aria-label="Abrir opções da conta" aria-expanded="false"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+        <div class="menu-conta" id="menu-conta" hidden role="menu" aria-label="Opções da conta">
+          <button type="button" data-acao-conta="sair" role="menuitem">Sair do site</button>
+          <button type="button" data-acao-conta="trocar" role="menuitem">Utilizar outra conta</button>
+          <div class="divisor-menu-conta"></div>
+          <button type="button" class="acao-perigosa" data-acao-conta="excluir" role="menuitem">Excluir minha conta</button>
         </div>
       </div>
-      <button class="nav-item config-open" id="open-config" type="button"><i class="nav-icon fa-solid fa-gear" aria-hidden="true"></i><span class="nav-text">Configurações</span></button>
-      <div class="sidebar-foot"><a href="index.html">Painel administrativo</a></div>
+      <button class="item-nav config-aberto" id="abrir-config" type="button"><i class="icone-nav fa-solid fa-gear" aria-hidden="true"></i><span class="texto-nav">Configurações</span></button>
+      <div class="rodape-lateral"><a href="index.html">Painel administrativo</a></div>
     </aside>
 
-    <main class="main-area">
-      <header class="topbar">
-        <button class="mobile-menu icon-button" id="mobile-menu" aria-label="Abrir menu"><i class="fa-solid fa-bars"></i></button>
-        <button class="back-button icon-button" id="back-button" type="button" data-voltar data-voltar-fallback="/" aria-label="Voltar para a página anterior" title="Voltar"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></button>
-        <a href="/" class="top-brand"><span class="logo-circle"><img src="assets/logo-foguete.png" alt=""></span><span class="brand-title">Expl<span class="brand-ai">AI</span>ner</span></a>
-        <div class="breadcrumb"><span>Área do estudante</span><b>/</b><strong id="page-heading">Aprender</strong></div>
-        <div class="topbar-actions">
-          <div class="top-stat points-top" title="Pontos de experiência"><i class="fa-solid fa-bolt" aria-hidden="true"></i><strong id="top-points">0</strong></div>
-          <div class="top-stat streak-top" title="Sequência de dias"><i class="fa-solid fa-fire" aria-hidden="true"></i><strong id="top-streak">0</strong></div>
-          <div class="top-stat rank-top" title="Posição no ranking"><i class="fa-solid fa-trophy" aria-hidden="true"></i><strong id="top-rank">#—</strong></div>
-          <button class="top-avatar" id="top-avatar" type="button" title="Ver meu progresso e perfil" aria-label="Ver meu progresso e perfil">E</button>
+    <main class="area-principal">
+
+      <header class="barra-superior">
+        <button class="menu-celular botao-icone" id="menu-celular" aria-label="Abrir menu"><i class="fa-solid fa-bars"></i></button>
+        <button class="botao-voltar botao-icone" id="botao-voltar" type="button" data-voltar data-voltar-fallback="/" aria-label="Voltar para a página anterior" title="Voltar"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></button>
+        <a href="/" class="marca-topo"><span class="circulo-logo"><img src="assets/logo-foguete.png" alt=""></span><span class="titulo-marca">Expl<span class="marca-ia">AI</span>ner</span></a>
+        <div class="migalhas"><span>Área do estudante</span><b>/</b><strong id="titulo-pagina">Aprender</strong></div>
+        <div class="acoes-barra-superior">
+          <div class="indicador-topo topo-pontos" title="Pontos de experiência"><i class="fa-solid fa-bolt" aria-hidden="true"></i><strong id="pontos-topo">0</strong></div>
+          <div class="indicador-topo topo-sequencia" title="Sequência de dias"><i class="fa-solid fa-fire" aria-hidden="true"></i><strong id="sequencia-topo">0</strong></div>
+          <div class="indicador-topo topo-posicao" title="Posição no ranking"><i class="fa-solid fa-trophy" aria-hidden="true"></i><strong id="posicao-topo">#—</strong></div>
+          <button class="avatar-topo" id="avatar-topo" type="button" title="Ver meu progresso e perfil" aria-label="Ver meu progresso e perfil">E</button>
         </div>
       </header>
 
-      <div class="view-panel dashboard-view" id="study-view">
-        <section class="dashboard-welcome">
-          <div class="dashboard-welcome-copy">
-            <div class="eyebrow"><span class="eyebrow-dot"></span> SEU ESPAÇO DE APRENDIZADO</div>
+      <div class="painel-visao visao-inicio" id="visao-estudo">
+        <section class="boas-vindas-inicio">
+          <div class="texto-boas-vindas-inicio">
+            <div class="sobretitulo"><span class="ponto-sobretitulo"></span> SEU ESPAÇO DE APRENDIZADO</div>
             <h1>Vamos aprender algo novo.</h1>
             <p>Sessões curtas, progresso visível e desafios no seu ritmo.</p>
           </div>
-          <button class="button button-primary welcome-action" id="jump-to-challenge" type="button" hidden><i class="fa-solid fa-play"></i> <span>Continuar desafio</span> <span aria-hidden="true">→</span></button>
+          <button class="botao botao-principal acao-boas-vindas" id="ir-para-desafio" type="button" hidden><i class="fa-solid fa-play"></i> <span>Continuar desafio</span> <span aria-hidden="true">→</span></button>
         </section>
 
-        <section class="quick-stats" aria-label="Resumo do seu progresso">
-          <article class="quick-stat"><span class="quick-stat-icon xp-icon" aria-hidden="true"><i class="fa-solid fa-bolt"></i></span><div><small>Pontos totais</small><strong id="stat-points">0</strong></div></article>
-          <article class="quick-stat"><span class="quick-stat-icon lessons-icon" aria-hidden="true"><i class="fa-solid fa-book"></i></span><div><small>Fases concluídas</small><strong id="stat-lessons">0</strong></div></article>
-          <article class="quick-stat"><span class="quick-stat-icon time-icon" aria-hidden="true"><i class="fa-solid fa-clock"></i></span><div><small>Tempo de estudo</small><strong><span id="stat-minutes">0</span><em> min</em></strong></div></article>
-          <article class="quick-stat"><span class="quick-stat-icon rank-icon" aria-hidden="true"><i class="fa-solid fa-trophy"></i></span><div><small>Posição no ranking</small><strong id="stat-rank">#—</strong></div></article>
-          <span id="stat-streak" class="sr-only">0</span>
+        <section class="indicadores-rapidos" aria-label="Resumo do seu progresso">
+          <article class="indicador-rapido"><span class="icone-indicador-rapido icone-xp" aria-hidden="true"><i class="fa-solid fa-bolt"></i></span><div><small>Pontos totais</small><strong id="indicador-pontos">0</strong></div></article>
+          <article class="indicador-rapido"><span class="icone-indicador-rapido icone-licoes" aria-hidden="true"><i class="fa-solid fa-book"></i></span><div><small>Fases concluídas</small><strong id="indicador-licoes">0</strong></div></article>
+          <article class="indicador-rapido"><span class="icone-indicador-rapido icone-tempo" aria-hidden="true"><i class="fa-solid fa-clock"></i></span><div><small>Tempo de estudo</small><strong><span id="indicador-minutos">0</span><em> min</em></strong></div></article>
+          <article class="indicador-rapido"><span class="icone-indicador-rapido icone-posicao" aria-hidden="true"><i class="fa-solid fa-trophy"></i></span><div><small>Posição no ranking</small><strong id="indicador-posicao">#—</strong></div></article>
+          <span id="indicador-sequencia" class="so-leitor-de-tela">0</span>
         </section>
 
-        <section class="study-grid" id="challenge-setup" aria-label="Configurar próximo desafio">
-          <article class="panel setup-panel">
-            <div class="compact-panel-heading">
-              <span class="panel-symbol" aria-hidden="true">✦</span>
-              <div><div class="mini-kicker">PRÓXIMO PASSO</div><h2>Monte sua jornada</h2><p>Escolha o conteúdo e a duração de cada fase.</p></div>
+        <section class="grade-estudo" id="montagem-desafio" aria-label="Configurar próximo desafio">
+          <article class="painel painel-montagem">
+            <div class="cabecalho-painel-compacto">
+              <span class="simbolo-painel" aria-hidden="true">✦</span>
+              <div><div class="mini-chamada">PRÓXIMO PASSO</div><h2>Monte sua jornada</h2><p>Escolha o conteúdo e a duração de cada fase.</p></div>
             </div>
-            <form id="challenge-form" class="challenge-form">
-              <div class="form-row form-row-subjects">
-                <label class="field"><span>Matéria</span><select id="subject-select" required><option value="">Carregando matérias…</option></select></label>
-                <label class="field"><span>Tema</span><select id="theme-select" required><option value="">Selecione uma matéria primeiro</option></select></label>
+
+            <form id="formulario-desafio" class="formulario-desafio">
+              <div class="linha-formulario linha-formulario-materias">
+                <label class="campo"><span>Matéria</span><select id="selecao-materia" required><option value="">Carregando matérias…</option></select></label>
+                <label class="campo"><span>Tema</span><select id="selecao-tema" required><option value="">Selecione uma matéria primeiro</option></select></label>
               </div>
-              <div class="field amount-field">
-                <div class="field-label-row"><span>Questões por desafio</span><small>Escolha seu ritmo</small></div>
-                <div class="choice-grid amount-options">
-                  <label class="choice-card"><input type="radio" name="quantidade" value="5" checked><span class="choice-main">05</span><span class="choice-sub">Rápido</span></label>
-                  <label class="choice-card"><input type="radio" name="quantidade" value="10"><span class="choice-main">10</span><span class="choice-sub">Padrão</span></label>
-                  <label class="choice-card"><input type="radio" name="quantidade" value="15"><span class="choice-main">15</span><span class="choice-sub">Estendido</span></label>
-                  <label class="choice-card"><input type="radio" name="quantidade" value="20"><span class="choice-main">20</span><span class="choice-sub">Maratona</span></label>
+              <div class="campo campo-quantidade">
+                <div class="linha-rotulo-campo"><span>Questões por desafio</span><small>Escolha seu ritmo</small></div>
+                <div class="grade-escolha opcoes-quantidade">
+                  <label class="cartao-escolha"><input type="radio" name="quantidade" value="5" checked><span class="escolha-principal">05</span><span class="escolha-sub">Rápido</span></label>
+                  <label class="cartao-escolha"><input type="radio" name="quantidade" value="10"><span class="escolha-principal">10</span><span class="escolha-sub">Padrão</span></label>
+                  <label class="cartao-escolha"><input type="radio" name="quantidade" value="15"><span class="escolha-principal">15</span><span class="escolha-sub">Estendido</span></label>
+                  <label class="cartao-escolha"><input type="radio" name="quantidade" value="20"><span class="escolha-principal">20</span><span class="escolha-sub">Maratona</span></label>
                 </div>
-                <div class="journey-planner" id="journey-planner" aria-live="polite">
-                  <div class="journey-planner-copy"><span>JORNADA PLANEJADA</span><strong id="journey-count">5 desafios</strong><small id="journey-description">5 questões por fase · 25 questões no total</small></div>
-                  <div class="journey-steps" id="journey-steps" aria-label="Quantidade de desafios"><i class="is-current"></i><i></i><i></i><i></i><i></i></div>
+                <div class="plano-jornada" id="plano-jornada" aria-live="polite">
+                  <div class="texto-plano-jornada"><span>JORNADA PLANEJADA</span><strong id="contagem-jornada">5 desafios</strong><small id="descricao-jornada">5 questões por fase · 25 questões no total</small></div>
+                  <div class="passos-jornada" id="passos-jornada" aria-label="Quantidade de desafios"><i class="atual"></i><i></i><i></i><i></i><i></i></div>
                 </div>
               </div>
-              <fieldset class="field difficulty-field">
+              <fieldset class="campo campo-dificuldade">
                 <legend>Dificuldade inicial</legend>
-                <div class="difficulty-options">
-                  <label class="difficulty-choice"><input type="radio" name="dificuldade" value="facil"><span class="difficulty-check">✓</span><strong>Fácil</strong><small>Comece leve</small></label>
-                  <label class="difficulty-choice"><input type="radio" name="dificuldade" value="normal" checked><span class="difficulty-check">✓</span><strong>Médio</strong><small>Ritmo equilibrado</small></label>
-                  <label class="difficulty-choice"><input type="radio" name="dificuldade" value="dificil"><span class="difficulty-check">✓</span><strong>Difícil</strong><small>Desafie-se</small></label>
+                <div class="opcoes-dificuldade">
+                  <label class="escolha-dificuldade"><input type="radio" name="dificuldade" value="facil"><span class="marca-dificuldade">✓</span><strong>Fácil</strong><small>Comece leve</small></label>
+                  <label class="escolha-dificuldade"><input type="radio" name="dificuldade" value="normal" checked><span class="marca-dificuldade">✓</span><strong>Médio</strong><small>Ritmo equilibrado</small></label>
+                  <label class="escolha-dificuldade"><input type="radio" name="dificuldade" value="dificil"><span class="marca-dificuldade">✓</span><strong>Difícil</strong><small>Desafie-se</small></label>
                 </div>
               </fieldset>
-              <div class="challenge-action-stack">
-                <div class="setup-bottom-row">
-                  <div class="points-preview"><span class="preview-star" aria-hidden="true">✦</span><div><strong id="possible-points">Até 75 pontos</strong><small>+25 de bônus se acertar tudo</small></div></div>
-                  <button class="button button-primary create-challenge-button" type="submit" id="create-challenge-button"><span aria-hidden="true">✦</span> Gerar desafio <span aria-hidden="true">→</span></button>
+              <div class="pilha-acoes-desafio">
+                <div class="linha-rodape-montagem">
+                  <div class="previa-pontos"><span class="estrela-previa" aria-hidden="true">✦</span><div><strong id="pontos-possiveis">Até 75 pontos</strong><small>+25 de bônus se acertar tudo</small></div></div>
+                  <button class="botao botao-principal botao-criar-desafio" type="submit" id="botao-criar-desafio"><span aria-hidden="true">✦</span> Gerar desafio <span aria-hidden="true">→</span></button>
                 </div>
-                <button class="button replay-latest-button" id="replay-latest-button" type="button" hidden><span aria-hidden="true">↻</span> Refazer último desafio <small>Sem ganhar pontos</small></button>
+                <button class="botao botao-refazer-ultimo" id="botao-refazer-ultimo" type="button" hidden><span aria-hidden="true">↻</span> Refazer último desafio <small>Sem ganhar pontos</small></button>
               </div>
-              <p class="setup-disclaimer"><span aria-hidden="true">ⓘ</span> Sem uma chave de IA, o app usa questões demonstrativas locais.</p>
+              <p class="observacao-montagem"><span aria-hidden="true">ⓘ</span> As questões são criadas por IA de acordo com o tema e a dificuldade escolhidos.</p>
             </form>
           </article>
 
-          <article class="panel path-panel" id="path-panel">
-            <div class="path-panel-top"><div><div class="mini-kicker">SUA PROGRESSÃO</div><h2>Mapa de conquistas</h2><p>Conclua fases para explorar novos mundos.</p></div><span class="path-level" id="path-level">NÍVEL 01</span></div>
-            <div class="path-subject"><span class="path-subject-icon" aria-hidden="true">◎</span><div><strong id="path-theme-title">Escolha um tema</strong><span id="path-subject-label">Seu caminho será montado aqui</span></div></div>
-            <div class="learning-map map-variant-0" id="learning-map">
-              <div class="learning-map-bg" id="learning-map-bg" aria-hidden="true"></div>
-              <div class="map-land land-one"></div><div class="map-land land-two"></div><div class="map-land land-three"></div>
-              <svg class="map-path-line" viewBox="0 0 600 220" preserveAspectRatio="none" aria-hidden="true"><path d="M25 145 C75 145 75 70 145 90 S220 165 285 105 S365 45 425 95 S500 145 575 55"/></svg>
-              <div class="map-node map-node-done" style="--x:5%;--y:66%"><span>✓</span><small>Início</small></div>
-              <div class="map-node map-node-current" style="--x:32%;--y:38%"><span>1</span><small>Seu desafio</small></div>
-              <div class="map-node map-node-locked" style="--x:61%;--y:64%"><span>2</span><small>Próxima</small></div>
-              <div class="map-node map-node-locked" style="--x:94%;--y:27%"><span>3</span><small>Meta</small></div>
-              <div class="map-goal" aria-hidden="true">✦<small>Meta</small></div>
+          <article class="painel painel-caminho" id="painel-caminho">
+            <div class="topo-painel-caminho"><div><div class="mini-chamada">SUA PROGRESSÃO</div><h2>Mapa de conquistas</h2><p>Conclua fases para explorar novos mundos.</p></div><span class="nivel-caminho" id="nivel-caminho">NÍVEL 01</span></div>
+            <div class="materia-caminho"><span class="icone-materia-caminho" aria-hidden="true">◎</span><div><strong id="titulo-tema-caminho">Escolha um tema</strong><span id="rotulo-materia-caminho">Seu caminho será montado aqui</span></div></div>
+            <div class="mapa-aprendizado mapa-variacao-0" id="mapa-aprendizado">
+              <div class="fundo-mapa-aprendizado" id="fundo-mapa-aprendizado" aria-hidden="true"></div>
+              <div class="terra-mapa terra-um"></div><div class="terra-mapa terra-dois"></div><div class="terra-mapa terra-tres"></div>
+              <svg class="linha-caminho-mapa" viewBox="0 0 600 220" preserveAspectRatio="none" aria-hidden="true"><path d="M25 145 C75 145 75 70 145 90 S220 165 285 105 S365 45 425 95 S500 145 575 55"/></svg>
+              <div class="fase-mapa fase-mapa-concluida" style="--x:5%;--y:66%"><span>✓</span><small>Início</small></div>
+              <div class="fase-mapa fase-mapa-atual" style="--x:32%;--y:38%"><span>1</span><small>Seu desafio</small></div>
+              <div class="fase-mapa fase-mapa-bloqueada" style="--x:61%;--y:64%"><span>2</span><small>Próxima</small></div>
+              <div class="fase-mapa fase-mapa-bloqueada" style="--x:94%;--y:27%"><span>3</span><small>Meta</small></div>
+              <div class="meta-mapa" aria-hidden="true">✦<small>Meta</small></div>
             </div>
-            <div class="map-panel-footer"><span><i class="legend-dot legend-done"></i> Concluído</span><span><i class="legend-dot legend-current"></i> Próxima fase</span><span><i class="legend-dot legend-locked"></i> Bloqueado</span></div>
-            <p class="map-helper" id="path-journey-count">Sua jornada aparece aqui quando você escolhe um tema.</p>
+            <div class="rodape-painel-mapa"><span><i class="ponto-legenda legenda-concluida"></i> Concluído</span><span><i class="ponto-legenda legenda-atual"></i> Próxima fase</span><span><i class="ponto-legenda legenda-bloqueada"></i> Bloqueado</span></div>
+            <p class="ajuda-mapa" id="contagem-jornada-caminho">Sua jornada aparece aqui quando você escolhe um tema.</p>
           </article>
         </section>
 
-        <section class="dashboard-lower-grid" aria-label="Atividade e comunidade">
-          <article class="panel recent-preview">
-            <div class="lower-heading"><div><div class="mini-kicker">CONTINUE DE ONDE PAROU</div><h2>Atividades recentes</h2></div><button class="text-button" data-go-view="progress" type="button">Ver histórico <span aria-hidden="true">→</span></button></div>
-            <div id="recent-preview-list" class="recent-list"><div class="loading-line">Carregando seu histórico…</div></div>
+        <section class="grade-inferior-inicio" aria-label="Atividade e comunidade">
+          <article class="painel previa-recentes">
+            <div class="cabecalho-inferior"><div><div class="mini-chamada">CONTINUE DE ONDE PAROU</div><h2>Atividades recentes</h2></div><button class="botao-texto" data-ir-visao="progresso" type="button">Ver histórico <span aria-hidden="true">→</span></button></div>
+            <div id="lista-previa-recentes" class="lista-recentes"><div class="linha-carregando">Carregando seu histórico…</div></div>
           </article>
-          <aside class="dashboard-side-rail" aria-label="Sequência diária e ranking">
-            <article class="panel sequence-panel">
-              <div class="sequence-heading"><div><div class="mini-kicker">CONSTÂNCIA</div><h2>Sua sequência</h2></div><span class="sequence-flame" aria-hidden="true"><i class="fa-solid fa-fire"></i></span></div>
-              <div class="week-labels" aria-hidden="true"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div>
-              <div class="week-dots" id="week-dots"><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span></div>
-              <p id="sequence-message">Estude hoje para iniciar sua sequência.</p>
+          <aside class="coluna-lateral-inicio" aria-label="Sequência diária e ranking">
+            <article class="painel painel-sequencia">
+              <div class="cabecalho-sequencia"><div><div class="mini-chamada">CONSTÂNCIA</div><h2>Sua sequência</h2></div><span class="chama-sequencia" aria-hidden="true"><i class="fa-solid fa-fire"></i></span></div>
+              <div class="rotulos-semana" aria-hidden="true"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div>
+              <div class="dias-semana" id="dias-semana"><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span></div>
+              <p id="mensagem-sequencia">Estude hoje para iniciar sua sequência.</p>
             </article>
-            <article class="panel ranking-preview">
-              <div class="lower-heading"><div><div class="mini-kicker">COMUNIDADE</div><h2>Ranking</h2></div><button class="text-button" data-go-view="ranking" type="button">Ver tudo <span aria-hidden="true">→</span></button></div>
-              <div id="ranking-preview-list" class="ranking-list"><div class="loading-line">Carregando classificação…</div></div>
+            <article class="painel previa-ranking">
+              <div class="cabecalho-inferior"><div><div class="mini-chamada">COMUNIDADE</div><h2>Ranking</h2></div><button class="botao-texto" data-ir-visao="ranking" type="button">Ver tudo <span aria-hidden="true">→</span></button></div>
+              <div id="lista-previa-ranking" class="lista-ranking"><div class="linha-carregando">Carregando classificação…</div></div>
             </article>
           </aside>
         </section>
       </div>
 
-      <section class="view-panel secondary-view" id="ranking-view" hidden><div class="page-intro"><div class="mini-kicker">COMPETIÇÃO SAUDÁVEL</div><h1>Ranking da comunidade</h1><p>Compare sua evolução e veja quem está mantendo a constância.</p></div><article class="panel table-panel"><div class="panel-heading"><div><h3>Classificação geral</h3><p>Ordenada pelo total de pontos acumulados.</p></div><span class="soft-pill">Atualizado agora</span></div><div class="table-wrap"><table><thead><tr><th>Posição</th><th>Estudante</th><th>Sequência</th><th>Tempo ativo</th><th>Pontos</th></tr></thead><tbody id="ranking-table-body"><tr><td colspan="5">Carregando ranking…</td></tr></tbody></table></div></article></section>
+      <section class="painel-visao visao-secundaria" id="visao-ranking" hidden><div class="introducao-pagina"><div class="mini-chamada">COMPETIÇÃO SAUDÁVEL</div><h1>Ranking da comunidade</h1><p>Compare sua evolução e veja quem está mantendo a constância.</p></div><article class="painel painel-tabela"><div class="cabecalho-painel"><div><h3>Classificação geral</h3><p>Ordenada pelo total de pontos acumulados.</p></div><span class="pilula-suave">Atualizado agora</span></div><div class="caixa-tabela"><table><thead><tr><th>Posição</th><th>Estudante</th><th>Sequência</th><th>Tempo ativo</th><th>Pontos</th></tr></thead><tbody id="corpo-tabela-ranking"><tr><td colspan="5">Carregando ranking…</td></tr></tbody></table></div></article></section>
 
-      <section class="view-panel secondary-view" id="progress-view" hidden><div class="page-intro"><div class="mini-kicker">CADA SESSÃO CONTA</div><h1>Seu progresso</h1><p>Veja sua consistência, desempenho e histórico de desafios.</p></div><section class="stats-grid progress-stats"><article class="stat-card"><div class="stat-icon stat-points">✓</div><div><span>Desafios concluídos</span><strong id="progress-completed">0</strong><small>Fases finalizadas</small></div></article><article class="stat-card"><div class="stat-icon stat-time">◎</div><div><span>Precisão das respostas</span><strong><span id="progress-accuracy">0</span><em>%</em></strong><small>Questões respondidas corretamente</small></div></article><article class="stat-card"><div class="stat-icon stat-fire">✦</div><div><span>Questões respondidas</span><strong id="progress-answered">0</strong><small>Experiência acumulada</small></div></article></section><article class="panel history-panel"><div class="panel-heading"><div><h3>Histórico de desafios</h3><p>Confira seu desempenho em cada fase.</p></div></div><div class="table-wrap"><table><thead><tr><th>Desafio</th><th>Matéria e tema</th><th>Dificuldade</th><th>Resultado</th><th>Data</th><th>Ação</th></tr></thead><tbody id="history-table-body"><tr><td colspan="5">Carregando histórico…</td></tr></tbody></table></div></article><article class="panel profile-panel"><div class="panel-heading"><div><h3>Seu perfil público</h3><p>Este nome aparece no ranking.</p></div></div><form id="profile-form" class="profile-form"><label class="field"><span>Nick</span><input id="profile-nick" type="text" maxlength="40" required></label><button class="button button-primary" type="submit">Salvar nick</button></form><p id="profile-message" class="notice" hidden></p><p class="terms-status"><span id="terms-status"></span> <a href="termos-de-uso.html" target="_blank" rel="noopener">Termos de Uso</a> · <a href="termo-de-consentimento.html" target="_blank" rel="noopener">Termo de Consentimento</a></p></article></section>
+      <section class="painel-visao visao-secundaria" id="visao-progresso" hidden><div class="introducao-pagina"><div class="mini-chamada">CADA SESSÃO CONTA</div><h1>Seu progresso</h1><p>Veja sua consistência, desempenho e histórico de desafios.</p></div><section class="grade-indicadores indicadores-progresso"><article class="cartao-indicador"><div class="icone-indicador indicador-pontos">✓</div><div><span>Desafios concluídos</span><strong id="concluidos-progresso">0</strong><small>Fases finalizadas</small></div></article><article class="cartao-indicador"><div class="icone-indicador indicador-tempo">◎</div><div><span>Precisão das respostas</span><strong><span id="precisao-progresso">0</span><em>%</em></strong><small>Questões respondidas corretamente</small></div></article><article class="cartao-indicador"><div class="icone-indicador indicador-fogo">✦</div><div><span>Questões respondidas</span><strong id="respondidas-progresso">0</strong><small>Experiência acumulada</small></div></article></section><article class="painel painel-historico"><div class="cabecalho-painel"><div><h3>Histórico de desafios</h3><p>Confira seu desempenho em cada fase.</p></div></div><div class="caixa-tabela"><table><thead><tr><th>Desafio</th><th>Matéria e tema</th><th>Dificuldade</th><th>Resultado</th><th>Data</th><th>Ação</th></tr></thead><tbody id="corpo-tabela-historico"><tr><td colspan="5">Carregando histórico…</td></tr></tbody></table></div></article><article class="painel painel-perfil"><div class="cabecalho-painel"><div><h3>Seu perfil público</h3><p>Este nome aparece no ranking.</p></div></div><form id="formulario-perfil" class="formulario-perfil"><label class="campo"><span>Nick</span><input id="nick-perfil" type="text" maxlength="40" required></label><button class="botao botao-principal" type="submit">Salvar nick</button></form><p id="mensagem-perfil" class="recado" hidden></p><p class="situacao-termos"><span id="situacao-termos"></span> <a href="termos-de-uso.html" target="_blank" rel="noopener">Termos de Uso</a> · <a href="termo-de-consentimento.html" target="_blank" rel="noopener">Termo de Consentimento</a></p></article></section>
 
-      <footer class="main-footer"><span>ExplAIner</span><span>Aprenda no seu ritmo. Evolua todos os dias.</span><a href="/api" target="_blank" rel="noreferrer">API</a></footer>
+      <footer class="rodape-principal"><span>ExplAIner</span><span>Aprenda no seu ritmo. Evolua todos os dias.</span><a href="/api" target="_blank" rel="noreferrer">API</a></footer>
     </main>
   </div>
 
-  <section class="config-panel" id="config-panel" hidden aria-label="Configurações">
-    <button class="config-close" id="config-close" type="button" aria-label="Fechar configurações"><i class="fa-solid fa-xmark"></i></button>
-    <div class="config-body">
+  <section class="painel-config" id="painel-config" hidden aria-label="Configurações">
+    <button class="fechar-config" id="fechar-config" type="button" aria-label="Fechar configurações"><i class="fa-solid fa-xmark"></i></button>
+    <div class="corpo-config">
       <h2>Configurações</h2>
-      <div class="config-row"><p>Modo claro</p><label class="theme-switch"><input id="theme-switch" type="checkbox" aria-label="Ativar modo claro"><span class="slider"></span></label></div>
+      <div class="linha-config"><p>Modo claro</p><label class="chave-tema"><input id="chave-tema" type="checkbox" aria-label="Ativar modo claro"><span class="deslizante"></span></label></div>
     </div>
   </section>
 
-  <section class="challenge-map-screen" id="challenge-map-screen" hidden aria-label="Mapa do desafio">
-    <header class="map-screen-topbar">
-      <button class="map-exit-button" id="exit-challenge-map" type="button" aria-label="Sair do mapa">×</button>
-      <div class="map-screen-heading">
-        <span class="map-screen-kicker">MAPA DO DESAFIO</span>
-        <h1 id="challenge-map-title">Sua jornada espacial</h1>
-        <p id="challenge-map-subtitle">Clique em uma bolinha para abrir a questão.</p>
+  <section class="tela-mapa-desafio" id="tela-mapa-desafio" hidden aria-label="Mapa do desafio">
+    <header class="barra-superior-tela-mapa">
+      <button class="botao-sair-mapa" id="sair-mapa-desafio" type="button" aria-label="Sair do mapa">×</button>
+      <div class="cabecalho-tela-mapa">
+        <span class="chamada-tela-mapa">MAPA DO DESAFIO</span>
+        <h1 id="titulo-mapa-desafio">Sua jornada espacial</h1>
+        <p id="subtitulo-mapa-desafio">Clique em uma bolinha para abrir a questão.</p>
       </div>
-      <div class="map-screen-progress"><strong id="map-progress-count">0/5</strong><span>questões</span><b id="map-xp-total">0 XP</b></div>
+      <div class="progresso-tela-mapa"><strong id="contagem-progresso-mapa">0/5</strong><span>questões</span><b id="total-xp-mapa">0 XP</b></div>
     </header>
-    <div class="space-map-scroll" id="space-map-scroll">
-      <div class="space-map" id="space-map">
-        <div class="space-map-bg" id="space-map-bg" aria-hidden="true"></div>
-        <img class="space-astronaut" src="assets/astronauta.png" alt="" aria-hidden="true">
-        <div class="space-map-route" id="space-map-route" aria-hidden="true"></div>
-        <div class="challenge-node-list" id="challenge-node-list"></div>
+    <div class="rolagem-mapa-espacial" id="rolagem-mapa-espacial">
+
+      <div class="mapa-espacial" id="mapa-espacial">
+        <div class="fundo-mapa-espacial" id="fundo-mapa-espacial" aria-hidden="true"></div>
+        <img class="astronauta-espaco" src="assets/astronauta.png" alt="" aria-hidden="true">
+        <div class="trilha-mapa-espacial" id="trilha-mapa-espacial" aria-hidden="true"></div>
+        <div class="lista-bolinhas" id="lista-bolinhas"></div>
       </div>
     </div>
-    <footer class="map-screen-footer"><span><i class="map-legend-dot"></i> Questão disponível <i class="map-legend-done"><i class="fa-solid fa-check"></i></i> Acertou <i class="map-legend-wrong"><i class="fa-solid fa-xmark"></i></i> Errou</span><div class="map-footer-actions"><button class="map-next-action" id="map-next-action" type="button" hidden>Concluir fase</button><button id="map-close-bottom" type="button">Voltar ao painel</button></div></footer>
+    <footer class="rodape-tela-mapa"><span><i class="ponto-legenda-mapa"></i> Questão disponível <i class="legenda-mapa-concluida"><i class="fa-solid fa-check"></i></i> Acertou <i class="legenda-mapa-errada"><i class="fa-solid fa-xmark"></i></i> Errou</span><div class="acoes-rodape-mapa"><button class="proxima-acao-mapa" id="proxima-acao-mapa" type="button" hidden>Concluir fase</button><button id="fechar-mapa-rodape" type="button">Voltar ao painel</button></div></footer>
   </section>
 
-  <div class="quiz-overlay" id="quiz-overlay" hidden>
-    <section class="quiz-shell" role="dialog" aria-modal="true" aria-labelledby="quiz-question-title">
-      <header class="quiz-topbar"><button class="quiz-close" id="close-quiz" type="button" aria-label="Sair do desafio">×</button><div class="quiz-progress-wrap"><div class="quiz-meta"><span id="quiz-theme-label">Tema do desafio</span><strong id="quiz-counter">Questão 1 de 5</strong></div><div class="quiz-progress-track"><div class="quiz-progress-fill" id="quiz-progress-fill"></div></div></div><div class="quiz-xp"><span>✦</span><strong id="quiz-xp-total">0</strong></div></header>
-      <div class="quiz-content" id="quiz-content"><div class="figma-question-heading"><strong id="quiz-question-number">Questão 1</strong><span class="question-dots" aria-hidden="true">••••</span></div><div class="quiz-kicker"><span class="live-dot"></span> DESAFIO EM ANDAMENTO</div><h1 id="quiz-question-title">Preparando sua questão…</h1><p class="quiz-instruction">Selecione uma única resposta para continuar.</p><div class="answer-list" id="answer-list"></div><div class="answer-feedback" id="answer-feedback" hidden><strong id="feedback-title"></strong><p id="feedback-text"></p><small id="feedback-points"></small></div><div class="quiz-actions"><span class="question-status-icon" aria-hidden="true">✓</span><span id="quiz-action-hint">Escolha uma alternativa</span><button class="button button-primary" id="next-question" type="button" disabled>Continuar</button></div></div>
-      <div class="quiz-result" id="quiz-result" hidden><div class="result-medal">✦</div><div class="mini-kicker">FASE CONCLUÍDA</div><h1 id="result-title">Desafio concluído!</h1><p id="result-description">Você completou mais uma etapa da sua jornada.</p><div class="result-metrics"><div><span>Acertos</span><strong id="result-correct">0/5</strong></div><div><span>Pontos ganhos</span><strong id="result-points">+0</strong></div><div><span>Precisão</span><strong id="result-accuracy">0%</strong></div></div><div class="result-review" id="result-review" hidden><span class="result-review-title">Suas respostas</span><ol class="result-review-list" id="result-review-list"></ol></div><p class="result-bonus" id="result-bonus" hidden>✦ Bônus de desafio perfeito: +25 pontos</p><div class="result-actions"><button class="button button-primary button-wide" id="next-challenge" type="button">Próxima fase <span>→</span></button><button class="button button-secondary button-wide" id="finish-quiz" type="button">Voltar ao mapa</button></div></div>
+  <div class="janela-quiz" id="janela-quiz" hidden>
+    <section class="moldura-quiz" role="dialog" aria-modal="true" aria-labelledby="titulo-questao-quiz">
+      <header class="barra-superior-quiz"><button class="fechar-quiz-x" id="fechar-quiz" type="button" aria-label="Sair do desafio">×</button><div class="area-progresso-quiz"><div class="info-quiz"><span id="rotulo-tema-quiz">Tema do desafio</span><strong id="contador-quiz">Questão 1 de 5</strong></div><div class="trilho-progresso-quiz"><div class="preenchimento-progresso-quiz" id="preenchimento-progresso-quiz"></div></div></div><div class="xp-quiz"><span>✦</span><strong id="total-xp-quiz">0</strong></div></header>
+      <div class="conteudo-quiz" id="conteudo-quiz"><div class="cabecalho-questao"><strong id="numero-questao-quiz">Questão 1</strong><span class="bolinhas-questao" aria-hidden="true">••••</span></div><div class="chamada-quiz"><span class="ponto-ativo"></span> DESAFIO EM ANDAMENTO</div><h1 id="titulo-questao-quiz">Preparando sua questão…</h1><p class="instrucao-quiz">Selecione uma única resposta para continuar.</p><div class="lista-respostas" id="lista-respostas"></div><div class="retorno-resposta" id="retorno-resposta" hidden><strong id="titulo-retorno"></strong><p id="texto-retorno"></p><small id="pontos-retorno"></small></div><div class="acoes-quiz"><span class="icone-situacao-questao" aria-hidden="true">✓</span><span id="dica-acao-quiz">Escolha uma alternativa</span><button class="botao botao-principal" id="proxima-questao" type="button" disabled>Continuar</button></div></div>
+      <div class="resultado-quiz" id="resultado-quiz" hidden><div class="medalha-resultado">✦</div><div class="mini-chamada">FASE CONCLUÍDA</div><h1 id="titulo-resultado">Desafio concluído!</h1><p id="descricao-resultado">Você completou mais uma etapa da sua jornada.</p><div class="metricas-resultado"><div><span>Acertos</span><strong id="resultado-corretas">0/5</strong></div><div><span>Pontos ganhos</span><strong id="pontos-resultado">+0</strong></div><div><span>Precisão</span><strong id="precisao-resultado">0%</strong></div></div><div class="revisao-resultado" id="revisao-resultado" hidden><span class="titulo-revisao-resultado">Suas respostas</span><ol class="lista-revisao-resultado" id="lista-revisao-resultado"></ol></div><p class="bonus-resultado" id="bonus-resultado" hidden>✦ Bônus de desafio perfeito: +25 pontos</p><div class="acoes-resultado"><button class="botao botao-principal botao-largo" id="proximo-desafio" type="button">Próxima fase <span>→</span></button><button class="botao botao-secundario botao-largo" id="finalizar-quiz" type="button">Voltar ao mapa</button></div></div>
     </section>
   </div>
 
-  <div class="modal-overlay" id="terms-overlay" hidden>
-    <section class="modal-card" role="alertdialog" aria-modal="true" aria-labelledby="terms-title" aria-describedby="terms-text">
-      <div class="modal-icon" aria-hidden="true"><i class="fa-solid fa-file-contract"></i></div>
-      <h2 id="terms-title">Termos de uso e privacidade</h2>
-      <p id="terms-text">Para continuar usando o ExplAIner, leia e aceite os <a href="termos-de-uso.html" target="_blank" rel="noopener">Termos de Uso</a> e o <a href="termo-de-consentimento.html" target="_blank" rel="noopener">Termo de Consentimento</a>. Sem o aceite, não podemos tratar os seus dados.</p>
-      <div class="modal-actions">
-        <button class="button button-secondary" id="terms-refuse" type="button">Recusar e sair</button>
-        <button class="button button-primary" id="terms-accept" type="button">Li e aceito</button>
+  <div class="janela-modal" id="janela-termos" hidden>
+    <section class="cartao-modal" role="alertdialog" aria-modal="true" aria-labelledby="titulo-termos" aria-describedby="texto-termos">
+      <div class="icone-modal" aria-hidden="true"><i class="fa-solid fa-file-contract"></i></div>
+      <h2 id="titulo-termos">Termos de uso e privacidade</h2>
+      <p id="texto-termos">Para continuar usando o ExplAIner, leia e aceite os <a href="termos-de-uso.html" target="_blank" rel="noopener">Termos de Uso</a> e o <a href="termo-de-consentimento.html" target="_blank" rel="noopener">Termo de Consentimento</a>. Sem o aceite, não podemos tratar os seus dados.</p>
+      <div class="acoes-modal">
+        <button class="botao botao-secundario" id="recusar-termos" type="button">Recusar e sair</button>
+        <button class="botao botao-principal" id="aceitar-termos" type="button">Li e aceito</button>
       </div>
     </section>
   </div>
 
-  <div class="modal-overlay" id="confirm-overlay" hidden>
-    <section class="modal-card" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text">
-      <div class="modal-icon" id="confirm-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></div>
-      <h2 id="confirm-title">Tem certeza?</h2>
-      <p id="confirm-text"></p>
-      <label class="modal-field" id="confirm-field" hidden><span>Senha</span><input id="confirm-input" type="password" autocomplete="current-password"></label>
-      <div class="modal-actions">
-        <button class="button button-secondary" id="confirm-no" type="button">Não</button>
-        <button class="button button-primary" id="confirm-yes" type="button">Sim</button>
+  <div class="janela-modal" id="janela-confirmar" hidden>
+    <section class="cartao-modal" role="alertdialog" aria-modal="true" aria-labelledby="titulo-confirmar" aria-describedby="texto-confirmar">
+      <div class="icone-modal" id="icone-confirmar" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <h2 id="titulo-confirmar">Tem certeza?</h2>
+      <p id="texto-confirmar"></p>
+      <label class="campo-modal" id="campo-confirmar" hidden><span>Senha</span><input id="entrada-confirmar" type="password" autocomplete="current-password"></label>
+      <div class="acoes-modal">
+        <button class="botao botao-secundario" id="confirmar-nao" type="button">Não</button>
+        <button class="botao botao-principal" id="confirmar-sim" type="button">Sim</button>
       </div>
     </section>
   </div>
 
-  <div class="praise-overlay" id="praise-overlay" hidden>
-    <section class="praise-card" id="praise-card" role="status" aria-live="polite">
-      <button class="praise-close" id="praise-close" type="button" aria-label="Fechar elogio"><i class="fa-solid fa-xmark"></i></button>
-      <div class="praise-icon" id="praise-icon" aria-hidden="true">👍</div>
-      <h2 id="praise-title"></h2>
-      <p id="praise-text"></p>
-      <strong class="praise-xp" id="praise-xp" hidden></strong>
-      <div class="praise-timer" aria-hidden="true"><i id="praise-timer-bar"></i></div>
+  <div class="janela-elogio" id="janela-elogio" hidden>
+    <section class="cartao-elogio" id="cartao-elogio" role="status" aria-live="polite">
+      <button class="fechar-elogio" id="fechar-elogio" type="button" aria-label="Fechar elogio"><i class="fa-solid fa-xmark"></i></button>
+      <div class="icone-elogio" id="icone-elogio" aria-hidden="true">👍</div>
+      <h2 id="titulo-elogio"></h2>
+      <p id="texto-elogio"></p>
+      <strong class="xp-elogio" id="xp-elogio" hidden></strong>
+      <div class="tempo-elogio" aria-hidden="true"><i id="barra-tempo-elogio"></i></div>
     </section>
   </div>
 
-  <div class="celebrate-layer" id="celebrate-layer" aria-hidden="true"></div>
+  <div class="camada-comemoracao" id="camada-comemoracao" aria-hidden="true"></div>
 
-  <div class="toast" id="toast" role="status" hidden></div>
+  <div class="aviso-rapido" id="aviso-rapido" role="status" hidden></div>
+
   <script src="voltar.js"></script>
   <script src="estudar.js"></script>
 </body>
