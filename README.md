@@ -1,257 +1,230 @@
-# ExplAIner v16.1 — correções de segurança, retomada e banco local
+# ExplAIner
 
-## Alterações desta versão
-- **Segurança:** o painel administrativo legado (CRUD sem login) fica desligado por padrão (`ENABLE_ADMIN_PANEL=1` liga, só em desenvolvimento); CORS só para origens em `CORS_ORIGINS`; chaves de sessão vazias, curtas ou de exemplo são recusadas; login com limite de tentativas (5 erros por e-mail/IP em 15 min → 429); tempo ativo só conta o tempo que realmente passou; exclusão de conta pede a senha num campo mascarado; páginas do painel escapam o HTML vindo do servidor.
-- **Jogo:** dificuldade sobe um nível por fase (Fácil → Médio → Difícil) e o servidor recalcula a dificuldade da fase que grava; "Normal" aparece como **Médio** (o valor interno continua `Normal`).
-- **Retomada:** "Continuar desafio" volta na fase e na questão certas; uma fase com tudo respondido mas não concluída pode ser concluída depois; após concluir uma fase e sair, o painel oferece "Continuar jornada" (funciona após recarregar e em outro dispositivo).
-- **Mapa:** trilha refeita em HTML/CSS (sem SVG), mais grossa, com o trecho percorrido em violeta.
-- **Botão Voltar** ao lado da marca em todas as páginas (`frontend/voltar.js`).
-- **Banco local:** todos os 18 temas do catálogo inicial funcionam sem `OPENAI_API_KEY` (novos bancos para Equações do 1º grau, Figuras de linguagem, Sistema solar e Brasil Colônia).
-- **Dados:** excluir aluno, desafio, tema ou questão não deixa mais registros órfãos; `create_database.sql` atualizado para espelhar os models.
+**ExplAIner** é uma plataforma de estudos gamificada que usa Inteligência Artificial para gerar questões de múltipla escolha sobre o tema escolhido pelo aluno. O aluno define a dificuldade e o tamanho das fases e acompanha pontuação, ranking e sequência de dias de estudo (foguinho), tornando o estudo mais dinâmico, rápido e eficiente para alunos do Ensino Médio.
 
-# ExplAIner v16 — refazer fiel, fases corretas e aproveitamento
+**Site hospedado:** https://COLOQUE-AQUI-O-LINK.onrender.com
 
-## Alterações desta versão
-- **Refazer com as mesmas questões:** a revisão reutiliza as questões salvas do desafio concluído, na mesma ordem (mesma bolinha = mesma pergunta).
-- **Fase gravada no servidor:** um desafio novo é sempre Fase 1 da jornada; "Continuar" volta na fase certa. A cor do espaço agora depende da fase (fase 1 = cor original), inclusive ao refazer e no mapa pequeno da tela inicial.
-- **Pontos por erro:** acertar dá o ponto normal (10/15/20); errar tira 25% disso (ex.: 100 → -25), sem deixar o total abaixo de 0. Na revisão não há ganho nem perda.
-- **Aproveitamento da jornada:** ao terminar a última fase, se o aluno errou 70% ou mais de todas as questões da jornada, ela é reprovada: sem elogio, sem bônus, todos os pontos da jornada são descontados e fases e revisões são apagadas (como se nunca tivesse feito). O botão "Recomeçar jornada" gera tudo de novo com perguntas novas.
-- A decisão de fim de jornada e de reprovação é feita no servidor.
+**Repositório:** https://github.com/Alvaro3105/Explainer
 
-# ExplAIner v15 — correções do mapa e novos elogios
+## Integrantes da Equipe
+* Lucas Ribeiro Fontana
+* Josué Fernando Silva Melo
+* Weber Anjos de Souza Sodré
+* Álvaro Pires de Souza
+* Antônio Henrique de Paula Reis
+* Henrique Saddi Meinicke
 
-## Alterações desta versão
-- **Mapa do desafio em tela cheia:** o mapa agora ocupa sempre toda a largura e altura visíveis (mesmo com 5 questões) e só cria rolagem horizontal quando há muitas questões. Redesenha ao redimensionar a janela.
-- **Sequência obrigatória:** só a primeira questão não respondida fica liberada; as demais aparecem bloqueadas (cadeado). O servidor também recusa respostas fora de ordem.
-- **Gerar novo desafio:** se já existe um desafio em andamento, aparece uma janela perguntando se deseja excluí-lo (Sim/Não). Ao confirmar, o desafio antigo é apagado no servidor e o botão "Continuar desafio" passa a abrir o novo. O estado do desafio é zerado por inteiro a cada início (corrige o vazamento de progresso/modo revisão entre desafios).
-- **Continuar** volta na fase certa da jornada (fase/dificuldade salvas no navegador).
-- **Refazer:** o botão começa pelo **desafio 1**. Ao terminar, só avança para o desafio 2 se ele já foi concluído no progresso normal; caso contrário aparece o aviso "Conclua o desafio 2 no seu progresso normal para conseguir refazê-lo".
-- **Elogios:** desafio concluído → emojis 👍 subindo + janela de elogio com X e fechamento automático; 5 desafios seguidos → janela + som "Uhul!" (sem emojis); jornada completa → confetes + janela de festa.
-- **XP extra:** +10 XP por desafio concluído e +50 XP ao concluir a jornada (não vale no modo Refazer).
-- **Mapa pequeno da tela inicial** usa o mesmo fundo espacial (com a cor do desafio atual).
-
-# ExplAIner v14 — novo visual (front-end Figma)
-
-## Alterações desta versão
-- Todo o front-end foi adaptado ao novo design: tema escuro `#1E2C32` com lime `#D1DC5A`, Montserrat, ícones Font Awesome, cartões `#45444E`, bolinhas com sombra e botões em relevo. O modo claro continua disponível em **Configurações** (o padrão agora é escuro).
-- Login/cadastro com painel espacial e astronauta, rótulos flutuantes e abas Entrar / Criar conta.
-- Painel "Aprender" no estilo do novo layout (cabeçalho fixo com XP, sequência e ranking; barra lateral com ícones; cartões de estatísticas). Nenhuma função foi removida.
-- Mapa do desafio continua **horizontal**, com a **trilha** ligando cada bolinha; bolinhas no novo formato (lime / turquesa / roxo quando concluída).
-- O fundo do mapa mantém astronauta e estrelas, mas **muda de cor a cada desafio criado** (8 tons escolhidos pelo id do desafio; ver `PALETAS_ESPACO` em `estudar.js`).
-- Janela da questão com alternativas lime/turquesa; acerto em verde e erro em vermelho.
-- Páginas administrativas (`index.html`, `listar.html`, `temas.html` etc.) com o mesmo tema via `style.css`.
-- Novos arquivos visuais em `frontend/assets/`.
+## Stack Tecnológica
+* **Frontend:** HTML5, CSS3, JavaScript (Vanilla ES6+)
+* **Backend:** Python, Flask, Flask-SQLAlchemy (ORM), Flask-CORS
+* **Inteligência Artificial:** API do Google Gemini (geração das questões); a API da OpenAI também é aceita
+* **Banco de Dados:** SQLite (local), PostgreSQL (hospedado) e MySQL (opcional, com `create_database.sql`)
+* **Hospedagem:** Render (`render.yaml`) com Gunicorn
+* **Testes:** pytest
 
 ---
 
-# ExplAIner v13 — navegação aprimorada e revisão isolada
+## Visão geral
 
-## Alterações desta versão
-- Barra superior redesenhada com navegação mais clara, indicadores e botão de continuar destacado.
-- Barra lateral com estados ativos/hover, ícones e área de conta refinados.
-- Revisões marcadas como `[REFAZER]` não são tratadas como desafios ativos da jornada normal.
-- O histórico e o botão de refazer ignoram sessões de revisão para evitar encadeamento de revisões.
-- A geração local prioriza perguntas que o aluno ainda não viu no mesmo tema e dificuldade, evitando repetições até esgotar o banco local disponível.
-- A geração por IA recebe os enunciados anteriores como contexto para reduzir repetição.
+O frontend (`frontend/`) e a API (`backend/`) ficam separados. O frontend consome a API por requisições `fetch` em JSON, e o Flask também entrega os arquivos do frontend, então basta iniciar o backend.
 
-## Limites importantes
-O banco local é demonstrativo e finito. Ele não consegue garantir diversidade ilimitada nem uma separação pedagógica perfeita entre Fácil, Médio e Difícil. Para uma variedade muito maior e questões novas contextualizadas, configure `OPENAI_API_KEY` no arquivo `.env`. Se o banco local não tiver questões suficientes para a quantidade solicitada, o sistema informa o limite em vez de inventar questões de outro tema.
+O backend segue a arquitetura em camadas:
 
-## Executar
-1. Crie e ative um ambiente virtual Python.
-2. Execute `pip install -r requirements.txt`.
-3. Copie `.env.example` para `.env` se necessário e configure as variáveis.
-4. Execute `python backend/app.py`.
-5. Abra `http://127.0.0.1:5000`.
-
-## Testes
-Instale as dependências de desenvolvimento com `pip install -r requirements-dev.txt` e execute `python -m pytest tests -q` (ou, sem pytest, `python -m unittest discover -s tests -v`).
-
-O projeto é organizado com `backend/`, `frontend/` e `tests/` diretamente na raiz; não é necessário abrir uma pasta de versão aninhada.
-
----
-
-# ExplAIner — aprendizagem gamificada
-
-Aplicação web de estudo construída com Flask, SQLite, HTML, CSS e JavaScript. A nova área do estudante fica na rota `/`; as páginas de administração CRUD que já existiam continuam disponíveis pelos arquivos HTML originais.
+| Camada | Pasta | Responsabilidade |
+|---|---|---|
+| Controller | `backend/controllers/` | Recebe a requisição HTTP, confere o login e devolve o JSON |
+| Service | `backend/services/` | Executa o caso de uso e as regras da aplicação |
+| Repository | `backend/repositories/` | Acessa o banco (ORM e consultas SQL do ranking) |
+| Model | `backend/models/` | Representa as tabelas |
 
 ## Casos de uso implementados
 
-Os casos de uso abaixo descrevem os principais fluxos disponíveis na área do estudante do ExplAIner.
+Ator principal: **Aluno** (estudante do Ensino Médio). No painel administrativo, o ator é o **Administrador**.
 
-### 1. Gerar uma jornada de estudos
+| Nº | Caso de uso | Ator | Objetivo | Tela | Rota da API |
+|---|---|---|---|---|---|
+| UC01 | Criar conta e aceitar os termos | Aluno | Cadastrar-se com nome, nick, e-mail e senha; a conta só é criada com o aceite dos Termos de Uso e do Termo de Consentimento | Login / Criar conta | `POST /api/auth/register` |
+| UC02 | Entrar e sair da conta | Aluno | Acessar a plataforma com e-mail e senha e encerrar a sessão | Login | `POST /api/auth/login`, `POST /api/auth/logout` |
+| UC03 | Gerar desafio por tema e dificuldade | Aluno | Escolher matéria, tema, quantidade de questões e dificuldade e receber uma fase com questões criadas por IA | Aprender | `POST /api/learning/challenges` |
+| UC04 | Responder questão | Aluno | Responder em ordem e ver na hora se acertou, a explicação e os pontos | Mapa do desafio / Questão | `POST /api/learning/challenges/<id>/answer` |
+| UC05 | Concluir fase e avançar na jornada | Aluno | Fechar a fase, receber os bônus e liberar a próxima fase, mais difícil; com 70% de erros a jornada é refeita | Resultado da fase | `POST /api/learning/challenges/<id>/complete` |
+| UC06 | Continuar desafio em andamento | Aluno | Voltar a um desafio de onde parou, com as respostas já salvas | Aprender | `GET /api/learning/active-challenge`, `GET /api/learning/challenges/<id>` |
+| UC07 | Refazer fase concluída | Aluno | Treinar de novo com as mesmas questões, sem ganhar pontos | Meu progresso | `POST /api/learning/challenges` (`refazer: true`) |
+| UC08 | Consultar ranking | Aluno | Ver a classificação por pontos e a própria posição | Ranking | `GET /api/learning/ranking` |
+| UC09 | Acompanhar progresso e histórico | Aluno | Ver fases concluídas, precisão, questões respondidas e histórico | Meu progresso | `GET /api/learning/me`, `GET /api/learning/history` |
+| UC10 | Manter a sequência de estudos (foguinho) | Aluno | Registrar o tempo de estudo e os dias seguidos de uso | Todas (contagem automática) | `POST /api/learning/activity` |
+| UC11 | Alterar nick | Aluno | Mudar o nome que aparece no ranking | Meu progresso | `PATCH /api/learning/profile` |
+| UC12 | Aceitar termos em conta existente | Aluno | Registrar o aceite quando a versão dos termos mudar | Modal de termos | `POST /api/auth/accept-terms` |
+| UC13 | Excluir a própria conta | Aluno | Apagar a conta e todos os dados, confirmando com a senha | Menu da conta | `DELETE /api/auth/delete-account` |
+| UC14 | Gerenciar cadastros (CRUD) | Administrador | Criar, listar, atualizar e excluir alunos, temas, questões, desafios e ranking | Painel administrativo | `/alunos`, `/temas`, `/questoes`, `/desafio`, `/ranking` |
 
-**Objetivo:** permitir que o estudante personalize uma sequência de desafios de acordo com o conteúdo que deseja estudar e com o tempo disponível.
+## Models implementadas
 
-**Fluxo:** o estudante seleciona primeiro a matéria e depois um tema, escolhe a quantidade de questões por desafio (5, 10, 15 ou 20) e define a dificuldade inicial (Fácil, Médio ou Difícil). Ao confirmar, o sistema prepara as questões e apresenta a jornada em um mapa dividido em fases. A geração utiliza a integração opcional com a OpenAI quando há uma chave configurada; sem ela, o sistema seleciona questões do banco local.
+- `Aluno`
+- `Tema`
+- `Desafio`
+- `Questao`
+- `RespostaDesafio`
+- `AlunoDesafio`
+- `DesafioQuestao`
+- `Ranking` (painel administrativo legado)
 
-**Telas:** **Aprender — Monte sua jornada** (seleção de matéria, tema, quantidade e dificuldade) e **Mapa do desafio** (fases e questões disponíveis).
+## Rotas principais
 
-### 2. Responder uma questão e receber correção
+- `/` - área do estudante (`estudar.html`)
+- `/api` - documentação simples da API
 
-**Objetivo:** permitir que o estudante resolva questões de múltipla escolha e receba retorno imediato sobre seu desempenho.
-
-**Fluxo:** o estudante abre a questão pelo mapa, escolhe uma alternativa e envia a resposta. O servidor valida se a questão pertence ao desafio do aluno e se está sendo respondida na ordem correta. Em seguida, informa se a resposta está certa, apresenta a alternativa correta e uma explicação, calcula os pontos e salva a resposta. O mapa identifica cada questão respondida com ✓ para acerto ou ✗ para erro.
-
-**Telas:** **Mapa do desafio**, **Janela da questão** e **Mapa com o resultado da resposta**.
-
-### 3. Concluir uma fase e avançar na jornada
-
-**Objetivo:** organizar a progressão do estudante em etapas, com dificuldade crescente e regras de pontuação.
-
-**Fluxo:** depois de responder todas as questões da fase, o estudante solicita sua conclusão. O sistema registra o resultado e aplica os bônus previstos: 25 pontos por fase perfeita, 10 pontos pela conclusão da fase e 50 pontos ao completar a jornada. A dificuldade sobe um nível a cada fase concluída, até chegar a Difícil. Na última fase, o servidor considera os erros de toda a jornada: se forem iguais ou superiores a 70% das questões, a jornada é reprovada, seus pontos são retirados e suas fases são desfeitas.
-
-**Telas:** **Mapa do desafio** (ação para concluir a fase), **Resumo/feedback da fase** e **Mapa da próxima fase**.
-
-### 4. Retomar um desafio ou continuar uma jornada
-
-**Objetivo:** permitir que o estudante interrompa o estudo e retorne ao ponto em que parou, sem perder as respostas já registradas.
-
-**Fluxo:** ao entrar novamente, o sistema consulta o desafio ativo e restaura a fase, as questões, as alternativas escolhidas e os resultados já salvos. Se todas as questões foram respondidas, mas a fase ainda não foi concluída, a interface oferece a opção de concluir a fase. Se uma fase já foi concluída e a próxima ainda não foi iniciada, o painel apresenta **Continuar jornada**, recuperando a próxima etapa a partir do histórico do servidor.
-
-**Telas:** **Aprender** (botão **Continuar desafio** ou **Continuar jornada**) e **Mapa do desafio** restaurado.
-
-### 5. Acompanhar o progresso e a classificação
-
-**Objetivo:** mostrar ao estudante sua evolução, sua constância de estudo e sua posição em relação aos demais participantes.
-
-**Fluxo:** o sistema reúne pontos, fases concluídas, questões respondidas, precisão das respostas e tempo ativo. A sequência diária aumenta quando o estudante mantém atividade em dias consecutivos e volta a 1 após um dia sem estudar. O ranking considera apenas alunos que já responderam ao menos uma questão e ordena os participantes por pontos, com critérios de desempate. O histórico apresenta os 30 registros mais recentes de desafios concluídos.
-
-**Telas:** **Aprender** (resumo, sequência diária e prévia do ranking), **Ranking** (classificação geral) e **Meu progresso** (indicadores e histórico de desafios).
-
-### Funcionalidades complementares
-
-- **Cadastro e acesso:** criação de conta com e-mail, senha e nick público; o cadastro exige o aceite dos Termos de Uso e do Termo de Consentimento.
-- **Registro do consentimento:** o sistema registra a data/hora e a versão dos termos aceitos; a revogação é realizada pela exclusão da conta.
-- **Refazer desafio:** permite revisar as mesmas questões de um desafio concluído, na mesma ordem, sem conceder pontos ou bônus.
-- **Perfil:** permite alterar o nick exibido no ranking.
-
-
-## Ajustes da versão 12 — ações do desafio, mapa e conta
-
-- O botão verde do topo agora aparece somente quando existe um desafio em andamento e serve para continuar o desafio salvo.
-- O botão grande de continuar foi removido da área de configuração. O botão inferior fica maior e é identificado como “Gerar desafio” ou “Criar um novo desafio”, conforme exista um desafio ativo.
-- O minimapa de conquistas ganha borda, trilha e detalhes coloridos conforme matéria, tema e fase selecionados.
-- O menu da conta oferece “Sair do site”, “Utilizar outra conta” e “Excluir minha conta”.
-- A exclusão da conta solicita confirmação e senha e remove os registros pessoais de respostas, histórico, ranking e desafios próprios associados à conta.
-- A estrutura do ZIP foi organizada para que `backend/`, `frontend/` e `tests/` fiquem diretamente na raiz, sem uma pasta `explv9/` adicional.
-
-## Funcionalidades adicionadas
-
-- Cadastro e login com sessão de servidor e senha armazenada como hash.
-- Nick público, perfil e alteração do nick.
-- Catálogo organizado por matéria e tema, com temas iniciais inseridos automaticamente quando o catálogo está vazio.
-- Desafios com 5, 10, 15 ou 20 questões e níveis Fácil, Médio e Difícil. A jornada mostra quantos desafios terá: 5 questões → 5 desafios; 10 → 4; 15 → 3; 20 → 2.
-- Questões de múltipla escolha, validação da resposta no backend, explicação da resposta e pontos por acerto.
-- Bônus de 25 pontos por concluir um desafio com 100% de acertos.
-- Ranking por pontos, sequência de atividade diária, tempo ativo, precisão e quantidade de desafios concluídos.
-- Mapa espacial de desafios em tela cheia, adaptado às referências visuais exportadas do Figma, com uma bolinha por questão; tocar/clicar na bolinha abre a questão correspondente.
-- Progresso visual das bolinhas respondidas, trilha conectada e quatro variações de mapa, que se alternam conforme a fase avança. Tema claro por padrão, com opção de tema escuro.
-- Histórico de desafios e registro de respostas individuais, com opção para refazer atividades anteriores.
-- Elogio após cada resposta correta, mensagem especial a cada cinco acertos consecutivos e mensagens separadas ao concluir uma fase ou acertar tudo.
-- A jornada termina após o número de desafios planejado para a quantidade de questões escolhida; o estudante pode iniciar uma nova jornada depois.
-- Layout responsivo para desktop e celular.
-- Login e cadastro por e-mail/senha, com senha armazenada em hash e telas de acesso separadas.
-- Integração opcional com a API da OpenAI para gerar questões alinhadas à matéria, ao tema, à dificuldade e à quantidade selecionada.
-- Modo local de demonstração quando não existe chave de API configurada.
-
-
-### Ajustes visuais v8 — mapa horizontal e mundos temáticos
-
-- O mapa de cada desafio foi redesenhado para desktop em formato horizontal, com progressão da esquerda para a direita e rolagem lateral quando há muitas questões.
-- As bolinhas ficam conectadas por uma trilha curva; questões concluídas ganham estado visual próprio e os rótulos ficam visíveis em telas maiores.
-- O minimapa do painel inicial também usa uma trilha horizontal e ocupa menos espaço vertical.
-- Os cenários variam conforme a matéria/tema (matemática, ciências, história, geografia, idiomas ou outros) e também recebem uma variação pela fase. Os cenários são feitos com gradientes e camadas CSS locais, sem dependência de imagens externas ou carregamento do Google.
-- Mantidos o fluxo de perguntas, o histórico, o ranking, o sistema de pontos e o modo claro/escuro.
-
-## Requisitos
-
-- Python 3.10 ou superior.
-- Pacotes descritos em `requirements.txt`.
-- Opcional: chave de API da OpenAI para geração dinâmica de questões. O uso da API pode gerar custos na conta associada à chave.
-
-## Executar no Windows
-
-Abra o terminal na pasta raiz deste projeto e execute:
-
-```powershell
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-py -m pip install -r requirements.txt
-cd backend
-py app.py
-```
-
-Acesse `http://127.0.0.1:5000/` no navegador. Não abra `estudar.html` diretamente pelo explorador de arquivos: a interface usa a API Flask e a sessão HTTP.
-
-Se o PowerShell bloquear a ativação do ambiente virtual, use o terminal CMD e rode `.venv\Scripts\activate.bat`.
-
-## Configurar geração por IA
-
-Sem a chave, o aplicativo usa um banco local demonstrativo. Para gerar questões com a API da OpenAI, defina as variáveis de ambiente **antes de iniciar o backend**. No PowerShell:
-
-```powershell
-$env:OPENAI_API_KEY="sua-chave-de-api"
-$env:OPENAI_MODEL="gpt-4o-mini"
-$env:FLASK_SECRET_KEY="uma-chave-longa-e-aleatoria"
-cd backend
-py app.py
-```
-
-A variável `OPENAI_API_KEY` deve permanecer apenas no backend; não a coloque em `estudar.js`, no HTML nem em arquivos publicados. `OPENAI_MODEL` é opcional. A geração dinâmica depende de conectividade e de uma conta de API habilitada. Se uma solicitação de geração falhar, o sistema retorna ao banco local de demonstração e identifica essa origem na resposta.
-
-Para produção, configure uma `FLASK_SECRET_KEY` forte (gere com `python -c "import secrets; print(secrets.token_hex(32))"`), use HTTPS e defina `COOKIE_SECURE=1`. Se a chave estiver vazia, curta ou for a do `.env.example`, o app a recusa e usa uma chave temporária, que derruba as sessões a cada reinício.
-
-## Notas sobre dados existentes
-
-Na inicialização, o aplicativo adiciona as colunas novas ao banco SQLite existente sem eliminar os registros anteriores. Senhas legadas em texto puro são convertidas para hash quando o usuário entra com sucesso; novas senhas já são armazenadas como hash. Faça uma cópia de `backend/instance/explainer.db` antes de usar o projeto sobre uma base importante.
-
-O modo local foi pensado para testar a navegação e a mecânica de gamificação sem chave de IA. Ele seleciona questões de demonstração por área de conhecimento e não equivale à geração personalizada por IA para cada tema. Para conteúdo escolar específico, configure a API e valide as questões geradas antes de uso avaliativo.
-
-## API principal
-
-- `POST /api/auth/register`
+### Conta
+- `POST /api/auth/register` - cadastro (exige aceite dos termos)
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
-- `GET /api/learning/me`
-- `GET /api/learning/catalog`
-- `POST /api/learning/challenges`
-- `GET /api/learning/active-challenge`
-- `GET /api/learning/challenges/<id>`
-- `POST /api/learning/challenges/<id>/answer`
-- `POST /api/learning/challenges/<id>/complete`
-- `POST /api/learning/activity`
-- `GET /api/learning/ranking`
-- `GET /api/learning/history`
-- `PATCH /api/learning/profile`
+- `POST /api/auth/accept-terms` - registra o aceite dos termos
 - `DELETE /api/auth/delete-account`
 
-A interface de estudante foi reorganizada em um painel compacto, com configuração do desafio e mapa de conquistas lado a lado, indicadores resumidos e histórico/ranking em blocos menores. O mapa do desafio abre depois da criação, cada bolinha abre uma questão e, depois da resposta, o estudante volta ao mapa. A reprodução usa as referências visuais exportadas do Figma e não sincroniza automaticamente com o arquivo Figma original.
+### Aprendizado
+- `GET /api/learning/me` - dados e progresso do aluno
+- `PATCH /api/learning/profile` - alterar o nick
+- `GET /api/learning/catalog` - matérias e temas
+- `GET /api/learning/active-challenge` - desafio em andamento
+- `POST /api/learning/challenges` - gerar desafio com IA (ou refazer um antigo)
+- `GET /api/learning/challenges/<id>`
+- `POST /api/learning/challenges/<id>/answer` - responder questão
+- `POST /api/learning/challenges/<id>/complete` - concluir fase
+- `POST /api/learning/activity` - tempo ativo
+- `GET /api/learning/ranking`
+- `GET /api/learning/history`
 
-### Limite importante do painel administrativo legado
+### Painel administrativo legado (CRUD)
+Desligado por padrão. Para usar no computador, defina `ENABLE_ADMIN_PANEL=1` no `.env` (nunca em produção, porque o painel não tem login).
 
-As rotas CRUD antigas (`/alunos`, `/questoes`, `/temas`, `/desafio`, `/ranking` e rotas associadas) não têm autorização por perfil. Por isso elas respondem **403 por padrão**; para usar as telas administrativas em desenvolvimento local, defina `ENABLE_ADMIN_PANEL=1` no `.env`. Não ligue essa opção num servidor publicado: antes, seria preciso proteger essas rotas com autenticação administrativa. O novo fluxo de estudante usa sessão, hash de senha e validação de respostas no servidor, mas isso não substitui a proteção das rotas administrativas antigas.
+- Aluno: `GET/POST /alunos`, `GET/PUT/DELETE /alunos/<id>`, `GET /alunos/ranking`
+- Tema: `GET/POST /temas`, `PUT/DELETE /temas/<id_tema>`
+- Desafio: `GET/POST /desafio`, `GET /desafio/nome/<nome>`, `PUT/DELETE /desafio/<id_desafio>`
+- Questão: `GET/POST /questoes`, `PUT/DELETE /questoes/<id_questao>`, `POST /questoes/<id_questao>/verificar`
+- Ranking: `GET/POST /ranking`, `PUT/DELETE /ranking/<id_ranking>`
+- Relacionamentos: `POST /alunos/desafios`, `GET /alunos/<id_aluno>/desafios`, `PUT /alunos/<id_aluno>/desafios/<id_desafio>`, `POST/DELETE /desafios/<id_desafio>/questoes/<id_questao>`, `GET /desafios/<id_desafio>/questoes`
 
+## Telas
 
-## Ajustes para desktop
-A interface recebeu overrides responsivos para monitores: modal de questao ampliado, tipografia maior, feedback de resposta com contraste alto e estados correto/incorreto claramente identificados.
+- `estudar.html` - área do estudante: login, cadastro, aprender, mapa de questões, ranking e progresso
+- `termos-de-uso.html` e `termo-de-consentimento.html` - termos aceitos no cadastro
+- `index.html`, `ler.html`, `listar.html`, `atualizar.html`, `deletar.html`, `temas.html`, `desafios.html`, `questoes.html` e `ranking.html` - painel administrativo legado (CRUD)
 
-## Autenticação (e-mail e senha)
+---
 
-- O login e o cadastro usam as rotas `/api/auth/login` e `/api/auth/register`, com senha armazenada em hash.
-- A tela apresenta dois modos exclusivos: **Entrar** e **Criar conta**. O formulário inativo fica removido do layout; erros como e-mail já cadastrado levam ao modo de login e mantêm o e-mail preenchido.
-- Não há botão, rota ou dependência de autenticação Google nesta versão.
-- A confirmação de novas contas por código de e-mail ou SMS não está ativa; isso exige configurar um provedor de envio e implementar a validação do token.
+## Como executar o projeto
 
-## Atualizações v9 — continuidade e variedade
-- O botão verde de **Continuar desafio** é a ação principal quando há um desafio incompleto salvo na conta.
-- O botão inferior passa a indicar **Criar um novo desafio** quando existe um desafio em andamento; um novo desafio passa a ser o ativo mais recente.
-- O botão **Refazer último desafio** aparece após existir pelo menos um desafio concluído. Tentativas de refazer não concedem pontos nem bônus de desafio perfeito.
-- O servidor expõe o desafio ativo da conta, incluindo questões respondidas, para restaurar o progresso após sair e entrar novamente.
-- A geração por IA pede maior diversidade entre enunciados e separação mais clara entre níveis. O banco local demonstrativo ainda tem uma variedade limitada; para grande diversidade real por tema, configure `OPENAI_API_KEY`.
+Antes de começar, instale:
+* **Python 3.12 ou mais novo**
+* **Git** (opcional)
 
-## Ajustes desta versão
-- O modo de refazer abre novamente o mapa de revisão, permite sair de qualquer questão e não habilita avanço de fase.
-- Tentativas marcadas como `[REFAZER]` não contam para calcular a próxima fase normal.
-- O gerador local não usa perguntas genéricas de outra matéria quando não reconhece o tema; nesse caso, configure `OPENAI_API_KEY` para solicitar geração contextualizada.
-- O mapa usa uma ilustração 2D local e não depende de imagens externas.
+Rode os comandos no terminal (PowerShell), **na pasta raiz do projeto**:
+
+### 1. Criar o ambiente virtual
+```powershell
+python -m venv .venv
+```
+
+### 2. Ativar o ambiente virtual
+* **PowerShell:**
+  ```powershell
+  .\.venv\Scripts\Activate.ps1
+  ```
+* **Prompt de Comando (CMD):**
+  ```cmd
+  .venv\Scripts\activate.bat
+  ```
+
+### 3. Instalar as dependências
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+### 4. Configurar as variáveis de ambiente
+Crie o arquivo `.env` na raiz do projeto a partir do exemplo:
+```powershell
+copy .env.example .env
+```
+
+Depois, edite o `.env`:
+* `FLASK_SECRET_KEY`: gere uma chave com `python -c "import secrets; print(secrets.token_hex(32))"` e cole o resultado.
+* `GEMINI_API_KEY`: a chave do Google Gemini que gera as questões (crie grátis em aistudio.google.com).
+* `OPENAI_API_KEY` (opcional): usada só se não houver chave do Gemini.
+
+O `.env` está no `.gitignore` e **nunca** deve ser enviado ao GitHub.
+
+### 5. Executar a aplicação
+```powershell
+.\.venv\Scripts\python.exe backend\app.py
+```
+
+Acesse:
+
+```text
+http://127.0.0.1:5000
+```
+
+### 6. Rodar os testes (opcional)
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+---
+
+## Banco de dados
+
+Por padrão, o projeto usa SQLite para facilitar o teste local (arquivo `instance/explainer.db`, na raiz do projeto). As tabelas são criadas sozinhas na primeira execução.
+
+Para usar outro banco, defina `DATABASE_URL` no `.env`:
+
+* **PostgreSQL** (usado na hospedagem, por exemplo com o Neon):
+  ```text
+  DATABASE_URL=postgresql://usuario:senha@servidor/banco
+  ```
+* **MySQL:** execute `backend/database/create_database.sql` e use:
+  ```text
+  DATABASE_URL=mysql+pymysql://root:sua_senha@localhost:3306/ExplAIner
+  ```
+
+## Hospedagem
+
+O projeto está pronto para o Render pelo arquivo `render.yaml`. No Render, crie um **Blueprint** a partir deste repositório e informe `GEMINI_API_KEY` e `DATABASE_URL` (`OPENAI_API_KEY` é opcional). A cada `git push` na branch `main`, o site é atualizado sozinho.
+
+---
+
+## Resolução de problemas comuns
+
+### Erro: "Fatal error in launcher: Unable to create process..."
+Acontece no Windows quando a pasta do projeto é movida ou sincronizada no OneDrive.
+* **Solução:** use sempre `.\.venv\Scripts\python.exe -m pip install <pacote>` em vez de `pip install`.
+
+### O PowerShell não deixa ativar o ambiente virtual
+Rode uma vez: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
+
+---
+
+## Funcionalidades implementadas
+
+1. Cadastro com e-mail e senha (a senha é guardada com hash).
+2. Nome de usuário (nick) salvo no banco de dados e editável no perfil.
+3. Escolha do tema a estudar.
+4. Organização dos temas por matéria: o aluno escolhe a matéria e vê os temas dela.
+5. Escolha do nível de dificuldade inicial (Fácil, Médio ou Difícil).
+6. Escolha da quantidade de questões por fase (5, 10, 15 ou 20), que define quantas fases a jornada tem.
+7. Desafios em forma de fases, com um mapa de questões, como no Duolingo.
+8. Pontuação do aluno com base no desempenho em cada fase, com bônus por fase perfeita e por jornada concluída.
+9. Ranking de usuários.
+10. Posição e pontos de cada usuário no ranking, inclusive a posição de quem está fora do topo.
+11. Histórico das atividades anteriores (as 30 mais recentes).
+12. Refazer atividades já concluídas (modo revisão, sem pontos).
+13. Alternativa marcada em vermelho quando o aluno erra a questão.
+14. Alternativa marcada em verde quando o aluno acerta a questão.
+15. Pontos por acerto que variam com a dificuldade, inspirado no Kahoot.
+16. Continuar um desafio de onde parou, com o progresso salvo automaticamente.
+17. Sequência de dias de estudo (foguinho) para incentivar o uso diário, como no Duolingo.
+18. Questões de múltipla escolha geradas por Inteligência Artificial.
+19. Painel "Meu progresso" com todo o progresso do aluno.
+20. Elogios e comemorações a cada desafio concluído.
+21. Termos de Uso e Termo de Consentimento, com a data e a versão do aceite registradas.
+22. Exclusão da própria conta, apagando todos os dados do aluno.
