@@ -1,5 +1,4 @@
 @startuml
-' Gerado a partir de backend/models — reflete o código atual do ExplAIner.
 hide empty members
 
 class Aluno {
@@ -20,12 +19,6 @@ class Aluno {
   - termos_aceitos_em : DateTime
   - versao_termos : String
   --
-  + salvar()
-  + atualizar(nome, email, senha, data_nascimento, pontos, foguinho)
-  + atualizar_foguinho(dias)
-  + adicionar_pontos(pontuacao)
-  + deletar()
-  + buscar_por_email(email)
   + to_dict()
 }
 
@@ -34,10 +27,6 @@ class Tema {
   - materia : String
   - nome : String
   --
-  + salvar()
-  + atualizar(materia, nome)
-  + deletar()
-  + buscar_por_id(id_tema)
   + to_dict()
 }
 
@@ -49,10 +38,6 @@ class Questao {
   - alternativas_json : Text
   - explicacao : Text
   --
-  + salvar()
-  + atualizar(enunciado, alternativa_correta, id_tema)
-  + deletar()
-  + buscar_por_id(id_questao)
   + to_dict()
 }
 
@@ -68,11 +53,6 @@ class Desafio {
   - nivel_mapa : Integer
   - origem_ia : Boolean
   --
-  + salvar()
-  + atualizar(nome, dificuldade, quantidade_questoes)
-  + deletar()
-  + buscar_por_nome(nome)
-  + buscar_por_id(id_desafio)
   + to_dict()
 }
 
@@ -80,8 +60,6 @@ class DesafioQuestao {
   - id_desafio : Integer
   - id_questao : Integer
   --
-  + salvar()
-  + deletar()
   + to_dict()
 }
 
@@ -92,9 +70,6 @@ class AlunoDesafio {
   - pontuacao_obtida : Integer
   - concluido : Boolean
   --
-  + salvar()
-  + atualizar(data_realizacao, pontuacao_obtida, concluido)
-  + deletar()
   + to_dict()
 }
 
@@ -118,10 +93,6 @@ class Ranking {
   - pontos : Integer
   - id_aluno : Integer
   --
-  + salvar()
-  + atualizar(classificacao, pontos)
-  + deletar()
-  + buscar_por_id(id_ranking)
   + to_dict()
 }
 

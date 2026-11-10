@@ -17,22 +17,12 @@ classDiagram
     -Integer segundos_pendentes
     -DateTime termos_aceitos_em
     -String versao_termos
-    +salvar()
-    +atualizar(nome, email, senha, data_nascimento, pontos, foguinho)
-    +atualizar_foguinho(dias)
-    +adicionar_pontos(pontuacao)
-    +deletar()
-    +buscar_por_email(email)
     +to_dict()
   }
   class Tema {
     -Integer id_tema
     -String materia
     -String nome
-    +salvar()
-    +atualizar(materia, nome)
-    +deletar()
-    +buscar_por_id(id_tema)
     +to_dict()
   }
   class Questao {
@@ -42,10 +32,6 @@ classDiagram
     -Integer id_tema
     -Text alternativas_json
     -Text explicacao
-    +salvar()
-    +atualizar(enunciado, alternativa_correta, id_tema)
-    +deletar()
-    +buscar_por_id(id_questao)
     +to_dict()
   }
   class Desafio {
@@ -59,18 +45,11 @@ classDiagram
     -Integer id_aluno
     -Integer nivel_mapa
     -Boolean origem_ia
-    +salvar()
-    +atualizar(nome, dificuldade, quantidade_questoes)
-    +deletar()
-    +buscar_por_nome(nome)
-    +buscar_por_id(id_desafio)
     +to_dict()
   }
   class DesafioQuestao {
     -Integer id_desafio
     -Integer id_questao
-    +salvar()
-    +deletar()
     +to_dict()
   }
   class AlunoDesafio {
@@ -79,9 +58,6 @@ classDiagram
     -Date data_realizacao
     -Integer pontuacao_obtida
     -Boolean concluido
-    +salvar()
-    +atualizar(data_realizacao, pontuacao_obtida, concluido)
-    +deletar()
     +to_dict()
   }
   class RespostaDesafio {
@@ -101,10 +77,6 @@ classDiagram
     -Integer classificacao
     -Integer pontos
     -Integer id_aluno
-    +salvar()
-    +atualizar(classificacao, pontos)
-    +deletar()
-    +buscar_por_id(id_ranking)
     +to_dict()
   }
   Tema "1" -- "0..*" Questao : possui

@@ -1,7 +1,7 @@
 flowchart TD
   subgraph F["Frontend — estudar.js"]
     A(["Painel ou aba Ranking é aberta"]) --> B["fetch GET /api/learning/ranking?limite=5"]
-    Z(["renderizarRankingPreview / renderizarTabelaRanking<br/>mostra posições, pontos e a posição do usuário"])
+    Z(["renderizarPreviaRanking / renderizarTabelaRanking<br/>mostra posições, pontos e a posição do usuário"])
   end
   subgraph C["Controller — aprendizado_controller.py"]
     C1["ranking_de_estudo()<br/>lê o limite da URL e o aluno da sessão"]
@@ -15,7 +15,7 @@ flowchart TD
   end
   subgraph R["Repository — AlunoRepository (SQL)"]
     R1["ranking_topo(limite)<br/>SELECT … FROM Aluno WHERE id_aluno IN (SELECT DISTINCT id_aluno FROM resposta_desafio)<br/>ORDER BY pontos DESC, nome, id LIMIT :limite"]
-    R2["quantos_a_frente(pontos, nome, id)<br/>SELECT COUNT(*) …"]
+    R2["participa_do_ranking(id) — SELECT 1 …<br/>quantos_a_frente(pontos, nome, id) — SELECT COUNT(*) …"]
     R3["total_participantes()<br/>SELECT COUNT(*) …"]
   end
   subgraph M["Model / Banco"]
