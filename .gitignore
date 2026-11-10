@@ -8,3 +8,19 @@ __pycache__/
 instance/
 .pytest_cache/
 *.zip
+
+# Configurações e arquivos locais
+.env.*
+!.env.example
+.claude/
+.vscode/
+.idea/
+
+# Testes e ferramentas
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Sistema operacional
+Thumbs.db

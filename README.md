@@ -2,8 +2,6 @@
 
 **ExplAIner** é uma plataforma de estudos gamificada que usa Inteligência Artificial para gerar questões de múltipla escolha sobre o tema escolhido pelo aluno. O aluno define a dificuldade e o tamanho das fases e acompanha pontuação, ranking e sequência de dias de estudo (foguinho), tornando o estudo mais dinâmico, rápido e eficiente para alunos do Ensino Médio.
 
-**Site hospedado:** https://COLOQUE-AQUI-O-LINK.onrender.com
-
 **Repositório:** https://github.com/Alvaro3105/Explainer
 
 ## Integrantes da Equipe
@@ -174,7 +172,7 @@ http://127.0.0.1:5000
 
 ## Banco de dados
 
-Por padrão, o projeto usa SQLite para facilitar o teste local (arquivo `instance/explainer.db`, na raiz do projeto). As tabelas são criadas sozinhas na primeira execução.
+Por padrão, o projeto usa SQLite para facilitar o teste local (arquivo `backend/instance/explainer.db`). As tabelas são criadas sozinhas na primeira execução.
 
 Para usar outro banco, defina `DATABASE_URL` no `.env`:
 
