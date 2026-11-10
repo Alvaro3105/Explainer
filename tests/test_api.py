@@ -1,4 +1,3 @@
-"""Testes de integração da API (SQLite temporário, sem IA externa)."""
 import os
 import sys
 import tempfile
@@ -9,23 +8,24 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "backend"
 
-_TMP = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)  # no Windows o SQLite mantém o arquivo aberto
-os.environ["DATABASE_URL"] = f"sqlite:///{Path(_TMP.name, 'teste.db').as_posix()}"
-os.environ["OPENAI_API_KEY"] = ""          # força o banco local de questões
+_TMP = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+os.environ["DATABASE_URL"] = os.getenv("TEST_DATABASE_URL") or f"sqlite:///{Path(_TMP.name, 'teste.db').as_posix()}"
+os.environ["OPENAI_API_KEY"] = ""
+os.environ["GEMINI_API_KEY"] = ""
 os.environ["FLASK_SECRET_KEY"] = "chave-de-teste"
 os.environ.pop("ENABLE_ADMIN_PANEL", None)
 os.environ.pop("CORS_ORIGINS", None)
 sys.path.insert(0, str(BACKEND))
 
-import app as app_module  # noqa: E402  (precisa vir depois de configurar o ambiente)
+import app as app_module
 
 
-def tema_programacao(client):
+def tema_com_banco_local(client):
     catalogo = client.get("/api/learning/catalog").get_json()
     for materia in catalogo["materias"]:
-        if materia["nome"] == "Programação":
-            return next(t for t in materia["temas"] if t["nome"] == "Lógica de programação")["id_tema"]
-    raise AssertionError("Tema de programação não encontrado no catálogo inicial")
+        if materia["nome"] == "Ciências":
+            return next(t for t in materia["temas"] if t["nome"] == "Sistema solar")["id_tema"]
+    raise AssertionError("Tema com banco local não encontrado no catálogo inicial")
 
 
 class BaseApi(unittest.TestCase):
@@ -39,14 +39,13 @@ class BaseApi(unittest.TestCase):
         return resposta.get_json()["aluno"]
 
     def criar_desafio(self, **extra):
-        corpo = {"id_tema": tema_programacao(self.client), "quantidade_questoes": 5, "dificuldade": "normal"}
+        corpo = {"id_tema": tema_com_banco_local(self.client), "quantidade_questoes": 5, "dificuldade": "normal"}
         corpo.update(extra)
         resposta = self.client.post("/api/learning/challenges", json=corpo)
         self.assertEqual(201, resposta.status_code, resposta.get_data(as_text=True))
         return resposta.get_json()
 
     def concluir(self, desafio):
-        """Responde todas as questões do desafio e o conclui."""
         id_desafio = desafio["desafio"]["id_desafio"]
         for questao in desafio["questoes"]:
             resposta = self.client.post(f"/api/learning/challenges/{id_desafio}/answer", json={
@@ -106,16 +105,13 @@ class TestJogo(BaseApi):
             self.assertNotIn("alternativa_correta", questao)
         id_desafio = desafio["desafio"]["id_desafio"]
         primeira = desafio["questoes"][0]["id_questao"]
-        # Responder fora de ordem é rejeitado.
         fora_de_ordem = self.client.post(f"/api/learning/challenges/{id_desafio}/answer", json={
             "id_questao": desafio["questoes"][2]["id_questao"], "alternativa": "A"})
         self.assertEqual(409, fora_de_ordem.status_code)
         self.concluir(desafio)
-        # Responder de novo não gera pontos duplicados.
         repetida = self.client.post(f"/api/learning/challenges/{id_desafio}/answer", json={
             "id_questao": primeira, "alternativa": "B"}).get_json()
         self.assertTrue(repetida["ja_respondida"])
-        # Concluir duas vezes não paga bônus de novo.
         segunda = self.client.post(f"/api/learning/challenges/{id_desafio}/complete", json={}).get_json()
         self.assertTrue(segunda["ja_concluido"])
         self.assertEqual(0, segunda["bonus_conclusao"])
@@ -127,12 +123,10 @@ class TestJogo(BaseApi):
 
 
 class TestProgressaoDeDificuldade(BaseApi):
-    """A dificuldade sobe um nível por fase concluída, com teto em Difícil."""
 
     def jornada(self, email, base, fases=3):
-        """Conclui fases em sequência e devolve a dificuldade gravada em cada uma."""
         self.registrar(email)
-        id_tema = tema_programacao(self.client)
+        id_tema = tema_com_banco_local(self.client)
         dificuldades = []
         for fase in range(1, fases + 1):
             desafio = self.criar_desafio(id_tema=id_tema, dificuldade=base,
@@ -152,8 +146,8 @@ class TestProgressaoDeDificuldade(BaseApi):
         self.assertEqual(["Difícil", "Difícil", "Difícil"], self.jornada("dificil@exemplo.com", "dificil"))
 
     def test_fase_forjada_tambem_reverte_a_dificuldade(self):
-        # Sem ter concluído a fase anterior, o servidor volta para a fase 1 — e a dificuldade
-        # precisa acompanhar, senão a fase 1 valeria pontos de Difícil.
+        # Sem ter concluído a fase anterior, o servidor volta para a fase 1, e a dificuldade
+        # precisa acompanhar. Senão a fase 1 valeria pontos de Difícil.
         self.registrar("forjada@exemplo.com")
         desafio = self.criar_desafio(dificuldade="dificil", dificuldade_base="facil", fase_jornada=5)
         self.assertEqual(1, desafio["desafio"]["nivel_mapa"])
@@ -161,7 +155,7 @@ class TestProgressaoDeDificuldade(BaseApi):
 
     def test_refazer_mantem_a_dificuldade_do_desafio_original(self):
         self.registrar("refazer@exemplo.com")
-        id_tema = tema_programacao(self.client)
+        id_tema = tema_com_banco_local(self.client)
         original = self.criar_desafio(id_tema=id_tema, dificuldade="facil",
                                       dificuldade_base="facil", fase_jornada=1)
         self.concluir(original)
@@ -169,6 +163,24 @@ class TestProgressaoDeDificuldade(BaseApi):
                                      refazer_de=original["desafio"]["id_desafio"])
         self.assertEqual("Fácil", revisao["desafio"]["dificuldade"])
         self.assertTrue(revisao["desafio"]["nome"].startswith("[REFAZER] "))
+
+    def test_refazer_nao_conta_como_desafio_concluido(self):
+        self.registrar("contagem@exemplo.com")
+        original = self.criar_desafio()
+        self.concluir(original)
+        antes = self.client.get("/api/learning/me").get_json()["progresso"]["desafios_concluidos"]
+        revisao = self.criar_desafio(refazer=True, refazer_de=original["desafio"]["id_desafio"])
+        self.concluir(revisao)
+        depois = self.client.get("/api/learning/me").get_json()["progresso"]["desafios_concluidos"]
+        self.assertEqual(1, antes)
+        self.assertEqual(antes, depois)
+
+    def test_refazer_sem_desafio_de_origem_e_recusado(self):
+        self.registrar("semorigem@exemplo.com")
+        resposta = self.client.post("/api/learning/challenges", json={
+            "id_tema": tema_com_banco_local(self.client), "quantidade_questoes": 5,
+            "dificuldade": "normal", "refazer": True})
+        self.assertEqual(404, resposta.status_code)
 
     def test_aceita_medio_com_e_sem_acento_como_normal(self):
         self.registrar("aliases@exemplo.com")
@@ -180,13 +192,12 @@ class TestProgressaoDeDificuldade(BaseApi):
     def test_dificuldade_invalida_cita_medio_na_mensagem(self):
         self.registrar("invalida@exemplo.com")
         resposta = self.client.post("/api/learning/challenges", json={
-            "id_tema": tema_programacao(self.client), "quantidade_questoes": 5, "dificuldade": "impossivel"})
+            "id_tema": tema_com_banco_local(self.client), "quantidade_questoes": 5, "dificuldade": "impossivel"})
         self.assertEqual(400, resposta.status_code)
         self.assertIn("Médio", resposta.get_json()["erro"])
 
 
 class TestReprovacaoDaJornada(BaseApi):
-    """Errar 70% ou mais somando todas as fases desfaz a jornada inteira e devolve os pontos."""
 
     def errar_tudo(self, desafio):
         from models.model_questao import Questao
@@ -203,8 +214,7 @@ class TestReprovacaoDaJornada(BaseApi):
     def test_jornada_com_muitos_erros_e_reprovada(self):
         from models.model_desafio import Desafio
         aluno = self.registrar("reprova@exemplo.com")
-        id_tema = tema_programacao(self.client)
-        # 20 questões por fase = jornada de 2 fases.
+        id_tema = tema_com_banco_local(self.client)
         fase1 = self.criar_desafio(id_tema=id_tema, quantidade_questoes=20, dificuldade="facil",
                                    dificuldade_base="facil", fase_jornada=1)
         self.assertTrue(self.errar_tudo(fase1)["concluido"])
@@ -216,13 +226,12 @@ class TestReprovacaoDaJornada(BaseApi):
         self.assertEqual(100, resultado["taxa_erro"])
         self.assertEqual(0, resultado["pontos_totais"])
         with app_module.app.app_context():
-            # As duas fases foram apagadas: é como se a jornada não tivesse acontecido.
             self.assertEqual(0, Desafio.query.filter_by(id_aluno=aluno["id_aluno"]).count())
         self.assertFalse(self.client.get("/api/learning/active-challenge").get_json()["ativo"])
 
 
 class TestAceiteDosTermos(BaseApi):
-    """Bônus da rubrica: termos de consentimento com a decisão do usuário registrada."""
+    """Termos de consentimento: a decisão do usuário fica registrada."""
 
     def test_cadastro_sem_aceite_e_recusado(self):
         for valor in (None, False, "sim", 1):
@@ -233,7 +242,7 @@ class TestAceiteDosTermos(BaseApi):
                 resposta = self.client.post("/api/auth/register", json=corpo)
                 self.assertEqual(400, resposta.status_code)
                 self.assertIn("Termos", resposta.get_json()["erro"])
-        self.assertEqual(401, self.client.get("/api/learning/me").status_code)  # conta não foi criada
+        self.assertEqual(401, self.client.get("/api/learning/me").status_code)
 
     def test_cadastro_registra_data_e_versao_do_aceite(self):
         from models.model_aluno import VERSAO_TERMOS_ATUAL
@@ -245,7 +254,7 @@ class TestAceiteDosTermos(BaseApi):
     def test_conta_antiga_aceita_pelo_app(self):
         from models.model_aluno import Aluno
         aluno = self.registrar("antiga@exemplo.com")
-        with app_module.app.app_context():  # simula conta criada antes dos termos
+        with app_module.app.app_context():
             registro = app_module.d.db.session.get(Aluno, aluno["id_aluno"])
             registro.termos_aceitos_em, registro.versao_termos = None, None
             app_module.d.db.session.commit()
@@ -258,7 +267,6 @@ class TestAceiteDosTermos(BaseApi):
 
 
 class TestRetomada(BaseApi):
-    """Retomar um desafio deve devolver a fase certa, as respostas salvas e a próxima questão."""
 
     def responder(self, desafio, quantas):
         id_desafio = desafio["desafio"]["id_desafio"]
@@ -276,13 +284,12 @@ class TestRetomada(BaseApi):
         self.assertEqual(desafio["desafio"]["id_desafio"], ativo["desafio"]["id_desafio"])
         self.assertEqual(2, len(ativo["respondidas"]))
         self.assertFalse(ativo["todas_respondidas"])
-        # A ordem das questões é a mesma da criação, então a próxima é a 3ª.
         ids = [q["id_questao"] for q in ativo["questoes"]]
         self.assertEqual([q["id_questao"] for q in desafio["questoes"]], ids)
         self.assertEqual({str(i) for i in ids[:2]}, set(ativo["respondidas"]))
 
     def test_retomada_informa_quais_respostas_acertaram(self):
-        # Requisitos 13 e 14: ao retomar, o mapa precisa saber onde mostrar ✓ e onde mostrar ✗.
+        # Ao retomar, o mapa precisa saber quais questões o aluno acertou e quais errou.
         from models.model_questao import Questao
         self.registrar("acertos@exemplo.com")
         desafio = self.criar_desafio()
@@ -297,13 +304,10 @@ class TestRetomada(BaseApi):
         for dados in (self.client.get("/api/learning/active-challenge").get_json(),
                       self.client.get(f"/api/learning/challenges/{id_desafio}").get_json()):
             self.assertEqual({str(q1): True, str(q2): False}, dados["acertos"])
-        # O gabarito das questões ainda não respondidas continua escondido.
         for questao in self.client.get(f"/api/learning/challenges/{id_desafio}").get_json()["questoes"]:
             self.assertNotIn("alternativa_correta", questao)
 
     def test_tudo_respondido_sem_concluir_ainda_pode_ser_retomado(self):
-        # Cenário: o aluno responde a última questão e sai antes de "Concluir fase". O desafio
-        # precisa continuar no "Continuar"; senão a jornada fica presa.
         self.registrar("presa@exemplo.com")
         desafio = self.criar_desafio()
         self.responder(desafio, len(desafio["questoes"]))
@@ -318,18 +322,16 @@ class TestRetomada(BaseApi):
 
     def test_fase_concluida_some_do_continuar_e_libera_a_proxima(self):
         self.registrar("proxima@exemplo.com")
-        id_tema = tema_programacao(self.client)
+        id_tema = tema_com_banco_local(self.client)
         fase1 = self.criar_desafio(id_tema=id_tema, dificuldade="facil", dificuldade_base="facil", fase_jornada=1)
         self.concluir(fase1)
         self.assertFalse(self.client.get("/api/learning/active-challenge").get_json()["ativo"])
         historico = self.client.get("/api/learning/history").get_json()["historico"]
         ultimo = max((h for h in historico if h["concluido"]), key=lambda h: h["id_desafio"])
-        # O histórico traz tudo que o front precisa para criar a próxima fase.
         self.assertEqual((id_tema, 1, 5, "Fácil"), (ultimo["id_tema"], ultimo["nivel_mapa"],
                                                     ultimo["quantidade_questoes"], ultimo["dificuldade"]))
         fase2 = self.criar_desafio(id_tema=id_tema, dificuldade="normal", dificuldade_base="facil", fase_jornada=2)
         self.assertEqual(2, fase2["desafio"]["nivel_mapa"])
-        # A fase 1 concluída continua lá: nada foi apagado nem duplicado.
         historico = self.client.get("/api/learning/history").get_json()["historico"]
         self.assertEqual(1, sum(1 for h in historico if h["id_desafio"] == fase1["desafio"]["id_desafio"]))
 
@@ -344,7 +346,7 @@ class TestRetomada(BaseApi):
 
 
 class TestCorrecoesDaAuditoria(BaseApi):
-    """Erros encontrados na auditoria do projeto, cada um com o cenário que quebrava."""
+    """Erros já corrigidos no projeto, cada um com o cenário que quebrava."""
 
     def test_chave_de_sessao_de_exemplo_e_recusada(self):
         self.assertFalse(app_module.chave_valida("troque-por-uma-chave-aleatoria-e-segura"))
@@ -359,7 +361,7 @@ class TestCorrecoesDaAuditoria(BaseApi):
             self.assertEqual(401, self.client.post("/api/auth/login", json={
                 "email": "forca-bruta@exemplo.com", "senha": "errada"}).status_code)
         bloqueado = self.client.post("/api/auth/login", json={"email": "forca-bruta@exemplo.com", "senha": "senha-segura-123"})
-        self.assertEqual(429, bloqueado.status_code)  # nem a senha certa entra durante o bloqueio
+        self.assertEqual(429, bloqueado.status_code)
         self.assertIn("Retry-After", bloqueado.headers)
 
     def test_tempo_ativo_nao_infla_com_chamadas_seguidas(self):
@@ -367,7 +369,6 @@ class TestCorrecoesDaAuditoria(BaseApi):
         for _ in range(10):
             resposta = self.client.post("/api/learning/activity", json={"segundos": 120})
             self.assertEqual(200, resposta.status_code)
-        # 10 chamadas imediatas não podem virar 20 minutos: só a primeira conta (até 60 s).
         self.assertLessEqual(resposta.get_json()["minutos_ativos"], 1)
 
     def test_tempo_ativo_guarda_o_resto_dos_segundos(self):
@@ -375,7 +376,7 @@ class TestCorrecoesDaAuditoria(BaseApi):
         aluno = self.registrar("resto@exemplo.com")
         with app_module.app.app_context():
             registro = app_module.d.db.session.get(Aluno, aluno["id_aluno"])
-            registro.ultimo_heartbeat = time.time() - 1000  # 2 heartbeats "atrasados" de 30 s
+            registro.ultimo_heartbeat = time.time() - 1000
             app_module.d.db.session.commit()
         self.client.post("/api/learning/activity", json={"segundos": 30})
         with app_module.app.app_context():
@@ -383,7 +384,7 @@ class TestCorrecoesDaAuditoria(BaseApi):
             registro.ultimo_heartbeat = time.time() - 1000
             app_module.d.db.session.commit()
         resposta = self.client.post("/api/learning/activity", json={"segundos": 30}).get_json()
-        self.assertEqual(1, resposta["minutos_ativos"])  # 30 s + 30 s = 1 minuto
+        self.assertEqual(1, resposta["minutos_ativos"])
 
     def test_excluir_conta_nao_deixa_questoes_orfas(self):
         from models.model_questao import Questao
@@ -415,8 +416,6 @@ class TestCorrecoesDaAuditoria(BaseApi):
                          json={"id_questao": desafio["questoes"][0]["id_questao"], "alternativa": "A"})
         ranking = self.client.get("/api/learning/ranking?limite=1").get_json()
         self.assertEqual(1, len(ranking["itens"]))
-        # A posição calculada com o topo limitado a 1 tem de ser a mesma da lista completa.
-        # O aluno é identificado pelo id: todos os alunos do teste têm o mesmo nick.
         completo = self.client.get("/api/learning/ranking?limite=100").get_json()
         minha = next(i["posicao"] for i in completo["itens"] if i["id_aluno"] == eu["id_aluno"])
         self.assertEqual(completo["total_alunos"], ranking["total_alunos"])
@@ -434,7 +433,6 @@ class TestCorrecoesDaAuditoria(BaseApi):
         self.concluir(desafio)
         id_desafio = desafio["desafio"]["id_desafio"]
         with app_module.app.app_context():
-            # Questão em uso e tema com questões não podem ser apagados (ficariam órfãos).
             with self.assertRaises(ValueError):
                 DeletarQuestaoService().executar(desafio["questoes"][0]["id_questao"])
             with self.assertRaises(ValueError):
@@ -452,7 +450,7 @@ class TestCorrecoesDaAuditoria(BaseApi):
             questao = Questao(enunciado="Sem gabarito", alternativa_correta=None, id_tema=tema.id_tema)
             app_module.d.db.session.add(questao)
             app_module.d.db.session.commit()
-            with self.assertRaises(ValueError):  # erro de validação, não erro 500
+            with self.assertRaises(ValueError):
                 QuestaoRepository.verificar_resposta(questao.id_questao, "A")
             questao.alternativa_correta = "b"
             app_module.d.db.session.commit()
@@ -466,9 +464,54 @@ class TestCorrecoesDaAuditoria(BaseApi):
         with app_module.app.app_context():
             servico = AtualizarAlunoDesafioService()
             resultado = servico.executar(aluno["id_aluno"], desafio["desafio"]["id_desafio"], {"data_realizacao": "2026-01-15"})
-            self.assertEqual("2026-01-15", resultado["data_realizacao"])  # texto vira date
+            self.assertEqual("2026-01-15", resultado["data_realizacao"])
             with self.assertRaises(ValueError):
                 servico.executar(aluno["id_aluno"], desafio["desafio"]["id_desafio"], {"data_realizacao": "15/01/2026"})
+
+    def test_trocar_de_desafio_mantem_pontos_e_ranking_coerentes(self):
+        eu = self.registrar("troca@exemplo.com")
+        desafio = self.criar_desafio()
+        id_desafio = desafio["desafio"]["id_desafio"]
+        resposta = self.client.post(f"/api/learning/challenges/{id_desafio}/answer",
+                                    json={"id_questao": desafio["questoes"][0]["id_questao"], "alternativa": "A"}).get_json()
+        self.criar_desafio()
+        ultimo = self.criar_desafio()
+        pontos = self.client.get("/api/learning/me").get_json()["aluno"]["pontos"]
+        self.assertEqual(resposta["pontos_totais"], pontos)
+        ranking = self.client.get("/api/learning/ranking?limite=100").get_json()
+        self.assertIn(eu["id_aluno"], [item["id_aluno"] for item in ranking["itens"]])
+        self.assertIsNotNone(ranking["posicao_usuario"])
+        ativo = self.client.get("/api/learning/active-challenge").get_json()
+        self.assertEqual(ultimo["desafio"]["id_desafio"], ativo["desafio"]["id_desafio"])
+
+    def test_cadastro_com_nome_nulo_e_recusado(self):
+        resposta = self.client.post("/api/auth/register", json={
+            "nome": None, "email": "nulo@exemplo.com", "senha": "senha-segura-123", "aceite_termos": True})
+        self.assertEqual(400, resposta.status_code)
+
+    def test_cadastro_com_nick_nulo_usa_o_nome(self):
+        resposta = self.client.post("/api/auth/register", json={
+            "nome": "Sem Nick", "nick": None, "email": "semnick@exemplo.com", "senha": "senha-segura-123",
+            "aceite_termos": True})
+        self.assertEqual(201, resposta.status_code, resposta.get_data(as_text=True))
+        self.assertEqual("Sem Nick", resposta.get_json()["aluno"]["nick"])
+
+    def test_corpo_que_nao_e_objeto_nao_vira_erro_500(self):
+        self.assertEqual(400, self.client.post("/api/auth/register", json=["a", "b"]).status_code)
+        self.registrar("lista@exemplo.com")
+        self.assertEqual(404, self.client.post("/api/learning/challenges", json=[1, 2]).status_code)
+
+    def test_refazer_desafio_sem_tema_nao_vira_erro_500(self):
+        from models.model_desafio import Desafio
+        self.registrar("semtema@exemplo.com")
+        desafio = self.criar_desafio()
+        self.concluir(desafio)
+        id_desafio = desafio["desafio"]["id_desafio"]
+        with app_module.app.app_context():
+            app_module.d.db.session.get(Desafio, id_desafio).id_tema = None
+            app_module.d.db.session.commit()
+        resposta = self.client.post("/api/learning/challenges", json={"refazer": True, "refazer_de": id_desafio})
+        self.assertEqual(404, resposta.status_code, resposta.get_data(as_text=True))
 
 
 if __name__ == "__main__":
