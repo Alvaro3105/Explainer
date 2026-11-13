@@ -1,0 +1,61 @@
+/* Minijogo "Chuva de asteroides" (abre ao clicar na logo do topo). */
+body.minijogo-aberto{overflow:hidden}
+
+.janela-minijogo{position:fixed;inset:0;z-index:260;display:grid;place-items:center;padding:20px;background:rgba(6,10,13,.82);backdrop-filter:blur(6px);animation:carregar-suave .2s}
+.janela-minijogo[hidden]{display:none}
+
+/* O jogo é sempre escuro (é o espaço), mesmo no tema claro. */
+.cartao-minijogo{width:min(960px,100%);max-height:100%;display:flex;flex-direction:column;gap:12px;padding:16px 18px 14px;border:2px solid #D1DC5A;border-radius:20px;background:#131F24;color:#F6F9FC;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+
+.topo-minijogo{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.nome-minijogo{margin-right:auto;min-width:0}
+.chamada-minijogo{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;color:#6AC5CB}
+.nome-minijogo h2{font-size:20px;font-weight:800;line-height:1.2}
+
+.placar-minijogo{display:flex;gap:8px;margin:0}
+.placar-minijogo>div{min-width:70px;padding:6px 12px;border-radius:12px;background:rgba(255,255,255,.06);text-align:center}
+.placar-minijogo dt{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#b4bec4}
+.placar-minijogo dd{margin:0;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;color:#D1DC5A}
+.vidas-minijogo{display:flex;justify-content:center;gap:3px;color:#EA2B2B!important;font-size:14px!important;line-height:25px}
+.vidas-minijogo .vida-perdida{color:rgba(255,255,255,.18)}
+
+.fechar-minijogo{flex:none;color:#F6F9FC;border-color:rgba(255,255,255,.14);cursor:pointer}
+.fechar-minijogo:hover{border-color:#D1DC5A;color:#D1DC5A}
+.fechar-minijogo:focus-visible{outline:3px solid #D1DC5A;outline-offset:2px}
+
+.palco-minijogo{position:relative;border-radius:14px;overflow:hidden;border:2px solid rgba(255,255,255,.08);background:#0b1418;aspect-ratio:16/9;max-height:calc(100vh - 210px);margin-inline:auto;width:100%}
+@supports (aspect-ratio:16/9){.palco-minijogo{width:min(100%,calc((100vh - 210px) * 16 / 9))}}
+.palco-minijogo canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;cursor:none;touch-action:none}
+.palco-minijogo canvas:focus{outline:none}
+.palco-minijogo canvas:focus-visible{outline:2px solid rgba(209,220,90,.4);outline-offset:-2px}
+
+.aviso-minijogo{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;text-align:center;background:rgba(11,20,24,.55)}
+.aviso-minijogo[hidden]{display:none}
+.aviso-minijogo h3{font-size:26px;font-weight:800;color:#F6F9FC;text-shadow:0 3px 0 rgba(0,0,0,.4)}
+.aviso-minijogo p{max-width:380px;font-size:14.5px;line-height:1.5;color:#d6dde1}
+.aviso-minijogo .botao{margin-top:6px;min-width:170px}
+
+.ajuda-minijogo{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;font-size:12.5px;color:#b4bec4}
+.ajuda-minijogo span{display:inline-flex;align-items:center;gap:4px}
+.ajuda-minijogo kbd{min-width:22px;padding:1px 6px;border:1px solid rgba(255,255,255,.18);border-bottom-width:2px;border-radius:6px;background:rgba(255,255,255,.06);font:700 11.5px/1.5 "Montserrat",sans-serif;color:#F6F9FC;text-align:center}
+
+/* Logo do topo: agora é um botão que abre o minijogo. */
+button.marca-topo{border:0;padding:0;background:none;color:inherit;font:inherit;cursor:pointer;border-radius:14px}
+button.marca-topo:focus-visible{outline:3px solid var(--cor2);outline-offset:3px}
+button.marca-topo .circulo-logo{transition:transform .25s ease}
+button.marca-topo:hover .circulo-logo{transform:rotate(-12deg) scale(1.06)}
+
+@media (max-width:720px){
+  .janela-minijogo{padding:8px}
+  .cartao-minijogo{padding:12px 10px 10px;gap:10px;border-radius:16px}
+  .nome-minijogo h2{font-size:17px}
+  .placar-minijogo{order:3;width:100%;gap:6px}
+  .placar-minijogo>div{flex:1;min-width:0;padding:5px 4px}
+  .palco-minijogo{max-height:none}
+  @supports (aspect-ratio:16/9){.palco-minijogo{width:100%}}
+  .ajuda-minijogo{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .janela-minijogo{animation:none}
+  button.marca-topo .circulo-logo{transition:none}
+}
