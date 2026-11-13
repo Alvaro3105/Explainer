@@ -1,0 +1,140 @@
+@ Química | Ciências da Natureza e suas Tecnologias | quimica
+
+Introdução à Química | materia e energia
+- Propriedades da Matéria | propriedades gerais; propriedades especificas
+- Estados Físicos da Matéria | solido; liquido; gasoso
+- Substâncias e Misturas | substancia pura; mistura
+- Separação de Misturas | filtracao; destilacao; decantacao
+- Fenômenos Físicos e Químicos | fenomeno quimico
+
+Estrutura Atômica | atomo
+- Partículas do Átomo | proton; neutron; eletron
+- Número Atômico e Massa | numero de massa
+- Isótopos, Isóbaros e Isótonos | isotopos
+- Distribuição Eletrônica | diagrama de linus pauling
+- Íons | cation; anion
+
+Modelos Atômicos | evolucao dos modelos
+- Modelo de Dalton | bola de bilhar
+- Modelo de Thomson | pudim de passas
+- Modelo de Rutherford | modelo planetario
+- Modelo de Bohr | niveis de energia
+
+Tabela Periódica | tabela periodica
+- Organização da Tabela Periódica | familias; periodos
+- Metais, Ametais e Gases Nobres | metais
+
+Propriedades Periódicas | eletronegatividade; raio atomico
+- Raio Atômico | tamanho do atomo
+- Energia de Ionização | ionizacao
+- Eletronegatividade | atracao de eletrons
+
+Ligações Químicas | ligacao quimica
+- Ligação Iônica | ionica
+- Ligação Covalente | covalente; molecular
+- Ligação Metálica | metalica
+- Regra do Octeto | octeto
+
+Geometria Molecular | forma das moleculas; vsepr
+
+Polaridade | moleculas polares; apolares
+
+Forças Intermoleculares | ligacao de hidrogenio; dipolo dipolo; dipolo induzido
+
+Funções Inorgânicas | ácidos bases sais oxidos
+- Ácidos | acido
+- Bases | base; hidroxido
+- Sais | sal
+- Óxidos | oxido
+- Teoria de Arrhenius | arrhenius
+- Nomenclatura Inorgânica | nomes dos compostos
+
+Reações Químicas | reacao quimica
+- Tipos de Reações | sintese; decomposicao; simples troca; dupla troca
+- Balanceamento | balancear equacao quimica
+- Reações de Oxirredução | oxidacao; reducao; nox
+
+Estequiometria | calculo estequiometrico
+- Mol | numero de avogadro
+- Massa Molar | massa molecular
+- Cálculo Estequiométrico | proporcao das reacoes
+- Rendimento e Pureza | reagente limitante
+
+Soluções | solucoes quimicas
+- Solubilidade | coeficiente de solubilidade
+- Concentração | concentracao comum; molaridade
+- Diluição | diluir
+- Mistura de Soluções | misturas
+
+Propriedades Coligativas | coligativas
+- Tonoscopia, Ebulioscopia e Crioscopia | crioscopia
+- Osmose e Pressão Osmótica | pressao osmotica
+
+Termoquímica | entalpia
+- Reações Exotérmicas e Endotérmicas | exotermica; endotermica
+- Lei de Hess | hess
+- Energia de Ligação | quebra de ligacoes
+
+Cinética Química | velocidade das reacoes
+- Fatores que Afetam a Velocidade | temperatura; catalisador
+- Catalisadores | catalise
+
+Equilíbrio Químico | equilibrio
+- Constante de Equilíbrio | kc; kp
+- Princípio de Le Chatelier | le chatelier
+- pH e pOH | ph; acidez
+- Hidrólise Salina | hidrolise
+
+Eletroquímica | pilhas e eletrolise
+- Pilhas | pilha de daniell
+- Eletrólise | eletrolise ignea; eletrolise aquosa
+- Corrosão | ferrugem
+
+Radioatividade | quimica nuclear
+- Emissões Radioativas | alfa; beta; gama
+- Meia-Vida | meia vida
+
+Química Orgânica | organica; compostos de carbono
+- Características do Carbono | cadeias carbonicas
+- Classificação das Cadeias Carbônicas | cadeia aberta; cadeia fechada
+
+Hidrocarbonetos | alcanos; alcenos; alcinos
+- Alcanos | parafinas
+- Alcenos e Alcinos | duplas ligacoes
+- Hidrocarbonetos Aromáticos | benzeno
+- Petróleo e Derivados | petroleo
+
+Funções Orgânicas | grupos funcionais
+- Álcoois | alcool
+- Aldeídos e Cetonas | aldeido; cetona
+- Ácidos Carboxílicos | acido carboxilico
+- Ésteres | ester
+- Éteres | eter
+- Aminas e Amidas | amina; amida
+- Nomenclatura Orgânica | iupac
+
+Isomeria | isomeros
+- Isomeria Plana | isomeria estrutural
+- Isomeria Geométrica | cis trans
+- Isomeria Óptica | carbono quiral
+
+Reações Orgânicas | reacoes de adicao
+- Reações de Substituição | substituicao
+- Reações de Adição | adicao
+- Reações de Eliminação | eliminacao
+
+Polímeros | plasticos
+- Polímeros de Adição e Condensação | polimerizacao
+- Plásticos e Reciclagem | reciclagem
+
+Bioquímica na Química | biomoleculas
+
+Química Ambiental | poluicao quimica
+- Chuva Ácida | chuva acida
+- Camada de Ozônio | ozonio
+- Tratamento de Água | estacao de tratamento
+- Combustíveis e Biocombustíveis | etanol; biodiesel
+
+Química para o ENEM | quimica enem
+- Questões de Química do ENEM | questoes enem quimica
+- Química no Cotidiano | quimica do dia a dia

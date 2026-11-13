@@ -1,0 +1,173 @@
+@ Biologia | Ciências da Natureza e suas Tecnologias | bio; ciencias biologicas
+
+Introdução à Biologia | caracteristicas dos seres vivos
+- Características dos Seres Vivos | o que e vida
+- Níveis de Organização | celula tecido orgao sistema
+- Método Científico | hipotese; experimento
+- Origem da Vida | abiogenese; biogenese
+
+Bioquímica | quimica da vida
+- Água e Sais Minerais | agua na celula
+- Carboidratos | glicose; amido
+- Lipídios | gorduras
+- Proteínas | aminoacidos
+- Enzimas | catalisador biologico
+- Vitaminas | vitamina
+- Ácidos Nucleicos | nucleotideos
+
+Citologia | celula; biologia celular
+- Células Procariontes e Eucariontes | procarionte; eucarionte
+- Célula Animal e Célula Vegetal | diferencas entre celulas
+- Microscopia | microscopio
+
+Membrana Plasmática | membrana celular
+- Transporte Passivo | difusao; osmose
+- Transporte Ativo | bomba de sodio e potassio
+- Endocitose e Exocitose | fagocitose; pinocitose
+
+Organelas Celulares | organelas; citoplasma
+- Mitocôndrias | respiracao celular
+- Cloroplastos | fotossintese na celula
+- Ribossomos e Retículo Endoplasmático | reticulo
+- Complexo de Golgi | golgi
+- Lisossomos e Peroxissomos | lisossomo
+- Núcleo Celular | cromatina; nucleolo
+
+Metabolismo Energético | energia na celula
+- Respiração Celular | glicolise; ciclo de krebs
+- Fermentação | fermentacao alcoolica; fermentacao latica
+- Fotossíntese | fase clara; fase escura
+- Quimiossíntese | bacterias quimiossintetizantes
+
+Divisão Celular | ciclo celular
+- Mitose | fases da mitose
+- Meiose | fases da meiose; crossing over
+- Câncer e Ciclo Celular | divisao descontrolada
+
+Genética | hereditariedade; herança
+- Primeira Lei de Mendel | monoibridismo; segregacao dos fatores
+- Segunda Lei de Mendel | diibridismo; segregacao independente
+- Hereditariedade | genotipo; fenotipo
+- Heredogramas | genealogia
+- Alelos Múltiplos e Grupos Sanguíneos | sistema abo; fator rh
+- Herança Ligada ao Sexo | daltonismo; hemofilia
+- Interação Gênica | epistasia
+- Mutações | mutacao
+- Probabilidade em Genética | cruzamentos
+
+DNA | acido desoxirribonucleico; material genetico
+- Estrutura do DNA | dupla helice
+- Replicação do DNA | duplicacao
+- Código Genético | codon
+
+RNA | acido ribonucleico
+- Transcrição | rna mensageiro
+- Tradução | sintese de proteinas
+
+Biotecnologia | engenharia genetica
+- Transgênicos | ogm
+- Clonagem | clone
+- Células-Tronco | celula tronco
+- Teste de DNA | exame de paternidade
+- Vacinas e Biotecnologia | vacinas de rna
+
+Evolução | evolucao biologica
+- Lamarckismo | lamarck; uso e desuso
+- Darwinismo | darwin
+- Seleção Natural | adaptacao
+- Teoria Sintética da Evolução | neodarwinismo
+- Especiação | formacao de especies
+- Evidências da Evolução | fosseis; orgaos homologos
+- Evolução Humana | hominideos
+
+Ecologia | ecossistema; meio ambiente
+- Conceitos de Ecologia | habitat; nicho ecologico
+- Cadeias Alimentares | produtores; consumidores; decompositores
+- Teias Alimentares | teia alimentar
+- Pirâmides Ecológicas | piramide de energia
+- Fluxo de Energia | energia nos ecossistemas
+- Relações Ecológicas | mutualismo; parasitismo; predacao
+- Sucessão Ecológica | comunidade clímax
+- Dinâmica de Populações | crescimento populacional
+
+Ciclos Biogeoquímicos | ciclos da materia
+- Ciclo da Água | ciclo hidrologico
+- Ciclo do Carbono | carbono
+- Ciclo do Nitrogênio | nitrogenio
+- Ciclo do Oxigênio | oxigenio
+
+Biomas | biomas do mundo
+- Biomas Brasileiros na Biologia | amazonia; cerrado; caatinga; mata atlantica
+- Ecossistemas Aquáticos | marinho; agua doce
+
+Sustentabilidade | impactos ambientais; meio ambiente
+- Poluição | poluicao do ar; poluicao da agua
+- Efeito Estufa e Aquecimento Global | aquecimento global
+- Desmatamento e Biodiversidade | biodiversidade
+- Espécies Invasoras e Extinção | extincao
+
+Microbiologia | microrganismos
+- Vírus | virus; viroses
+- Bactérias | bacterias; bacterioses
+- Protozoários | protozooses
+- Fungos | fungos; micoses
+- Doenças Transmissíveis | doencas infecciosas
+
+Botânica | plantas; reino plantae
+- Classificação das Plantas | briofitas; pteridofitas; gimnospermas; angiospermas
+- Histologia Vegetal | tecidos vegetais
+- Fisiologia Vegetal | transpiracao; hormonios vegetais
+- Raiz, Caule e Folha | orgaos vegetais
+- Flor, Fruto e Semente | reproducao das plantas
+
+Zoologia | animais; reino animalia
+- Poríferos e Cnidários | esponjas; aguas vivas
+- Platelmintos e Nematelmintos | vermes; verminoses
+- Anelídeos e Moluscos | minhoca; caramujo
+- Artrópodes | insetos; aracnideos; crustaceos
+- Equinodermos | estrela do mar
+- Peixes e Anfíbios | peixes; anfibios
+- Répteis | repteis
+- Aves | aves
+- Mamíferos | mamiferos
+
+Classificação dos Seres Vivos | taxonomia; reinos
+- Sistemática e Taxonomia | nomenclatura binomial
+- Reinos dos Seres Vivos | cinco reinos
+
+Histologia Animal | tecidos animais
+- Tecido Epitelial | epitelio
+- Tecido Conjuntivo | sangue; osso; cartilagem
+- Tecido Muscular | musculo
+- Tecido Nervoso | neuronio
+
+Corpo Humano | anatomia humana; corpo humano e saude
+
+Fisiologia Humana | sistemas do corpo humano
+- Sistema Digestório | digestao
+- Sistema Respiratório | respiracao pulmonar
+- Sistema Circulatório | coracao; sangue
+- Sistema Excretor | rins; urina
+- Sistema Nervoso | cerebro; neuronio
+- Sistema Endócrino | hormonios; glandulas
+- Sistema Locomotor | ossos e musculos
+- Sistema Sensorial | sentidos; visao; audicao
+
+Imunologia | sistema imunologico; defesa do corpo
+- Imunidade Inata e Adquirida | anticorpos
+- Vacinas e Soros | vacina; soro
+
+Reprodução | reproducao humana
+- Sistema Reprodutor | sistema genital
+- Métodos Contraceptivos | contracepcao
+- Infecções Sexualmente Transmissíveis | ist
+
+Embriologia | desenvolvimento embrionario
+- Fecundação | fecundacao
+- Fases do Desenvolvimento Embrionário | segmentacao; gastrulacao
+- Anexos Embrionários | placenta; amnio
+
+Biologia para o ENEM | bio enem; biologia enem
+- Questões de Biologia do ENEM | questoes enem biologia
+- Ecologia no ENEM | ecologia enem
+- Saúde e Doenças no ENEM | saude enem

@@ -1,0 +1,55 @@
+@ Artes | Linguagens, Códigos e suas Tecnologias | arte; educacao artistica
+
+História da Arte | historia da arte
+- Arte Pré-Histórica | pinturas rupestres
+- Arte Egípcia | egito
+- Arte Grega e Romana | arte classica
+- Arte Medieval | gotico; romanico
+- Renascimento Artístico | renascimento; leonardo da vinci; michelangelo
+- Barroco nas Artes | caravaggio; aleijadinho
+- Neoclassicismo e Romantismo nas Artes | neoclassico
+
+Movimentos Artísticos | vanguardas; movimentos
+- Impressionismo | monet; impressionista
+- Pós-Impressionismo | van gogh
+- Expressionismo | expressionista
+- Cubismo | picasso
+- Surrealismo | dali; surrealista
+- Dadaísmo | dada
+- Futurismo | futurista
+- Pop Art | andy warhol
+
+Arte Moderna | modernismo nas artes
+- Vanguardas Europeias | vanguarda
+- Modernismo Brasileiro nas Artes | tarsila do amaral; anita malfatti; di cavalcanti
+
+Arte Contemporânea | arte atual
+- Instalação e Performance | performance
+- Arte Urbana | grafite; street art
+- Arte Digital | arte e tecnologia
+
+Arte Brasileira | arte do brasil
+- Arte Indígena | grafismo indigena
+- Arte Afro-Brasileira | arte afro
+- Arte Colonial Brasileira | barroco mineiro
+- Arte Popular e Folclore | cultura popular; folclore
+
+Artes Visuais | desenho; pintura; escultura
+- Elementos da Linguagem Visual | linha; cor; forma; textura
+- Teoria das Cores | cores primarias; cores complementares
+- Perspectiva | ponto de fuga
+- Fotografia e Cinema | cinema
+
+Música | musica; teoria musical
+- Elementos da Música | ritmo; melodia; harmonia
+- Instrumentos Musicais | instrumentos
+- Música Popular Brasileira | mpb; samba; bossa nova
+- Música Erudita | musica classica
+
+Teatro | artes cenicas
+- Elementos do Teatro | palco; cenario
+- História do Teatro | tragedia grega
+
+Dança | danca
+- Danças Populares Brasileiras | frevo; maracatu
+- Dança Contemporânea | danca moderna

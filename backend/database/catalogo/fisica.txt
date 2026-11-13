@@ -1,0 +1,145 @@
+@ Física | Ciências da Natureza e suas Tecnologias | fisica
+
+Grandezas Físicas | unidades; sistema internacional
+- Sistema Internacional de Unidades | si; unidades de medida
+- Grandezas Escalares e Vetoriais | escalar; vetorial
+- Vetores na Física | soma de vetores
+- Algarismos Significativos | precisao
+
+Cinemática | movimento; posicao velocidade aceleracao
+- Velocidade Média | velocidade media
+- Movimento Uniforme | mu
+- Movimento Uniformemente Variado | muv; torricelli
+- Gráficos do Movimento | grafico s x t; grafico v x t
+- Queda Livre | gravidade
+- Lançamento Vertical | lancamento para cima
+- Lançamento Oblíquo | lancamento horizontal; alcance
+- Movimento Circular | velocidade angular; frequencia e periodo
+
+Dinâmica | forcas
+- Leis de Newton | inercia; f igual m a; acao e reacao
+- Força Peso e Força Normal | peso; normal
+- Força de Atrito | atrito
+- Força Elástica | lei de hooke; mola
+- Plano Inclinado | rampa
+- Força Centrípeta | resultante centripeta
+
+Trabalho e Energia | trabalho; energia mecanica
+- Trabalho de uma Força | trabalho
+- Energia Cinética | energia de movimento
+- Energia Potencial | energia potencial gravitacional; energia elastica
+- Conservação da Energia Mecânica | conservacao
+- Potência | potencia mecanica
+- Rendimento | eficiencia
+
+Impulso e Quantidade de Movimento | momento linear
+- Impulso | teorema do impulso
+- Quantidade de Movimento | conservacao do momento
+- Colisões | choques; colisao elastica
+
+Gravitação | gravitacao universal
+- Leis de Kepler | kepler; orbitas
+- Lei da Gravitação Universal | newton gravitacao
+- Satélites e Órbitas | satelites
+
+Estática | equilibrio
+- Equilíbrio do Ponto Material | equilibrio de forcas
+- Momento de uma Força | torque; alavanca
+- Máquinas Simples | polias; alavancas
+
+Hidrostática | fluidos
+- Densidade e Pressão | pressao
+- Pressão Atmosférica | atmosfera
+- Teorema de Stevin | pressao hidrostatica
+- Princípio de Pascal | prensa hidraulica
+- Empuxo e Princípio de Arquimedes | empuxo; arquimedes
+
+Termologia | temperatura; calor
+- Escalas Termométricas | celsius; fahrenheit; kelvin
+- Dilatação Térmica | dilatacao
+- Propagação do Calor | conducao; conveccao; irradiacao
+
+Calorimetria | calor sensivel; calor latente
+- Calor Específico | capacidade termica
+- Mudanças de Estado | fusao; ebulicao
+- Trocas de Calor | equilibrio termico
+
+Gases | estudo dos gases
+- Transformações Gasosas | isotermica; isobarica; isocorica
+- Equação de Clapeyron | pv igual nrt
+
+Termodinâmica | leis da termodinamica
+- Primeira Lei da Termodinâmica | energia interna
+- Segunda Lei da Termodinâmica | entropia
+- Máquinas Térmicas | motor; rendimento termico
+- Ciclo de Carnot | carnot
+
+Óptica | luz
+- Princípios da Óptica Geométrica | raio de luz
+- Reflexão da Luz | reflexao
+- Espelhos | espelho plano; espelhos esfericos
+- Refração da Luz | refracao; lei de snell
+- Lentes | lentes convergentes; lentes divergentes
+- Óptica da Visão | miopia; hipermetropia
+- Instrumentos Ópticos | lupa; microscopio optico
+
+Ondulatória | ondas
+- Características das Ondas | comprimento de onda; frequencia
+- Fenômenos Ondulatórios | reflexao de ondas; difracao; interferencia
+- Espectro Eletromagnético | ondas eletromagneticas
+
+Acústica | som
+- Qualidades do Som | altura; intensidade; timbre
+- Efeito Doppler | doppler
+- Ressonância | ressonancia
+
+Eletricidade | eletricidade
+- Carga Elétrica | carga; eletron
+
+Eletrostática | eletrizacao
+- Processos de Eletrização | atrito; contato; inducao
+- Lei de Coulomb | forca eletrica
+- Campo Elétrico | campo eletrico
+- Potencial Elétrico | diferenca de potencial
+
+Eletrodinâmica | corrente eletrica
+- Corrente Elétrica | amperes
+- Resistência | resistencia eletrica; lei de ohm
+- Potência Elétrica | consumo de energia; kwh
+- Associação de Resistores | serie; paralelo
+- Geradores e Receptores | pilha; bateria
+
+Circuitos Elétricos | circuito eletrico
+- Leis de Kirchhoff | kirchhoff
+- Instrumentos de Medida Elétrica | amperimetro; voltimetro
+- Circuitos Residenciais | instalacao eletrica
+
+Magnetismo | ima; campo magnetico
+- Campo Magnético | linhas de campo
+- Força Magnética | forca de lorentz
+- Indução Eletromagnética | lei de faraday; lei de lenz
+- Transformadores e Geradores | transformador
+
+Física Moderna | fisica quantica; relatividade
+- Relatividade | einstein
+- Efeito Fotoelétrico | foton
+- Física Nuclear e Radioatividade | radioatividade; fissao; fusao
+- Modelo Atômico na Física | bohr
+
+Astronomia | astronomia; universo
+- Estrelas e Galáxias | via lactea
+- Origem do Universo | big bang
+- Fases da Lua e Eclipses | eclipse; fases da lua
+- Estações do Ano | solsticio; equinocio
+
+Sistema Solar | planetas; sol
+
+Energia e Sociedade | fontes de energia
+- Fontes de Energia Renováveis | energia solar; energia eolica
+- Usinas Elétricas | hidreletrica; termeletrica; nuclear
+- Consumo Consciente de Energia | economia de energia
+
+Física para o ENEM | fisica enem
+- Questões de Física do ENEM | questoes enem fisica
+- Eletricidade no ENEM | contas de luz enem
+- Energia no ENEM | energia enem

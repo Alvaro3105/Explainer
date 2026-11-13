@@ -1,0 +1,176 @@
+@ Língua Portuguesa | Linguagens, Códigos e suas Tecnologias | portugues; lingua portuguesa; gramatica
+
+Gramática | gramatica e pontuacao; normas da lingua
+- Norma-Padrão e Norma Culta | norma culta
+- Análise Linguística | analise gramatical
+
+Fonologia | fonetica; sons
+- Fonemas e Letras | fonema
+- Encontros Vocálicos | ditongo; hiato; tritongo
+- Encontros Consonantais e Dígrafos | digrafo
+- Divisão Silábica | separacao de silabas
+- Sílaba Tônica | oxitona; paroxitona; proparoxitona
+
+Ortografia | escrita correta
+- Uso do S, SS, Ç e Z | s ou z
+- Uso do X e CH | x ou ch
+- Uso do G e J | g ou j
+- Uso do Porquê | por que; porque; por que; porque
+- Mal e Mau, Mas e Mais | parônimos comuns
+- Novo Acordo Ortográfico | acordo ortografico
+
+Acentuação | acento grafico
+- Regras de Acentuação | acentuacao grafica
+- Acento Diferencial | pode e pode
+- Acentuação de Hiatos | hiato acentuado
+
+Pontuação | virgula; ponto final
+- Uso da Vírgula | virgula
+- Ponto e Vírgula e Dois-Pontos | ponto e virgula
+- Aspas, Parênteses e Travessão | travessao
+- Pontuação e Sentido | pontuacao muda o sentido
+
+Morfologia | estrutura das palavras
+- Estrutura das Palavras | radical; desinencia; afixo
+- Formação de Palavras | derivacao; composicao
+- Prefixos e Sufixos | sufixo
+
+Classes Gramaticais | classes de palavras; dez classes
+- Substantivo | substantivo
+- Adjetivo | adjetivo
+- Artigo | artigo definido
+- Numeral | numeral
+- Pronome | pronome pessoal; pronome relativo
+- Verbo | verbo
+- Advérbio | adverbio
+- Preposição | preposicao
+- Conjunção | conjuncao
+- Interjeição | interjeicao
+
+Verbos | conjugacao verbal
+- Tempos e Modos Verbais | indicativo; subjuntivo; imperativo
+- Vozes Verbais | voz passiva; voz ativa
+- Verbos Irregulares | irregular
+- Formas Nominais | infinitivo; gerundio; participio
+- Correlação Verbal | correlacao dos tempos
+
+Pronomes | pronome
+- Pronomes Pessoais | eu tu ele
+- Pronomes Possessivos | meu teu seu
+- Pronomes Demonstrativos | este esse aquele
+- Pronomes Relativos | que; cujo; onde
+- Colocação Pronominal | proclise; mesoclise; enclise
+
+Sintaxe | analise sintatica
+- Termos Essenciais da Oração | sujeito e predicado
+- Tipos de Sujeito | sujeito oculto; sujeito indeterminado
+- Tipos de Predicado | predicado verbal; predicado nominal
+- Transitividade Verbal | verbo transitivo direto; objeto direto
+- Termos Integrantes | objeto indireto; complemento nominal; agente da passiva
+- Termos Acessórios | adjunto adnominal; adjunto adverbial; aposto
+- Vocativo | vocativo
+
+Período Composto | oracoes
+- Orações Coordenadas | coordenadas sindeticas
+- Orações Subordinadas Substantivas | subordinada substantiva
+- Orações Subordinadas Adjetivas | restritiva; explicativa
+- Orações Subordinadas Adverbiais | causal; concessiva; condicional
+
+Concordância | concordancia
+- Concordância Verbal | sujeito e verbo
+- Concordância Nominal | adjetivo e substantivo
+- Casos Especiais de Concordância | haver e fazer impessoais
+
+Regência | regencia
+- Regência Verbal | verbo e preposicao
+- Regência Nominal | nome e preposicao
+
+Crase | acento grave; a craseado
+- Regras da Crase | quando usar crase
+- Crase Facultativa | crase opcional
+- Casos Proibidos de Crase | nao usa crase
+
+Semântica | significado das palavras
+- Sinônimos e Antônimos | sinonimo; antonimo
+- Homônimos e Parônimos | paronimo
+- Polissemia | varios sentidos
+- Denotação e Conotação | sentido figurado
+
+Interpretação de Texto | interpretacao textual; leitura
+- Ideia Principal | tema central
+- Inferência | ler nas entrelinhas
+- Intenção do Autor | proposito comunicativo
+- Interpretação de Charges e Tirinhas | charge; tirinha; quadrinhos
+- Interpretação de Gráficos e Infográficos | infografico
+
+Compreensão Textual | compreensao de texto
+- Localização de Informações | informacao explicita
+- Vocabulário em Contexto | sentido da palavra no texto
+
+Gêneros Textuais | genero textual
+- Notícia e Reportagem | jornalistico
+- Artigo de Opinião | opiniao
+- Crônica | cronica
+- Conto | conto
+- Carta e E-mail | carta
+- Gêneros Digitais | post; meme
+- Textos Publicitários | anuncio; propaganda
+- Textos Instrucionais | manual; receita
+
+Tipologia Textual | tipos de texto
+- Narração | texto narrativo
+- Descrição | texto descritivo
+- Dissertação | texto dissertativo
+- Injunção | texto injuntivo
+
+Figuras de Linguagem | figuras de estilo
+- Metáfora | metafora
+- Comparação | comparacao
+- Metonímia | metonimia
+- Hipérbole | exagero
+- Ironia | ironia
+- Antítese e Paradoxo | antitese
+- Personificação | prosopopeia
+- Eufemismo | suavizar
+- Aliteração e Assonância | sonoridade
+
+Funções da Linguagem | funcoes da linguagem; jakobson
+- Função Referencial | denotativa
+- Função Emotiva | expressiva
+- Função Conativa | apelativa
+- Função Fática | canal
+- Função Metalinguística | metalinguagem
+- Função Poética | poetica
+
+Coesão | coesao textual
+- Coesão Referencial | retomada
+- Conectivos | conectores; articuladores
+- Coesão Sequencial | sequenciacao
+
+Coerência | coerencia textual
+- Coerência e Contradição | contradicao no texto
+- Progressão Temática | progressao do texto
+
+Variação Linguística | variacao linguistica; preconceito linguistico
+- Variação Regional | sotaque; regionalismo
+- Variação Social | variacao social
+- Variação Histórica | arcaismo
+- Variação Situacional | formal e informal
+- Gírias e Estrangeirismos | giria
+
+Redação | redacao; texto dissertativo argumentativo
+- Estrutura da Redação | introducao desenvolvimento conclusao
+- Tese e Argumentação | argumentos
+- Repertório Sociocultural | repertorio
+- Proposta de Intervenção | intervencao
+- Competências da Redação do ENEM | competencias enem; nota mil
+
+Produção Textual | escrita; producao de texto
+- Planejamento do Texto | rascunho
+- Revisão e Reescrita | revisar texto
+- Resumo e Resenha | resumo; resenha
+
+Português para o ENEM | enem linguagens; portugues enem
+- Questões de Português do ENEM | questoes enem portugues
+- Interpretação de Texto no ENEM | leitura enem
+- Gramática no ENEM | gramatica contextualizada

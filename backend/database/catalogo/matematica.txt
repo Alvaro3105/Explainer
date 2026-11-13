@@ -1,0 +1,368 @@
+# Catálogo de Matemática
+# Formato: "@ Matéria | Área | sinônimos", tema na linha sem marcação e subtema com "-".
+# Sinônimos separados por ";". Linhas com "#" são comentários.
+
+@ Matemática | Matemática e suas Tecnologias | mat; matematica basica
+
+Matemática Básica | matematica fundamental; base de matematica; revisao de matematica
+- Operações Fundamentais | adicao; subtracao; multiplicacao; divisao; quatro operacoes
+- Expressões Numéricas | ordem das operacoes; parenteses colchetes e chaves
+- Propriedades das Operações | comutativa; associativa; distributiva
+- Sinais nas Operações | regra de sinais; jogo de sinais
+- Arredondamento e Estimativa | estimar resultado; arredondar
+- Cálculo Mental | contas de cabeca
+
+Conjuntos Numéricos | conjuntos dos numeros
+- Números Naturais | conjunto n
+- Números Inteiros | numeros negativos; conjunto z
+- Números Racionais | conjunto q; fracao e decimal
+- Números Irracionais | raiz nao exata; pi
+- Números Reais | reta real; conjunto r
+- Intervalos Reais | intervalo aberto; intervalo fechado
+- Números Complexos | numero imaginario; unidade imaginaria
+
+Teoria dos Conjuntos | conjuntos
+- Representação de Conjuntos | diagrama de venn
+- União e Interseção de Conjuntos | uniao; intersecao
+- Diferença e Complementar | conjunto complementar
+- Subconjuntos e Pertinência | pertence; esta contido
+- Problemas com Diagramas de Venn | problemas de conjuntos
+
+Frações | fracao; fracoes
+- Frações Equivalentes | simplificacao de fracoes
+- Operações com Frações | soma de fracoes; multiplicacao de fracoes
+- Fração de um Número | fracao de quantidade
+- Frações Mistas e Impróprias | numero misto
+- Comparação de Frações | maior fracao
+
+Números Decimais | decimais; virgula
+- Operações com Decimais | conta com virgula
+- Dízimas Periódicas | dizima; fracao geratriz
+- Transformação de Fração em Decimal | fracao para decimal
+
+Múltiplos e Divisores | divisibilidade
+- Critérios de Divisibilidade | divisivel por 3; divisivel por 9
+- Números Primos | primo; numero composto
+- Fatoração em Primos | decomposicao em fatores primos
+- MMC | minimo multiplo comum
+- MDC | maximo divisor comum
+- Problemas com MMC e MDC | quando se encontram de novo
+
+Potenciação | potencia; expoente
+- Propriedades das Potências | produto de potencias
+- Expoente Negativo | potencia negativa
+- Expoente Fracionário | potencia com fracao
+- Potências de 10 | base dez
+
+Radiciação | raiz; raiz quadrada
+- Raiz Quadrada e Raiz Cúbica | raiz cubica
+- Propriedades dos Radicais | radicais
+- Simplificação de Radicais | simplificar raiz
+- Racionalização de Denominadores | racionalizar
+
+Notação Científica | numeros muito grandes; ordem de grandeza
+- Ordem de Grandeza | estimativa de potencia de 10
+- Operações em Notação Científica | multiplicar em notacao cientifica
+
+Razão e Proporção | razao; proporcao
+- Razão | divisao entre grandezas
+- Proporção | propriedade fundamental das proporcoes
+- Grandezas Diretamente Proporcionais | diretamente proporcional
+- Grandezas Inversamente Proporcionais | inversamente proporcional
+- Divisão Proporcional | dividir em partes proporcionais
+- Escalas | escala de mapa; escala numerica
+- Velocidade, Densidade e Outras Razões | razoes especiais
+
+Regra de Três | regra de tres
+- Regra de Três Simples | regra de tres direta
+- Regra de Três Composta | tres grandezas
+- Regra de Três Inversa | inversamente proporcional
+
+Porcentagem | percentual; por cento; porcentagem e fracoes
+- Cálculo de Porcentagem | quanto e x por cento
+- Aumentos e Descontos Percentuais | acrescimo; desconto
+- Aumentos e Descontos Sucessivos | porcentagem sobre porcentagem
+- Variação Percentual | quanto aumentou em porcentagem
+- Porcentagem em Gráficos | grafico de setores
+
+Matemática Financeira | juros; capital; montante; taxa; descontos; financas
+- Juros Simples | juro simples; j c i t
+- Juros Compostos | juros sobre juros; montante composto
+- Capital, Montante e Taxa | capital inicial; taxa de juros
+- Desconto Simples | desconto comercial
+- Taxas Equivalentes | taxa mensal e anual
+- Lucro e Prejuízo | preco de custo; preco de venda
+- Financiamentos e Parcelas | prestacoes; parcelamento
+- Inflação e Poder de Compra | inflacao
+- Porcentagem em Operações Financeiras | porcentagem financeira
+- Educação Financeira | orcamento pessoal; poupanca
+
+Medidas e Unidades | unidades de medida; conversao de unidades
+- Medidas de Comprimento | metro; quilometro
+- Medidas de Área | metro quadrado; hectare
+- Medidas de Volume e Capacidade | litro; metro cubico
+- Medidas de Massa | grama; quilograma
+- Medidas de Tempo | horas; minutos; segundos
+- Conversão de Unidades | transformar unidades
+
+Expressões Algébricas | algebra; letras na matematica
+- Valor Numérico | substituir a letra
+- Monômios | termo algebrico
+- Operações com Expressões Algébricas | soma de monomios
+
+Produtos Notáveis | quadrado da soma; quadrado da diferenca
+- Quadrado da Soma | a mais b ao quadrado
+- Quadrado da Diferença | a menos b ao quadrado
+- Produto da Soma pela Diferença | diferenca de quadrados
+- Cubo da Soma e da Diferença | cubo de binomio
+
+Fatoração | fatorar; fatoracao algebrica
+- Fator Comum em Evidência | colocar em evidencia
+- Fatoração por Agrupamento | agrupamento
+- Trinômio Quadrado Perfeito | tqp
+- Diferença de Dois Quadrados | fatorar diferenca de quadrados
+
+Equação do Primeiro Grau | equacao linear; equacao de primeiro grau; equacao simples; resolver equacao; equacao com incognita; equacoes do 1o grau; equacao do 1o grau
+- Conceito de Equação | o que e equacao; incognita
+- Princípio da Igualdade | balanca; equilibrio da equacao
+- Resolução de Equações | isolar o x
+- Equações com Parênteses | distributiva na equacao
+- Equações com Frações | equacao fracionaria; mmc na equacao
+- Problemas envolvendo Equações | problemas de equacao; montar equacao
+
+Equação do Segundo Grau | equacao quadratica; bhaskara; baskara
+- Fórmula de Bhaskara | formula quadratica; delta
+- Discriminante (Delta) | numero de raizes
+- Equações Incompletas | equacao sem termo b; equacao sem termo c
+- Soma e Produto das Raízes | relacoes de girard
+- Problemas com Equação do Segundo Grau | problemas quadraticos
+
+Equações | tipos de equacoes
+- Equações Biquadradas | biquadrada
+- Equações Irracionais | equacao com raiz
+- Equações Exponenciais | incognita no expoente
+- Equações Logarítmicas | equacao com log
+- Equações Modulares | equacao com modulo
+- Equações Fracionárias | incognita no denominador
+
+Sistemas de Equações | sistema de duas equacoes
+- Método da Substituição | substituicao
+- Método da Adição | adicao de equacoes; eliminacao
+- Problemas com Sistemas | duas incognitas
+
+Inequações | desigualdade; inequacao
+- Inequações do Primeiro Grau | inequacao linear
+- Inequações do Segundo Grau | estudo do sinal
+- Inequação Produto e Quociente | quadro de sinais
+- Sistemas de Inequações | intervalo solucao
+
+Polinômios | polinomio
+- Grau e Valor Numérico de Polinômios | grau do polinomio
+- Operações com Polinômios | soma de polinomios
+- Divisão de Polinômios | metodo da chave
+- Dispositivo de Briot-Ruffini | briot ruffini
+- Teorema do Resto | resto da divisao
+- Equações Polinomiais | raizes de polinomio; equacao algebrica
+
+Função | funcoes; conceito de funcao
+- Domínio, Contradomínio e Imagem | dominio; imagem
+- Leitura de Gráficos de Funções | grafico de funcao
+- Função Injetora, Sobrejetora e Bijetora | bijetora
+- Função Composta | composicao de funcoes
+- Função Inversa | inversa de funcao
+- Funções Crescentes e Decrescentes | crescimento de funcao
+
+Função Afim | funcao do 1o grau; funcao linear; funcao de primeiro grau; reta
+- Coeficiente Angular e Linear | inclinacao da reta
+- Gráfico da Função Afim | grafico da reta
+- Zero da Função Afim | raiz da funcao afim
+- Estudo do Sinal da Função Afim | sinal da reta
+- Problemas com Função Afim | custo fixo e variavel
+
+Função Quadrática | funcao do 2o grau; parabola; funcao de segundo grau
+- Gráfico da Parábola | concavidade
+- Vértice da Parábola | xv e yv; maximo e minimo
+- Zeros da Função Quadrática | raizes da parabola
+- Máximo e Mínimo | valor maximo; valor minimo
+- Problemas com Função Quadrática | lancamento obliquo; area maxima
+
+Função Modular | modulo; valor absoluto
+- Módulo de um Número | valor absoluto
+- Gráfico da Função Modular | grafico em v
+
+Função Exponencial | exponencial; crescimento exponencial
+- Gráfico da Função Exponencial | curva exponencial
+- Crescimento e Decaimento Exponencial | meia vida; populacao
+
+Logaritmo | log; logaritmos
+- Definição de Logaritmo | base e logaritmando
+- Propriedades dos Logaritmos | log do produto
+- Mudança de Base | trocar base do log
+- Logaritmo Decimal e Natural | ln; log 10
+
+Função Logarítmica | funcao log
+- Gráfico da Função Logarítmica | curva logaritmica
+- Aplicações de Logaritmos | escala richter; ph; decibeis
+
+Sequências | sequencia numerica; padroes
+- Lei de Formação de Sequências | termo geral
+- Sequência de Fibonacci | fibonacci
+
+Progressão Aritmética | pa; progressao aritmetica
+- Termo Geral da PA | formula da pa
+- Soma dos Termos da PA | soma da pa
+- Interpolação Aritmética | inserir meios aritmeticos
+
+Progressão Geométrica | pg; progressao geometrica
+- Termo Geral da PG | formula da pg
+- Soma dos Termos da PG | soma finita da pg
+- Soma da PG Infinita | serie geometrica
+
+Matrizes | matriz
+- Tipos de Matrizes | matriz identidade; matriz transposta
+- Operações com Matrizes | soma de matrizes
+- Multiplicação de Matrizes | produto de matrizes
+- Matriz Inversa | inversa da matriz
+
+Determinantes | determinante
+- Regra de Sarrus | sarrus
+- Teorema de Laplace | cofator
+- Propriedades dos Determinantes | determinante zero
+
+Sistemas Lineares | sistema linear
+- Escalonamento | metodo de gauss
+- Regra de Cramer | cramer
+- Classificação de Sistemas Lineares | spd; spi; si
+
+Geometria Plana | geometria; geometria basica; figuras planas
+- Ponto, Reta e Plano | entes primitivos
+- Ângulos | angulo reto; angulo agudo; bissetriz
+- Retas Paralelas cortadas por Transversal | angulos alternos
+- Classificação de Triângulos | equilatero; isosceles; escaleno
+- Quadriláteros | paralelogramo; trapezio; losango
+- Pontos Notáveis do Triângulo | baricentro; incentro
+- Congruência de Triângulos | casos de congruencia
+
+Perímetro | contorno; soma dos lados
+- Perímetro de Polígonos | perimetro do retangulo
+- Comprimento da Circunferência | 2 pi r
+
+Áreas | area; area de figuras planas
+- Área do Retângulo e do Quadrado | base vezes altura
+- Área do Triângulo | base vezes altura sobre dois; formula de heron
+- Área do Paralelogramo e do Trapézio | area do trapezio
+- Área do Losango | diagonais
+- Área do Círculo | pi r ao quadrado
+- Área de Figuras Compostas | dividir a figura
+
+Polígonos | poligono regular
+- Soma dos Ângulos Internos | 180 n menos 2
+- Número de Diagonais | diagonais do poligono
+- Polígonos Regulares Inscritos | apotema
+
+Circunferência e Círculo | circulo; circunferencia
+- Elementos da Circunferência | raio; diametro; corda
+- Ângulos na Circunferência | angulo inscrito; angulo central
+- Arcos e Setores Circulares | setor circular
+- Posições Relativas na Circunferência | reta tangente
+
+Teorema de Pitágoras | pitagoras; hipotenusa; catetos
+- Triângulo Retângulo | catetos e hipotenusa
+- Ternos Pitagóricos | 3 4 5
+- Aplicações do Teorema de Pitágoras | diagonal do retangulo
+
+Semelhança de Triângulos | triangulos semelhantes
+- Casos de Semelhança | aa; lal; lll
+- Teorema de Tales | tales; feixe de paralelas
+- Razão de Semelhança | razao entre areas
+
+Relações Métricas no Triângulo Retângulo | relacoes metricas
+- Projeções dos Catetos | altura relativa a hipotenusa
+
+Trigonometria | seno; cosseno; tangente
+- Razões Trigonométricas no Triângulo Retângulo | soh cah toa
+- Ângulos Notáveis | 30 45 60 graus
+- Lei dos Senos | lei dos senos
+- Lei dos Cossenos | lei dos cossenos
+- Ciclo Trigonométrico | circulo trigonometrico; radianos
+- Funções Trigonométricas | funcao seno; funcao cosseno
+- Identidades Trigonométricas | relacao fundamental
+- Equações Trigonométricas | equacao com seno
+
+Geometria Espacial | solidos geometricos; espacial
+- Prismas | prisma
+- Cubo e Paralelepípedo | caixa; bloco retangular
+- Pirâmides | piramide
+- Cilindros | cilindro
+- Cones | cone
+- Esferas | esfera
+- Poliedros e Relação de Euler | v menos a mais f
+- Troncos | tronco de cone; tronco de piramide
+
+Volumes | volume; capacidade
+- Volume de Prismas e Cilindros | area da base vezes altura
+- Volume de Pirâmides e Cones | um terco
+- Volume da Esfera | quatro tercos pi r ao cubo
+- Planificação de Sólidos | planificacao
+
+Geometria Analítica | plano cartesiano; analitica
+- Plano Cartesiano | eixos x e y
+- Distância entre Dois Pontos | formula da distancia
+- Ponto Médio | ponto medio
+- Equação da Reta | reta no plano
+- Retas Paralelas e Perpendiculares | coeficiente angular
+- Distância de Ponto a Reta | distancia ponto reta
+- Equação da Circunferência | centro e raio
+- Cônicas | elipse; hiperbole; parabola
+
+Estatística | dados; pesquisa estatistica
+- Média | media aritmetica; media ponderada
+- Mediana | valor central
+- Moda | valor mais frequente
+- Variância | variancia
+- Desvio Padrão | dispersao
+- Tabelas de Frequência | frequencia absoluta; frequencia relativa
+- Gráficos Estatísticos | grafico de barras; grafico de linhas; histograma
+- Amostra e População | amostragem
+
+Probabilidade | chance; eventos
+- Espaço Amostral e Eventos | evento
+- Probabilidade Simples | casos favoraveis
+- Probabilidade Condicional | dado que
+- Eventos Independentes | multiplicacao de probabilidades
+- Probabilidade da União | ou
+- Distribuição Binomial | binomial
+
+Análise Combinatória | contagem; combinatoria
+- Princípio Fundamental da Contagem | pfc; principio multiplicativo
+- Fatorial | n fatorial
+- Permutação | anagramas
+- Permutação com Repetição | anagrama com letras repetidas
+- Arranjo | arranjo simples
+- Combinação | combinacao simples
+
+Binômio de Newton | binomio
+- Triângulo de Pascal | pascal
+- Termo Geral do Binômio | coeficiente binomial
+
+Lógica Matemática | logica; proposicoes
+- Proposições e Conectivos | e; ou; se entao
+- Tabela-Verdade | tabela verdade
+- Negação de Proposições | negacao
+- Raciocínio Lógico | problemas de logica
+
+Matemática para o ENEM | enem; matematica enem; prova do enem
+- Matemática Básica para o ENEM | base para o enem
+- Questões de Matemática do ENEM | questoes do enem; questoes enem
+- Interpretação de Gráficos no ENEM | graficos enem; tabelas enem
+- Matemática Financeira para o ENEM | porcentagem enem
+- Geometria para o ENEM | geometria enem
+- Estatística para o ENEM | estatistica enem
+- Escalas e Proporções no ENEM | razao e proporcao enem
+- Funções no ENEM | funcao enem
+
+Matemática Avançada | matematica superior; pre calculo
+- Limites | limite de funcao
+- Derivadas | derivada; taxa de variacao
+- Integrais | integral; area sob a curva
+- Vetores | vetor

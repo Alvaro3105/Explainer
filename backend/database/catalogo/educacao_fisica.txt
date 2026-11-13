@@ -1,0 +1,38 @@
+@ Educação Física | Linguagens, Códigos e suas Tecnologias | ed fisica; educacao fisica; esportes
+
+Esportes | modalidades esportivas
+- Esportes Coletivos | futebol; volei; basquete; handebol
+- Esportes Individuais | atletismo; natacao; ginastica
+- Esportes de Raquete | tenis; badminton
+- Esportes Paralímpicos | paralimpiadas
+- Regras dos Esportes | regras
+- Jogos Olímpicos | olimpiadas
+
+Corpo e Movimento | movimento corporal
+- Capacidades Físicas | forca; resistencia; flexibilidade; velocidade
+- Habilidades Motoras | coordenacao motora
+- Postura e Ergonomia | postura
+
+Saúde | saude e bem estar
+- Alimentação Saudável | nutricao
+- Sedentarismo e Obesidade | sedentarismo
+- Primeiros Socorros | socorro
+- Saúde Mental e Atividade Física | bem estar mental
+
+Atividade Física | exercicio fisico
+- Aquecimento e Alongamento | alongamento
+- Treinamento Aeróbico e Anaeróbico | aerobico; anaerobico
+- Frequência Cardíaca no Exercício | batimentos
+
+Cultura Corporal | cultura corporal de movimento
+- Lutas | capoeira; judo; artes marciais
+- Ginástica | ginastica artistica; ginastica ritmica
+- Danças na Educação Física | danca
+- Jogos e Brincadeiras | brincadeiras populares
+
+Qualidade de Vida | qualidade de vida
+- Corpo, Mídia e Padrões de Beleza | padrao de beleza
+- Esporte e Inclusão | inclusao
+- Lazer e Tempo Livre | lazer
+
+Educação Física para o ENEM | educacao fisica enem

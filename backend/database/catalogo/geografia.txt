@@ -1,0 +1,128 @@
+@ Geografia | Ciências Humanas e suas Tecnologias | geo
+
+Cartografia | mapas
+- Projeções Cartográficas | projecao de mercator
+- Escalas | escala cartografica
+- Coordenadas Geográficas | latitude; longitude
+- Fusos Horários | fuso horario
+- Orientação e Rosa dos Ventos | pontos cardeais
+- Sensoriamento Remoto e GPS | satelites; gps
+- Leitura de Mapas Temáticos | mapa tematico
+
+Geografia Física | natureza; quadro natural
+- Estrutura Interna da Terra | crosta; manto; nucleo
+- Tectônica de Placas | placas tectonicas; terremotos; vulcoes
+- Rochas e Minerais | tipos de rochas
+
+Relevo | relevo brasileiro; formas de relevo
+- Agentes Internos e Externos | intemperismo; erosao
+- Classificação do Relevo Brasileiro | ross; ab saber
+- Solos | pedologia; tipos de solo
+
+Geomorfologia | estudo do relevo
+
+Climatologia | clima; clima e vegetacao
+- Tempo e Clima | tempo atmosferico
+- Fatores Climáticos | latitude; altitude; maritimidade
+- Massas de Ar | massas de ar
+- Tipos de Clima | clima tropical; clima equatorial
+- Climas do Brasil | clima brasileiro
+- Fenômenos Climáticos | el nino; la nina
+- Mudanças Climáticas | aquecimento global; efeito estufa
+
+Hidrografia | rios; bacias hidrograficas
+- Bacias Hidrográficas Brasileiras | amazonica; sao francisco; parana
+- Águas Subterrâneas e Aquíferos | aquifero guarani
+- Oceanos e Mares | oceanos
+- Crise Hídrica | falta de agua
+
+Vegetação | formacoes vegetais
+- Formações Vegetais do Mundo | tundra; taiga; savana
+
+Biomas Brasileiros | biomas do brasil
+- Amazônia | floresta amazonica
+- Cerrado | cerrado
+- Caatinga | caatinga
+- Mata Atlântica | mata atlantica
+- Pantanal | pantanal
+- Pampa | campos sulinos
+
+Geografia Humana | sociedade e espaco
+
+População | populacao; populacao e urbanizacao
+- Demografia | taxa de natalidade; mortalidade
+- Pirâmides Etárias | piramide etaria
+- Transição Demográfica | envelhecimento da populacao
+- População Brasileira | censo; ibge
+- Indicadores Sociais | idh
+
+Migrações | migracao; refugiados
+- Migrações Internas no Brasil | exodo rural; nordestinos
+- Migrações Internacionais | imigracao; emigracao
+- Refugiados | crise de refugiados
+
+Urbanização | cidades; urbanizacao brasileira
+- Problemas Urbanos | favelizacao; mobilidade urbana
+- Rede Urbana e Metrópoles | metropole; megalopole
+- Segregação Socioespacial | segregacao
+
+Industrialização | industria
+- Industrialização Brasileira | industria no brasil
+- Fatores de Localização Industrial | localizacao das industrias
+- Revoluções Industriais na Geografia | terceira revolucao industrial
+
+Agropecuária | agricultura; pecuaria; campo
+- Agronegócio | agronegocio
+- Agricultura Familiar | pequena propriedade
+- Estrutura Fundiária | reforma agraria; latifundio
+- Revolução Verde | revolucao verde
+
+Globalização | mundo globalizado
+- Fluxos da Globalização | comercio internacional
+- Empresas Transnacionais | multinacionais
+
+Geopolítica | conflitos mundiais
+- Conflitos Territoriais | fronteiras
+- Nova Ordem Mundial | multipolaridade
+- Organismos Internacionais | onu; otan
+
+Blocos Econômicos | mercosul; uniao europeia
+- Mercosul | mercosul
+- União Europeia | ue
+- Outros Blocos Econômicos | usmca; asean; brics
+
+Economia Mundial | economia global
+- Países Desenvolvidos e Subdesenvolvidos | norte e sul
+- Comércio Internacional | exportacoes
+
+Energia | fontes de energia; matriz energetica
+- Matriz Energética Brasileira | matriz brasileira
+- Fontes Renováveis e Não Renováveis | petroleo; energia solar
+
+Recursos Naturais | recursos
+- Recursos Minerais | mineracao
+- Recursos Hídricos | agua
+
+Problemas Ambientais | questao ambiental
+- Desmatamento | queimadas
+- Poluição Urbana | poluicao
+- Desastres Ambientais | mariana; brumadinho
+
+Desenvolvimento Sustentável | sustentabilidade; agenda 2030
+- Conferências Ambientais | eco 92; acordo de paris
+
+Geografia do Brasil | brasil
+- Regiões Brasileiras | regioes do ibge; regioes geoeconomicas
+- Formação do Território Brasileiro | territorio
+- Transportes no Brasil | rodovias; ferrovias
+
+Geografia Regional do Mundo | continentes
+- América Latina | america do sul
+- África | continente africano
+- Europa | continente europeu
+- Ásia | china; india; japao
+- Oriente Médio | oriente medio
+
+Geografia para o ENEM | geografia enem
+- Questões de Geografia do ENEM | questoes enem geografia
+- Questão Ambiental no ENEM | meio ambiente enem
