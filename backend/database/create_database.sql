@@ -21,10 +21,29 @@ CREATE TABLE IF NOT EXISTS Aluno (
     versao_termos VARCHAR(20)
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS Materia (
+    id_materia INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(80) NOT NULL UNIQUE,
+    nome_busca VARCHAR(80) NOT NULL UNIQUE,
+    area VARCHAR(80),
+    sinonimos TEXT,
+    termos_busca TEXT
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS Tema (
     id_tema INT AUTO_INCREMENT PRIMARY KEY,
     materia VARCHAR(60) NOT NULL,
-    nome VARCHAR(100) NOT NULL
+    nome VARCHAR(100) NOT NULL,
+    id_materia INT,
+    id_tema_pai INT,
+    nome_busca VARCHAR(160),
+    sinonimos TEXT,
+    termos_busca TEXT,
+    CONSTRAINT uq_tema_materia_nome UNIQUE (id_materia, nome_busca),
+    INDEX ix_tema_materia_nome_busca (id_materia, nome_busca),
+    INDEX ix_Tema_id_tema_pai (id_tema_pai),
+    FOREIGN KEY (id_materia) REFERENCES Materia(id_materia),
+    FOREIGN KEY (id_tema_pai) REFERENCES Tema(id_tema)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS Questao (
@@ -87,6 +106,16 @@ CREATE TABLE IF NOT EXISTS resposta_desafio (
     FOREIGN KEY (id_aluno) REFERENCES Aluno(id_aluno),
     FOREIGN KEY (id_desafio) REFERENCES desafio(id_desafio),
     FOREIGN KEY (id_questao) REFERENCES Questao(id_questao)
+) ENGINE=InnoDB;
+
+-- Pedidos de geração de desafio, usados no limite por aluno.
+CREATE TABLE IF NOT EXISTS geracao_desafio (
+    id_geracao INT AUTO_INCREMENT PRIMARY KEY,
+    id_aluno INT NOT NULL,
+    iniciada_em DOUBLE NOT NULL,
+    em_andamento BOOLEAN NOT NULL DEFAULT TRUE,
+    INDEX ix_geracao_aluno_momento (id_aluno, iniciada_em),
+    FOREIGN KEY (id_aluno) REFERENCES Aluno(id_aluno)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS Ranking (

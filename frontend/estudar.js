@@ -4,7 +4,8 @@ const LETRAS = ['A', 'B', 'C', 'D'];
 const estado = {
   aluno: null,
   progresso: null,
-  catalogo: [],
+  materiaEscolhida: null, // matéria escolhida na busca (uma por desafio)
+  temaEscolhido: null,    // tema ou subtema escolhido na busca
   desafio: null,
   temaAtual: null,
   questoes: [],
@@ -22,7 +23,7 @@ const estado = {
   configuracaoBase: null,
   revisao: null,          // lista de desafios e posição atual, quando está refazendo
   faseAtiva: 1,           // fase do desafio em andamento (muda a cor do espaço)
-  jornadaReprovada: false,
+  faseReprovada: false,
 };
 
 const elemento = (id) => document.getElementById(id);
@@ -42,6 +43,14 @@ async function api(caminho, opcoes = {}) {
     const erro = new Error(dados.erro || `Não foi possível concluir a solicitação (${resposta.status}).`);
     erro.status = resposta.status;
     erro.dados = dados;
+    // A sessão acabou no meio do uso (expirou ou a conta saiu em outra aba): volta para o login.
+    if (resposta.status === 401 && estado.aluno && !caminho.startsWith('/api/auth/')) {
+      estado.aluno = null;
+      estado.progresso = null;
+      fecharMenuConta();
+      mostrarTelaAutenticacao();
+      mostrarAviso('Sua sessão terminou. Entre de novo para continuar.', 'erro');
+    }
     throw erro;
   }
   return dados;
@@ -337,11 +346,7 @@ async function iniciarPlataforma(dados) {
   atualizarBotaoVoltar();
   atualizarIdentidade();
   try {
-    const [catalogo, perfil] = await Promise.all([
-      api('/api/learning/catalog'),
-      api('/api/learning/me'),
-    ]);
-    estado.catalogo = catalogo.materias || [];
+    const perfil = await api('/api/learning/me');
     estado.aluno = perfil.aluno;
     estado.progresso = perfil.progresso;
     if (estado.aluno.precisa_aceitar_termos && !(await pedirAceiteDosTermos())) {
@@ -349,7 +354,6 @@ async function iniciarPlataforma(dados) {
       mostrarAviso('Sem o aceite dos termos não é possível usar o ExplAIner. Você pode aceitá-los no próximo login.', 'erro');
       return;
     }
-    montarSeletorMaterias();
     atualizarPainelPerfil();
     await atualizarPainel();
     await atualizarBotoesDesafio();
@@ -403,10 +407,12 @@ function mostrarTelaAutenticacao() {
   // Ao sair da conta, limpa tudo o que era do desafio anterior.
   Object.assign(estado, {
     desafio: null, temaAtual: null, questoes: [], configuracaoBase: null, revisao: null,
-    modoRevisao: false, jornadaReprovada: false, faseConcluida: false,
+    modoRevisao: false, faseReprovada: false, faseConcluida: false,
     proximaFasePendente: null, questoesRespondidas: new Set(), resultadoQuestoes: new Map(),
   });
   window.__historicoDesafios = [];
+  limparRanking();
+  campoMateria.limpar();
   elemento('ir-para-desafio').hidden = true;
   elemento('botao-refazer-ultimo').hidden = true;
   elemento('tela-acesso').hidden = false;
@@ -471,50 +477,275 @@ function atualizarPainelPerfil() {
   atualizarSequenciaSemanal();
 }
 
-function montarSeletorMaterias() {
-  const seletor = elemento('selecao-materia');
-  const materiaAnterior = seletor.value;
-  seletor.replaceChildren();
-  estado.catalogo.forEach((materia) => {
-    const opcao = document.createElement('option');
-    opcao.value = materia.nome;
-    opcao.textContent = materia.nome;
-    seletor.appendChild(opcao);
+// Busca de matéria e tema: as sugestões vêm da API aos poucos, sem carregar o catálogo inteiro.
+
+// Texto sem acentos e em minúsculas, guardando onde cada letra estava no texto original
+// (serve para destacar o trecho pesquisado mesmo quando o aluno digita sem acento).
+function semAcentos(texto) {
+  let normalizado = '';
+  const posicoes = [];
+  Array.from(String(texto || '')).forEach((letra, indice) => {
+    const base = letra.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
+    for (const parte of base) { normalizado += parte; posicoes.push(indice); }
   });
-  if (!estado.catalogo.length) {
-    seletor.add(new Option('Nenhuma matéria cadastrada', ''));
-    seletor.disabled = true;
-    return;
-  }
-  seletor.disabled = false;
-  if (estado.catalogo.some((materia) => materia.nome === materiaAnterior)) seletor.value = materiaAnterior;
-  atualizarSeletorTemas();
+  return { normalizado, posicoes, letras: Array.from(String(texto || '')) };
 }
 
-function atualizarSeletorTemas() {
-  const materia = estado.catalogo.find((item) => item.nome === elemento('selecao-materia').value) || estado.catalogo[0];
-  const seletor = elemento('selecao-tema');
-  seletor.replaceChildren();
-  if (!materia || !materia.temas.length) {
-    seletor.add(new Option('Nenhum tema cadastrado', ''));
-    return;
-  }
-  materia.temas.forEach((tema) => seletor.add(new Option(tema.nome, String(tema.id_tema))));
-  atualizarMapaSelecionado();
+function destacar(texto, consulta) {
+  const fragmento = document.createDocumentFragment();
+  const palavras = semAcentos(consulta).normalizado.split(/[^a-z0-9]+/).filter(Boolean);
+  const { normalizado, posicoes, letras } = semAcentos(texto);
+  const marcado = new Array(letras.length).fill(false);
+  palavras.forEach((palavra) => {
+    let inicio = normalizado.indexOf(palavra);
+    while (inicio !== -1) {
+      for (let i = inicio; i < inicio + palavra.length; i += 1) marcado[posicoes[i]] = true;
+      inicio = normalizado.indexOf(palavra, inicio + palavra.length);
+    }
+  });
+  let trecho = '';
+  let emDestaque = false;
+  const fechar = () => {
+    if (!trecho) return;
+    if (emDestaque) { const marca = document.createElement('mark'); marca.textContent = trecho; fragmento.appendChild(marca); }
+    else fragmento.appendChild(document.createTextNode(trecho));
+    trecho = '';
+  };
+  letras.forEach((letra, indice) => {
+    if (marcado[indice] !== emDestaque) { fechar(); emDestaque = marcado[indice]; }
+    trecho += letra;
+  });
+  fechar();
+  return fragmento;
 }
 
-elemento('selecao-materia').addEventListener('change', atualizarSeletorTemas);
-elemento('selecao-tema').addEventListener('change', atualizarMapaSelecionado);
+// Campo de busca com sugestões: digitar, setas, Enter, Esc, clique fora e botão de limpar.
+function criarCampoBusca({ chave, buscar, montarItem, aoEscolher, aoLimpar }) {
+  const entrada = elemento(`entrada-${chave}`);
+  const lista = elemento(`sugestoes-${chave}`);
+  const botaoLimpar = elemento(`limpar-${chave}`);
+  let itens = [];
+  let ativo = -1;
+  let temporizador = null;
+  let pedido = 0;
+  let escolhido = null;
+  let consultaDosItens = null;   // texto que gerou as sugestões que estão na tela
+  let escolherAoChegar = false;   // Enter apertado antes de as sugestões novas chegarem
+
+  const abrir = () => { lista.hidden = false; entrada.setAttribute('aria-expanded', 'true'); };
+  const fechar = () => {
+    lista.hidden = true;
+    entrada.setAttribute('aria-expanded', 'false');
+    entrada.removeAttribute('aria-activedescendant');
+    ativo = -1;
+  };
+  const mensagem = (texto) => {
+    const item = document.createElement('li');
+    item.className = 'mensagem-busca';
+    item.setAttribute('role', 'option');
+    item.setAttribute('aria-disabled', 'true');
+    item.textContent = texto;
+    lista.replaceChildren(item);
+    itens = [];
+    abrir();
+  };
+  const marcar = (indice) => {
+    ativo = indice;
+    Array.from(lista.children).forEach((item, i) => item.setAttribute('aria-selected', String(i === indice)));
+    const atual = lista.children[indice];
+    if (atual) { entrada.setAttribute('aria-activedescendant', atual.id); atual.scrollIntoView({ block: 'nearest' }); }
+  };
+  const escolher = (indice) => {
+    const item = itens[indice];
+    if (!item) return;
+    escolhido = item;
+    entrada.value = item.rotulo;
+    botaoLimpar.hidden = false;
+    fechar();
+    aoEscolher(item);
+  };
+  const mostrar = (consulta) => {
+    if (!itens.length) {
+      mensagem(consulta ? `Nada encontrado para "${consulta}".` : 'Nenhuma opção disponível.');
+      return;
+    }
+    lista.replaceChildren(...itens.map((item, indice) => {
+      const opcao = document.createElement('li');
+      opcao.id = `sugestoes-${chave}-${indice}`;
+      opcao.setAttribute('role', 'option');
+      opcao.setAttribute('aria-selected', 'false');
+      opcao.append(...montarItem(item, consulta));
+      opcao.addEventListener('mousedown', (evento) => { evento.preventDefault(); escolher(indice); });
+      return opcao;
+    }));
+    abrir();
+    marcar(0);
+  };
+  const pesquisar = async () => {
+    if (entrada.disabled) return;
+    const consulta = entrada.value.trim();
+    const numero = ++pedido;
+    mensagem('Buscando…');
+    try {
+      const encontrados = await buscar(consulta);
+      if (numero !== pedido) return; // chegou a resposta de uma busca mais antiga
+      itens = encontrados;
+      consultaDosItens = consulta;
+      mostrar(consulta);
+      if (escolherAoChegar) {
+        escolherAoChegar = false;
+        if (itens.length) escolher(0);
+      }
+    } catch (erro) {
+      if (numero === pedido) { escolherAoChegar = false; mensagem(erro.message); }
+    }
+  };
+
+  entrada.addEventListener('input', () => {
+    if (escolhido) { escolhido = null; aoLimpar(); }
+    escolherAoChegar = false;
+    botaoLimpar.hidden = !entrada.value;
+    clearTimeout(temporizador);
+    temporizador = setTimeout(pesquisar, 220);
+  });
+  entrada.addEventListener('focus', () => { if (!escolhido) pesquisar(); });
+  entrada.addEventListener('keydown', (evento) => {
+    if (evento.key === 'ArrowDown' || evento.key === 'ArrowUp') {
+      evento.preventDefault();
+      if (lista.hidden) { pesquisar(); return; }
+      if (!itens.length) return;
+      const passo = evento.key === 'ArrowDown' ? 1 : -1;
+      marcar((ativo + passo + itens.length) % itens.length);
+    } else if (evento.key === 'Enter') {
+      evento.preventDefault(); // Enter escolhe a sugestão; nunca envia o formulário
+      if (escolhido) return;   // já há um item escolhido e o texto não mudou: nada a fazer
+      if (entrada.value.trim() !== consultaDosItens) {
+        // Quem digita rápido aperta Enter antes de as sugestões novas chegarem. As que estão
+        // na tela são de outro texto: busca agora e escolhe a primeira do resultado certo.
+        clearTimeout(temporizador);
+        escolherAoChegar = true;
+        pesquisar();
+        return;
+      }
+      if (!lista.hidden && itens.length) escolher(Math.max(ativo, 0));
+    } else if (evento.key === 'Escape' && !lista.hidden) {
+      evento.stopPropagation();
+      fechar();
+    }
+  });
+  botaoLimpar.addEventListener('click', () => { limpar(); entrada.focus(); });
+  document.addEventListener('mousedown', (evento) => {
+    if (!elemento(`busca-${chave}`).contains(evento.target)) fechar();
+  });
+
+  function limpar() {
+    const tinha = escolhido;
+    escolhido = null;
+    itens = [];
+    entrada.value = '';
+    botaoLimpar.hidden = true;
+    fechar();
+    if (tinha) aoLimpar();
+  }
+
+  return {
+    limpar,
+    habilitar(sim, marcador) {
+      entrada.disabled = !sim;
+      if (marcador) entrada.placeholder = marcador;
+    },
+    definir(item) { itens = [item]; escolher(0); },
+    focar() { entrada.focus(); },
+  };
+}
+
+function linhaDeTexto(conteudo, etiqueta = 'span') {
+  const no = document.createElement(etiqueta);
+  if (typeof conteudo === 'string') no.textContent = conteudo; else no.append(conteudo);
+  return no;
+}
+
+const campoMateria = criarCampoBusca({
+  chave: 'materia',
+  async buscar(consulta) {
+    const dados = await api(`/api/learning/catalog?q=${encodeURIComponent(consulta)}&limite=10`);
+    return (dados.materias || []).map((materia) => ({ ...materia, rotulo: materia.nome }));
+  },
+  montarItem(materia, consulta) {
+    const detalhe = [materia.area, `${formatarNumero(materia.quantidade_temas)} temas`].filter(Boolean).join(' · ');
+    return [linhaDeTexto(destacar(materia.nome, consulta), 'strong'), linhaDeTexto(detalhe, 'small')];
+  },
+  aoEscolher(materia) {
+    estado.materiaEscolhida = materia;
+    campoTema.limpar();
+    campoTema.habilitar(true, `Pesquisar tema de ${materia.nome}...`);
+    atualizarMapaSelecionado();
+    campoTema.focar();
+  },
+  aoLimpar() {
+    // Trocar de matéria limpa o tema: um desafio é sempre de uma matéria só.
+    estado.materiaEscolhida = null;
+    campoTema.limpar();
+    campoTema.habilitar(false, 'Escolha a matéria primeiro');
+    atualizarMapaSelecionado();
+  },
+});
+
+const campoTema = criarCampoBusca({
+  chave: 'tema',
+  async buscar(consulta) {
+    if (!estado.materiaEscolhida) return [];
+    const dados = await api(`/api/learning/catalog/${estado.materiaEscolhida.id_materia}/themes?q=${encodeURIComponent(consulta)}&limite=10`);
+    return (dados.temas || []).map((tema) => ({ ...tema, rotulo: tema.tema_pai ? `${tema.tema_pai.nome} › ${tema.nome}` : tema.nome }));
+  },
+  montarItem(tema, consulta) {
+    let detalhe = tema.tema_pai ? `Subtema de ${tema.tema_pai.nome}` : 'Tema';
+    if (!tema.tema_pai && tema.quantidade_subtemas) detalhe += ` · ${tema.quantidade_subtemas} subtemas`;
+    if (tema.termo_relacionado) detalhe += ` · também: ${tema.termo_relacionado}`;
+    return [linhaDeTexto(destacar(tema.nome, consulta), 'strong'), linhaDeTexto(detalhe, 'small')];
+  },
+  aoEscolher(tema) {
+    estado.temaEscolhido = tema;
+    atualizarMapaSelecionado();
+    mostrarSubtemas(tema);
+  },
+  aoLimpar() {
+    estado.temaEscolhido = null;
+    elemento('subtemas-sugeridos').hidden = true;
+    atualizarMapaSelecionado();
+  },
+});
+
+// Depois de escolher um tema principal, mostra alguns subtemas para quem quiser focar em um deles.
+async function mostrarSubtemas(tema) {
+  const area = elemento('subtemas-sugeridos');
+  const lista = elemento('lista-subtemas');
+  area.hidden = true;
+  if (tema.tema_pai || !tema.quantidade_subtemas) return;
+  try {
+    const dados = await api(`/api/learning/catalog/themes/${tema.id_tema}/subtopics?limite=12`);
+    if (estado.temaEscolhido?.id_tema !== tema.id_tema) return;
+    lista.replaceChildren(...(dados.temas || []).map((subtema) => {
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'chip-subtema';
+      botao.textContent = subtema.nome;
+      botao.addEventListener('click', () => campoTema.definir({ ...subtema, rotulo: `${tema.nome} › ${subtema.nome}` }));
+      return botao;
+    }));
+    area.hidden = !lista.children.length;
+  } catch (erro) {
+    console.warn('Não foi possível carregar os subtemas:', erro.message);
+  }
+}
+
 document.querySelectorAll('input[name="quantidade"], input[name="dificuldade"]').forEach((campo) => campo.addEventListener('change', atualizarPreviaPontos));
 atualizarPreviaPontos();
 
 function temaSelecionado() {
-  const id = Number(elemento('selecao-tema').value);
-  for (const materia of estado.catalogo) {
-    const tema = materia.temas.find((item) => item.id_tema === id);
-    if (tema) return { ...tema, materia: materia.nome };
-  }
-  return null;
+  const tema = estado.temaEscolhido;
+  if (!tema || !estado.materiaEscolhida) return null;
+  return { ...tema, materia: estado.materiaEscolhida.nome, id_materia: estado.materiaEscolhida.id_materia };
 }
 
 function fasesPorQuantidade(quantidade) {
@@ -524,8 +755,8 @@ function fasesPorQuantidade(quantidade) {
 
 function atualizarMapaSelecionado() {
   const tema = temaSelecionado();
-  const materia = elemento('selecao-materia').value;
-  elemento('titulo-tema-caminho').textContent = tema ? tema.nome : 'Escolha um tema';
+  const materia = estado.materiaEscolhida?.nome || '';
+  elemento('titulo-tema-caminho').textContent = tema ? tema.nome : (materia ? 'Escolha um tema' : 'Escolha uma matéria');
   elemento('rotulo-materia-caminho').textContent = tema ? materia : 'Seu caminho será montado aqui';
   const selecionadoId = tema ? tema.id_tema : null;
   const historico = (window.__historicoDesafios || []).filter((item) => !item.modo_revisao && !String(item.nome || "").startsWith("[REFAZER] "));
@@ -650,7 +881,7 @@ function dificuldadeBaseDaFase(dificuldadeAtual, fase) {
 function iniciarEstadoDesafio(dados, { modoMapa = true, modoRevisao = false, configuracao = null, revisao = null, respondidas = null, acertos = null, concluido = false } = {}) {
   estado.faseConcluida = Boolean(concluido);
   estado.desafio = dados.desafio;
-  estado.temaAtual = dados.tema || estado.catalogo.flatMap((m) => (m.temas || []).map((t) => ({ ...t, materia: m.nome }))).find((t) => Number(t.id_tema) === Number(dados.desafio.id_tema)) || { nome: dados.desafio.nome, materia: '' };
+  estado.temaAtual = dados.tema || { nome: dados.desafio.nome, materia: '' };
   estado.questoes = dados.questoes || [];
   estado.indiceQuestao = 0;
   estado.alternativaSelecionada = null;
@@ -658,7 +889,7 @@ function iniciarEstadoDesafio(dados, { modoMapa = true, modoRevisao = false, con
   estado.modoMapa = modoMapa;
   estado.modoRevisao = modoRevisao;
   estado.revisao = revisao;
-  estado.jornadaReprovada = false;
+  estado.faseReprovada = false;
   estado.questoesRespondidas = new Set();
   estado.acertosSeguidos = 0;
   estado.configuracaoBase = configuracao;
@@ -676,7 +907,7 @@ function iniciarEstadoDesafio(dados, { modoMapa = true, modoRevisao = false, con
   }
 }
 
-async function criarProximoDesafio({ idTema, quantidade, dificuldadeBase, mostrarMapa = true, fasesPlanejadas = fasesPorQuantidade(quantidade), faseNaJornada = 1 }) {
+async function criarProximoDesafio({ idTema, quantidade, dificuldadeBase, mostrarMapa = true, fasesPlanejadas = fasesPorQuantidade(quantidade), faseNaJornada = 1, novaTentativa = false }) {
   const fase = Number(faseNaJornada);
   const dificuldade = dificuldadeDaFase(dificuldadeBase, fase);
   const dados = await api('/api/learning/challenges', { method: 'POST', body: {
@@ -685,11 +916,13 @@ async function criarProximoDesafio({ idTema, quantidade, dificuldadeBase, mostra
   }});
   iniciarEstadoDesafio(dados, {
     modoMapa: mostrarMapa,
-    configuracao: { idTema: Number(idTema), quantidade: Number(quantidade), dificuldadeBase, fasesPlanejadas: Number(fasesPlanejadas), faseNaJornada: Number(faseNaJornada) },
+    configuracao: { idTema: Number(idTema), quantidade: Number(quantidade), dificuldadeBase, fasesPlanejadas: Number(fasesPlanejadas), faseNaJornada: Number(dados.desafio.nivel_mapa || faseNaJornada) },
   });
-  // Vale a dificuldade que o servidor gravou (ele pode voltar a jornada para a fase 1).
+  // Valem a fase e a dificuldade que o servidor gravou (ele só libera a fase com a anterior aprovada).
   const dificuldadeFinal = chaveDificuldade(dados.desafio.dificuldade || dificuldade);
-  if (dificuldadeFinal !== chaveDificuldade(dificuldadeBase)) {
+  if (novaTentativa) {
+    mostrarAvisoRapido(`Nova tentativa da fase ${dados.desafio.nivel_mapa || fase}. Acerte pelo menos ${NOTA_MINIMA}% para avançar.`);
+  } else if (dificuldadeFinal !== chaveDificuldade(dificuldadeBase)) {
     mostrarAvisoRapido(`Nova fase desbloqueada! A dificuldade subiu para ${rotuloDificuldade(dificuldadeFinal)}.`);
   } else {
     mostrarAvisoRapido(`Fase ${dados.desafio.nivel_mapa || fase} pronta. Bora continuar?`);
@@ -825,7 +1058,7 @@ elemento('formulario-desafio').addEventListener('submit', async (evento) => {
   evento.preventDefault();
   const tema = temaSelecionado();
   if (!tema) {
-    mostrarAvisoRapido('Selecione uma matéria e um tema antes de gerar o desafio.');
+    mostrarAvisoRapido('Pesquise e escolha uma matéria e um tema antes de gerar o desafio.');
     return;
   }
   const botao = elemento('botao-criar-desafio');
@@ -853,19 +1086,19 @@ elemento('formulario-desafio').addEventListener('submit', async (evento) => {
   }
 });
 
-async function gerarNovoDesafio(tema, reinicio = null) {
+async function gerarNovoDesafio(tema) {
   const botao = elemento('botao-criar-desafio');
   const textoOriginal = botao.innerHTML;
-  if (!reinicio) botao.innerHTML = '<span class="brilho-botao">✦</span> Preparando questões…';
+  botao.innerHTML = '<span class="brilho-botao">✦</span> Preparando questões…';
   try {
-    // Desafio novo começa na fase 1 (ou repete a configuração da jornada reprovada).
-    const quantidade = reinicio ? reinicio.quantidade : Number(document.querySelector('input[name="quantidade"]:checked').value);
-    const dificuldadeBase = reinicio ? reinicio.dificuldadeBase : document.querySelector('input[name="dificuldade"]:checked').value;
+    // Desafio novo começa sempre na fase 1.
+    const quantidade = Number(document.querySelector('input[name="quantidade"]:checked').value);
+    const dificuldadeBase = document.querySelector('input[name="dificuldade"]:checked').value;
     const dificuldade = dificuldadeDaFase(dificuldadeBase, 1);
     const dados = await api('/api/learning/challenges', {
       method: 'POST',
       body: {
-        id_tema: tema.id_tema, quantidade_questoes: quantidade, dificuldade, fase_jornada: 1,
+        id_tema: tema.id_tema, id_materia: tema.id_materia, quantidade_questoes: quantidade, dificuldade, fase_jornada: 1,
         dificuldade_base: chaveDificuldade(dificuldadeBase),
       },
     });
@@ -1033,7 +1266,12 @@ function atualizarAcaoDoMapa() {
   if (!botao) return;
   const todasRespondidas = estado.questoes.length > 0 && estado.questoesRespondidas.size >= estado.questoes.length;
   botao.hidden = true;
-  if (!estado.desafio || estado.jornadaReprovada || !todasRespondidas) return;
+  if (!estado.desafio || !todasRespondidas) return;
+  if (estado.faseReprovada) {
+    botao.textContent = 'Tentar a fase de novo ↻';
+    botao.hidden = false;
+    return;
+  }
   if (!estado.faseConcluida) {
     botao.textContent = estado.modoRevisao ? 'Concluir revisão ✓' : 'Concluir fase ✓';
     botao.hidden = false;
@@ -1052,7 +1290,9 @@ elemento('proxima-acao-mapa').addEventListener('click', async () => {
   const botao = elemento('proxima-acao-mapa');
   botao.disabled = true;
   try {
-    if (!estado.faseConcluida) {
+    if (estado.faseReprovada) {
+      await tentarFaseDeNovo();
+    } else if (!estado.faseConcluida) {
       // Usa a mesma conclusão do quiz e mostra a tela de resultado.
       elemento('resultado-quiz').hidden = true;
       elemento('conteudo-quiz').hidden = true;
@@ -1322,13 +1562,32 @@ elemento('proxima-questao').addEventListener('click', async () => {
   }
 });
 
+// Nota mínima para a fase ser aprovada. O servidor é quem decide; este valor só aparece nas mensagens.
+const NOTA_MINIMA = 60;
+
+// Elogios para quem foi muito bem na fase (80% de acertos ou mais).
 const ELOGIOS_FASE = [
   { icone: '👍', titulo: 'Parabéns!', texto: 'Você concluiu um desafio. Você é bacana demais, continue assim!' },
   { icone: '🌟', titulo: 'Mandou muito bem!', texto: 'Mais um desafio concluído. Seu esforço está aparecendo!' },
   { icone: '🚀', titulo: 'Decolou!', texto: 'Desafio concluído! Você está evoluindo rápido.' },
   { icone: '💪', titulo: 'Que orgulho!', texto: 'Mais um desafio no bolso. Seu foco é inspirador!' },
-  { icone: '🎯', titulo: 'Na mosca!', texto: 'Você concluiu o desafio. Continue nesse ritmo!' },
 ];
+
+// Título e texto da tela de resultado, conforme a faixa de desempenho que o servidor devolve.
+function textosDoDesempenho(resultado) {
+  const percentual = Number(resultado.percentual_acertos ?? Math.round((resultado.questoes_corretas / Math.max(resultado.quantidade_questoes, 1)) * 100));
+  const minimo = Number(resultado.minimo_para_avancar || NOTA_MINIMA);
+  if (resultado.desempenho === 'perfeito') {
+    return { percentual, titulo: 'Desafio perfeito!', texto: 'Você acertou todas as questões. Continue mantendo esse ritmo.' };
+  }
+  if (resultado.desempenho === 'otimo') {
+    return { percentual, titulo: 'Mandou muito bem!', texto: `Você acertou ${percentual}% das questões e a fase foi aprovada.` };
+  }
+  if (resultado.desempenho === 'reprovado') {
+    return { percentual, titulo: 'Ainda não foi desta vez', texto: `Você acertou ${percentual}% das questões e precisa de pelo menos ${minimo}% para avançar. Seus pontos e seu histórico continuam guardados. Revise as explicações e tente a fase de novo.` };
+  }
+  return { percentual, titulo: 'Fase aprovada!', texto: `Você acertou ${percentual}% das questões, acima do mínimo de ${minimo}%. Revise os erros para ir ainda melhor na próxima.` };
+}
 
 // Escolhe a comemoração: jornada completa, 5 seguidos ou desafio comum, nessa ordem.
 function comemorarConclusao({ ultimaDaJornada, resultado }) {
@@ -1359,40 +1618,66 @@ function comemorarConclusao({ ultimaDaJornada, resultado }) {
       duracao: 7,
       tipo: 'sequencia',
     });
-  } else {
+  } else if (resultado.desempenho === 'perfeito') {
+    emojisSubindo('🎯');
+    tocarSom('ok');
+    mostrarElogio({ icone: '🎯', titulo: 'Na mosca!', texto: 'Você acertou todas as questões da fase!', xp: xpExtra, duracao: 6 });
+  } else if (resultado.desempenho === 'otimo') {
     emojisSubindo('👍');
     tocarSom('ok');
     const elogio = ELOGIOS_FASE[Math.floor(Math.random() * ELOGIOS_FASE.length)];
     mostrarElogio({ ...elogio, xp: xpExtra, duracao: 6 });
+  } else {
+    // Passou perto do mínimo: confirma a aprovação sem exagerar no elogio.
+    tocarSom('ok');
+    mostrarElogio({ icone: '✅', titulo: 'Fase aprovada!', texto: `Você passou com ${resultado.percentual_acertos}% de acertos. Dá para ir ainda melhor na próxima!`, xp: xpExtra, duracao: 6 });
   }
 }
 
-// Jornada reprovada (70% de erros ou mais). O servidor já apagou a jornada e tirou os pontos.
-async function tratarJornadaReprovada(resultado) {
-  estado.jornadaReprovada = true;
+// Fase abaixo da nota mínima: não há bônus nem elogio, e a próxima fase continua bloqueada.
+// O histórico e os pontos das respostas ficam como estão.
+async function mostrarFaseReprovada(resultado) {
+  const textos = textosDoDesempenho({ ...resultado, desempenho: 'reprovado' });
+  const fase = Number(estado.desafio?.nivel_mapa || 1);
+  estado.faseReprovada = true;
   gravarSeguidos(0);
   fecharElogio(true);
+  atualizarAcaoDoMapa();
   elemento('conteudo-quiz').hidden = true;
   elemento('resultado-quiz').hidden = false;
   elemento('preenchimento-progresso-quiz').style.width = '100%';
-  elemento('titulo-resultado').textContent = 'Jornada não concluída';
-  elemento('descricao-resultado').textContent = `Você errou ${resultado.taxa_erro}% das questões da jornada (o limite é 70%). Todo o progresso e os pontos desta jornada foram perdidos, como se ela não tivesse acontecido. Recomece com perguntas novas!`;
-  elemento('resultado-corretas').textContent = `${resultado.questoes_corretas}/${resultado.questoes_total}`;
-  elemento('pontos-resultado').textContent = resultado.pontos_perdidos > 0 ? `−${formatarNumero(resultado.pontos_perdidos)}` : '0';
-  elemento('pontos-resultado').previousElementSibling.textContent = 'Pontos perdidos';
-  elemento('resultado-quiz').querySelector('.mini-chamada').textContent = 'JORNADA REPROVADA';
-  elemento('precisao-resultado').textContent = `${resultado.aproveitamento}%`;
+  elemento('resultado-quiz').querySelector('.mini-chamada').textContent = 'FASE NÃO APROVADA';
+  elemento('titulo-resultado').textContent = textos.titulo;
+  elemento('descricao-resultado').textContent = textos.texto;
+  elemento('resultado-corretas').textContent = `${resultado.questoes_corretas}/${resultado.quantidade_questoes}`;
+  elemento('pontos-resultado').previousElementSibling.textContent = 'Pontos nas respostas';
+  elemento('pontos-resultado').textContent = `${resultado.pontos_ganhos < 0 ? '−' : '+'}${formatarNumero(Math.abs(resultado.pontos_ganhos || 0))}`;
+  elemento('precisao-resultado').textContent = `${textos.percentual}%`;
   elemento('bonus-resultado').hidden = true;
-  elemento('revisao-resultado').hidden = true;
+  mostrarResumoDaFase();
   elemento('proximo-desafio').hidden = false;
   elemento('proximo-desafio').disabled = false;
-  elemento('proximo-desafio').innerHTML = 'Recomeçar jornada <span>↻</span>';
+  elemento('proximo-desafio').innerHTML = `Tentar a fase ${fase} de novo <span>↻</span>`;
   elemento('finalizar-quiz').textContent = 'Voltar ao painel';
   atualizarIdentidade();
   atualizarPainelPerfil();
   elemento('total-xp-quiz').textContent = formatarNumero(estado.aluno.pontos || 0);
-  estado.faseAtiva = 0;
   await atualizarPainel();
+  await atualizarBotoesDesafio();
+}
+
+// Cria uma nova tentativa da mesma fase, com outras questões.
+async function tentarFaseDeNovo() {
+  const configuracao = estado.configuracaoBase;
+  elemento('janela-quiz').hidden = true;
+  if (!configuracao) { fecharMapaDesafio(); return; }
+  try {
+    await criarProximoDesafio({ ...configuracao, faseNaJornada: Number(estado.desafio?.nivel_mapa || configuracao.faseNaJornada || 1), mostrarMapa: true, novaTentativa: true });
+  } catch (erro) {
+    mostrarAvisoRapido(`Não foi possível criar a nova tentativa: ${erro.message}`);
+    fecharMapaDesafio();
+    return;
+  }
   await atualizarBotoesDesafio();
 }
 
@@ -1424,7 +1709,7 @@ async function concluirQuiz() {
     const resultado = await api(`/api/learning/challenges/${estado.desafio.id_desafio}/complete`, { method: 'POST', body: { jornada_concluida: ultimaDaJornada } });
     estado.progresso = resultado.progresso;
     estado.aluno.pontos = resultado.pontos_totais;
-    if (resultado.reprovado) { await tratarJornadaReprovada(resultado); return; }
+    if (resultado.reprovado) { await mostrarFaseReprovada(resultado); return; }
     estado.faseConcluida = true;
     atualizarAcaoDoMapa();
     elemento('conteudo-quiz').hidden = true;
@@ -1433,9 +1718,12 @@ async function concluirQuiz() {
     elemento('resultado-quiz').querySelector('.mini-chamada').textContent = 'FASE CONCLUÍDA';
     elemento('resultado-corretas').textContent = `${resultado.questoes_corretas}/${resultado.quantidade_questoes}`;
     elemento('pontos-resultado').textContent = `${resultado.pontos_ganhos < 0 ? '−' : '+'}${formatarNumero(Math.abs(resultado.pontos_ganhos))}`;
-    elemento('precisao-resultado').textContent = `${Math.round((resultado.questoes_corretas / Math.max(resultado.quantidade_questoes, 1)) * 100)}%`;
-    elemento('titulo-resultado').textContent = resultado.questoes_corretas === resultado.quantidade_questoes ? 'Desafio perfeito!' : 'Mais uma fase concluída!';
-    elemento('descricao-resultado').textContent = resultado.questoes_corretas === resultado.quantidade_questoes ? 'Você acertou todas as questões. Continue mantendo esse ritmo.' : 'Cada tentativa conta. Revise os conceitos e avance para a próxima fase.';
+    const textos = ehRevisao
+      ? { percentual: Number(resultado.percentual_acertos || 0), titulo: 'Revisão concluída', texto: `Você acertou ${resultado.percentual_acertos}% das questões nesta revisão. Ela não vale pontos.` }
+      : textosDoDesempenho(resultado);
+    elemento('precisao-resultado').textContent = `${textos.percentual}%`;
+    elemento('titulo-resultado').textContent = textos.titulo;
+    elemento('descricao-resultado').textContent = textos.texto;
     elemento('bonus-resultado').hidden = !(resultado.bonus_perfeito > 0);
     mostrarResumoDaFase();
     elemento('preenchimento-progresso-quiz').style.width = '100%';
@@ -1480,7 +1768,7 @@ async function concluirQuiz() {
 
 elemento('finalizar-quiz').addEventListener('click', async () => {
   elemento('janela-quiz').hidden = true;
-  if (estado.modoRevisao || estado.jornadaReprovada) {
+  if (estado.modoRevisao || estado.faseReprovada) {
     fecharMapaDesafio();
     return;
   }
@@ -1494,7 +1782,7 @@ elemento('finalizar-quiz').addEventListener('click', async () => {
 });
 
 elemento('fechar-quiz').addEventListener('click', () => {
-  if ((estado.modoRevisao || estado.jornadaReprovada) && !elemento('resultado-quiz').hidden) { elemento('janela-quiz').hidden = true; fecharMapaDesafio(); return; }
+  if ((estado.modoRevisao || estado.faseReprovada) && !elemento('resultado-quiz').hidden) { elemento('janela-quiz').hidden = true; fecharMapaDesafio(); return; }
   if (estado.modoRevisao) { elemento('janela-quiz').hidden = true; renderizarMapaDesafio(); return; }
   if (estado.desafio && !elemento('resultado-quiz').hidden) {
     elemento('janela-quiz').hidden = true;
@@ -1512,7 +1800,7 @@ elemento('fechar-quiz').addEventListener('click', () => {
 async function atualizarPainel() {
   const tarefas = await Promise.allSettled([
     api('/api/learning/me'),
-    api(`/api/learning/ranking?limite=${elemento('visao-ranking').hidden ? 5 : 100}`),
+    api(`/api/learning/ranking?limite=${limiteDoRankingAtual()}`),
     api('/api/learning/history'),
   ]);
   if (tarefas[0].status === 'fulfilled') {
@@ -1521,7 +1809,7 @@ async function atualizarPainel() {
     atualizarIdentidade();
     atualizarPainelPerfil();
   }
-  if (tarefas[1].status === 'fulfilled') renderizarPreviaRanking(tarefas[1].value);
+  if (tarefas[1].status === 'fulfilled') renderizarRanking(tarefas[1].value);
   if (tarefas[2].status === 'fulfilled') {
     window.__historicoDesafios = tarefas[2].value.historico || [];
     renderizarHistorico(tarefas[2].value.historico || []);
@@ -1529,76 +1817,299 @@ async function atualizarPainel() {
   }
 }
 
-function renderizarPreviaRanking(dados) {
-  const lista = elemento('lista-previa-ranking');
-  lista.replaceChildren();
-  const itens = dados.itens || [];
-  if (!itens.length) {
-    lista.innerHTML = '<div class="estado-vazio">Ainda não há estudantes no ranking.</div>';
-    return;
-  }
-  itens.slice(0, 4).forEach((item) => {
-    const linha = document.createElement('div');
-    linha.className = 'linha-ranking';
-    const posicao = document.createElement('span');
-    posicao.className = `colocacao-ranking ${item.posicao === 1 ? 'primeiro' : ''}`;
-    posicao.textContent = String(item.posicao).padStart(2, '0');
-    const avatar = document.createElement('span');
-    avatar.className = 'avatar-ranking';
-    avatar.textContent = (item.nick || 'E').charAt(0).toUpperCase();
-    const nome = document.createElement('span');
-    nome.className = 'nome-ranking';
-    nome.textContent = item.nick || 'Estudante';
-    const detalhe = document.createElement('small');
-    detalhe.textContent = `${item.sequencia_atual || 0} dias de sequência`;
-    nome.appendChild(detalhe);
-    const pontos = document.createElement('span');
-    pontos.className = 'pontuacao-ranking';
-    pontos.textContent = `${formatarNumero(item.pontos)} pts`;
-    linha.append(posicao, avatar, nome, pontos);
-    lista.appendChild(linha);
-  });
-  renderizarTabelaRanking(dados);
+// ---------- Ranking ----------
+// O mesmo componente aparece na tela inicial e na tela "Ranking". Ele abre com o top 5
+// (GET /api/learning/ranking?limite=5) e, no botão "Ver mais posições", busca o top 100
+// (?limite=100) e mostra do 6º em diante abaixo dos cinco primeiros, no mesmo card.
+const LIMITE_INICIAL_RANKING = 5;
+const LIMITE_COMPLETO_RANKING = 100;
+const ranking = {
+  dados: null, // última resposta recebida (top 5 ou top 100)
+  completo: null, // resposta do top 100; volta a null quando os dados ficam velhos
+  instancias: [],
+};
+
+function montarRanking(raiz) {
+  const chave = raiz.dataset.ranking;
+  const idTitulo = `titulo-ranking-${chave}`;
+  const idExtra = `ranking-extra-${chave}`;
+  raiz.setAttribute('aria-labelledby', idTitulo);
+  raiz.innerHTML = `
+    <div class="cabecalho-ranking">
+      <div><div class="mini-chamada"></div><h2 id="${idTitulo}"></h2><p>Os estudantes com maior pontuação</p></div>
+      <span class="pilula-suave contagem-ranking" hidden></span>
+    </div>
+    <div class="corpo-ranking">
+      <div class="coluna-lista-ranking">
+        <ol class="lista-ranking lista-topo-ranking" aria-busy="true"></ol>
+        <div class="expansao-ranking" id="${idExtra}" inert>
+          <div class="interior-expansao">
+            <ol class="lista-ranking lista-extra-ranking" start="6"></ol>
+            <p class="nota-ranking" hidden></p>
+          </div>
+        </div>
+        <p class="erro-ranking" role="alert" hidden></p>
+        <button class="botao-expandir-ranking" type="button" aria-expanded="false" aria-controls="${idExtra}" hidden>
+          <span class="texto-botao-ranking">Ver mais posições</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </button>
+      </div>
+      <aside class="sua-posicao-ranking" aria-label="Sua posição no ranking" hidden></aside>
+    </div>
+    <p class="so-leitor-de-tela" aria-live="polite"></p>`;
+  raiz.querySelector('.mini-chamada').textContent = raiz.dataset.chamada || 'COMUNIDADE';
+  raiz.querySelector('h2').textContent = raiz.dataset.titulo || 'Ranking';
+  const instancia = {
+    raiz,
+    expandido: false,
+    carregando: false,
+    topo: raiz.querySelector('.lista-topo-ranking'),
+    expansao: raiz.querySelector('.expansao-ranking'),
+    extra: raiz.querySelector('.lista-extra-ranking'),
+    nota: raiz.querySelector('.nota-ranking'),
+    erro: raiz.querySelector('.erro-ranking'),
+    botao: raiz.querySelector('.botao-expandir-ranking'),
+    posicao: raiz.querySelector('.sua-posicao-ranking'),
+    contagem: raiz.querySelector('.contagem-ranking'),
+    aviso: raiz.querySelector('[aria-live]'),
+  };
+  mostrarEsqueletoRanking(instancia);
+  instancia.botao.addEventListener('click', () => alternarRanking(instancia));
+  return instancia;
 }
 
-function renderizarTabelaRanking(dados) {
-  const itensRanking = dados.itens || [];
-  const posicaoUsuario = itensRanking.find((item) => estado.aluno && item.id_aluno === estado.aluno.id_aluno)?.posicao || dados.posicao_usuario;
+function mostrarEsqueletoRanking(instancia) {
+  instancia.topo.replaceChildren();
+  for (let i = 0; i < LIMITE_INICIAL_RANKING; i += 1) {
+    const item = document.createElement('li');
+    item.className = 'item-ranking esqueleto';
+    item.setAttribute('aria-hidden', 'true');
+    item.innerHTML = '<span></span><span class="avatar-ranking"></span><span></span><span></span>';
+    instancia.topo.appendChild(item);
+  }
+}
+
+function criarItemRanking(item, ordem) {
+  const linha = document.createElement('li');
+  const souEu = Boolean(estado.aluno && item.id_aluno === estado.aluno.id_aluno);
+  const podio = item.posicao <= 3;
+  linha.className = `item-ranking${podio ? ` podio podio-${item.posicao}` : ''}${souEu ? ' voce' : ''}`;
+  linha.style.setProperty('--ordem', ordem);
+
+  const posicao = document.createElement('span');
+  posicao.className = 'posicao-ranking';
+  posicao.setAttribute('aria-label', `${item.posicao}º lugar`);
+  if (podio) {
+    const medalha = document.createElement('span');
+    medalha.className = `medalha-ranking ${['ouro', 'prata', 'bronze'][item.posicao - 1]}`;
+    medalha.textContent = item.posicao;
+    medalha.setAttribute('aria-hidden', 'true');
+    posicao.appendChild(medalha);
+  } else {
+    posicao.textContent = `${item.posicao}º`;
+  }
+
+  const avatar = document.createElement('span');
+  avatar.className = 'avatar-ranking';
+  avatar.setAttribute('aria-hidden', 'true');
+  avatar.textContent = (item.nick || 'E').charAt(0).toUpperCase();
+
+  const nome = document.createElement('span');
+  nome.className = 'nome-item-ranking';
+  const titulo = document.createElement('strong');
+  if (item.posicao === 1) {
+    const coroa = document.createElement('i');
+    coroa.className = 'fa-solid fa-crown coroa-ranking';
+    coroa.title = 'Primeiro lugar';
+    coroa.setAttribute('aria-hidden', 'true');
+    titulo.appendChild(coroa);
+  }
+  const apelido = document.createElement('span');
+  apelido.textContent = item.nick || 'Estudante';
+  titulo.appendChild(apelido);
+  if (souEu) {
+    const selo = document.createElement('em');
+    selo.className = 'selo-voce';
+    selo.textContent = 'Você';
+    titulo.appendChild(selo);
+  }
+  nome.appendChild(titulo);
+  if (item.posicao <= LIMITE_INICIAL_RANKING) {
+    const detalhe = document.createElement('small');
+    const dias = item.sequencia_atual || 0;
+    detalhe.textContent = `${dias} ${dias === 1 ? 'dia' : 'dias'} de sequência`;
+    nome.appendChild(detalhe);
+  }
+
+  const pontos = document.createElement('span');
+  pontos.className = 'pontos-ranking';
+  pontos.textContent = formatarNumero(item.pontos);
+  const unidade = document.createElement('small');
+  unidade.textContent = 'pts';
+  pontos.appendChild(unidade);
+
+  linha.append(posicao, avatar, nome, pontos);
+  return linha;
+}
+
+// Recebe a resposta da API (top 5 ou top 100) e atualiza todos os rankings da página.
+function renderizarRanking(dados) {
+  ranking.dados = dados;
+  ranking.completo = dados.limite === LIMITE_COMPLETO_RANKING ? dados : null;
+  const posicaoUsuario = dados.posicao_usuario;
   if (elemento('indicador-posicao')) elemento('indicador-posicao').textContent = posicaoUsuario ? `#${posicaoUsuario}` : '#—';
   if (elemento('posicao-topo')) elemento('posicao-topo').textContent = posicaoUsuario ? `#${posicaoUsuario}` : '#—';
-  const corpo = elemento('corpo-tabela-ranking');
-  corpo.replaceChildren();
+  ranking.instancias.forEach((instancia) => desenharRanking(instancia));
+}
+
+function desenharRanking(instancia) {
+  const dados = ranking.dados;
+  if (!dados) return;
   const itens = dados.itens || [];
+  const total = dados.total_participantes ?? dados.total_alunos ?? itens.length;
+  instancia.topo.removeAttribute('aria-busy');
+  instancia.topo.replaceChildren();
   if (!itens.length) {
-    const linha = corpo.insertRow();
-    linha.insertCell().colSpan = 5;
-    linha.cells[0].textContent = 'Ainda não há pontuações registradas.';
+    const vazio = document.createElement('li');
+    vazio.className = 'estado-vazio';
+    vazio.textContent = 'Ainda não temos participantes suficientes para montar o ranking. Seja um dos primeiros a estudar!';
+    instancia.topo.appendChild(vazio);
+  }
+  itens.slice(0, LIMITE_INICIAL_RANKING).forEach((item, indice) => instancia.topo.appendChild(criarItemRanking(item, indice)));
+  instancia.contagem.hidden = !total;
+  instancia.contagem.textContent = `${formatarNumero(total)} ${total === 1 ? 'participante' : 'participantes'}`;
+  if (ranking.completo) preencherExtraRanking(instancia);
+  desenharSuaPosicao(instancia, total);
+  atualizarBotaoRanking(instancia);
+}
+
+function preencherExtraRanking(instancia) {
+  const dados = ranking.completo;
+  const restantes = (dados.itens || []).slice(LIMITE_INICIAL_RANKING);
+  instancia.extra.replaceChildren(...restantes.map((item, indice) => criarItemRanking(item, indice)));
+  const total = dados.total_participantes ?? restantes.length + LIMITE_INICIAL_RANKING;
+  instancia.nota.hidden = false;
+  instancia.nota.textContent = dados.tem_mais
+    ? `Mostrando os ${formatarNumero(dados.retornados)} primeiros de ${formatarNumero(total)} participantes.`
+    : 'Você está vendo todos os participantes disponíveis no ranking.';
+}
+
+function desenharSuaPosicao(instancia, total) {
+  const usuario = ranking.dados?.usuario_atual;
+  const caixa = instancia.posicao;
+  caixa.hidden = !usuario;
+  if (!usuario) return;
+  caixa.replaceChildren();
+  const chamada = document.createElement('div');
+  chamada.className = 'mini-chamada';
+  chamada.textContent = 'SUA POSIÇÃO';
+  caixa.appendChild(chamada);
+  if (!usuario.posicao) {
+    const texto = document.createElement('p');
+    texto.className = 'detalhe-posicao';
+    texto.textContent = 'Você ainda não está no ranking. Responda sua primeira questão para aparecer aqui.';
+    caixa.appendChild(texto);
     return;
   }
-  itens.forEach((item) => {
-    const linha = corpo.insertRow();
-    if (estado.aluno && item.id_aluno === estado.aluno.id_aluno) linha.className = 'linha-usuario-atual';
-    const celulaPosicao = linha.insertCell();
-    const medalha = document.createElement('span');
-    const classe = item.posicao === 1 ? 'ouro' : item.posicao === 2 ? 'prata' : item.posicao === 3 ? 'bronze' : '';
-    medalha.className = `medalha-posicao ${classe}`;
-    medalha.textContent = item.posicao;
-    celulaPosicao.appendChild(medalha);
-    const estudante = linha.insertCell();
-    estudante.className = 'celula-estudante';
-    const avatar = document.createElement('span');
-    avatar.className = 'avatar-ranking';
-    avatar.textContent = (item.nick || 'E').charAt(0).toUpperCase();
-    const nome = document.createElement('span');
-    nome.textContent = item.nick || 'Estudante';
-    estudante.append(avatar, nome);
-    linha.insertCell().textContent = `${item.sequencia_atual || 0} dias`;
-    linha.insertCell().textContent = `${formatarNumero(item.minutos_ativos || 0)} min`;
-    const pontos = linha.insertCell();
-    pontos.className = 'celula-pontos';
-    pontos.textContent = `${formatarNumero(item.pontos)} pts`;
+  const numero = document.createElement('strong');
+  numero.className = 'numero-posicao';
+  numero.textContent = `${usuario.posicao}º`;
+  const lugar = document.createElement('small');
+  lugar.textContent = 'lugar';
+  numero.appendChild(lugar);
+  const pontos = document.createElement('span');
+  pontos.className = 'pontos-posicao';
+  pontos.textContent = `${formatarNumero(usuario.pontos)} pts`;
+  const detalhe = document.createElement('p');
+  detalhe.className = 'detalhe-posicao';
+  detalhe.textContent = usuario.posicao <= LIMITE_INICIAL_RANKING
+    ? `Você está no top 5 entre ${formatarNumero(total)} participantes.`
+    : `Entre ${formatarNumero(total)} participantes.`;
+  caixa.append(numero, pontos, detalhe);
+}
+
+function atualizarBotaoRanking(instancia) {
+  const { botao, expansao } = instancia;
+  const dados = ranking.dados;
+  const total = dados ? (dados.total_participantes ?? dados.total_alunos ?? 0) : 0;
+  // Com 5 participantes ou menos já aparece todo mundo: não há o que expandir.
+  botao.hidden = total <= LIMITE_INICIAL_RANKING;
+  expansao.classList.toggle('aberta', instancia.expandido);
+  expansao.inert = !instancia.expandido;
+  botao.setAttribute('aria-expanded', String(instancia.expandido));
+  // aria-disabled em vez de disabled: um botão desligado perde o foco do teclado.
+  botao.setAttribute('aria-disabled', String(instancia.carregando));
+  botao.setAttribute('aria-busy', String(instancia.carregando));
+  const texto = botao.querySelector('.texto-botao-ranking');
+  const icone = botao.querySelector('i');
+  if (instancia.carregando) {
+    texto.textContent = 'Carregando posições…';
+    icone.className = 'fa-solid fa-circle-notch fa-spin';
+  } else if (instancia.expandido) {
+    texto.textContent = 'Ver menos posições';
+    icone.className = 'fa-solid fa-chevron-up';
+  } else if (!instancia.erro.hidden) {
+    texto.textContent = 'Tentar novamente';
+    icone.className = 'fa-solid fa-rotate-right';
+  } else {
+    texto.textContent = 'Ver mais posições';
+    icone.className = 'fa-solid fa-chevron-down';
+  }
+}
+
+async function alternarRanking(instancia) {
+  if (instancia.carregando) return; // evita cliques repetidos enquanto carrega
+  if (instancia.expandido) {
+    instancia.expandido = false;
+    atualizarBotaoRanking(instancia);
+    instancia.aviso.textContent = 'Mostrando os 5 primeiros colocados.';
+    return;
+  }
+  instancia.erro.hidden = true;
+  if (!ranking.completo) {
+    instancia.carregando = true;
+    atualizarBotaoRanking(instancia);
+    try {
+      const dados = await api(`/api/learning/ranking?limite=${LIMITE_COMPLETO_RANKING}`);
+      // Os cinco primeiros também são redesenhados com a resposta nova, para a lista
+      // inteira vir da mesma consulta (sem posição repetida ou pulada).
+      renderizarRanking(dados);
+    } catch (erro) {
+      instancia.carregando = false;
+      instancia.erro.textContent = 'Não foi possível carregar mais posições. Verifique sua conexão e tente novamente.';
+      instancia.erro.hidden = false;
+      atualizarBotaoRanking(instancia);
+      return;
+    }
+    instancia.carregando = false;
+  }
+  preencherExtraRanking(instancia);
+  instancia.expandido = true;
+  atualizarBotaoRanking(instancia);
+  instancia.aviso.textContent = `Mostrando até ${LIMITE_COMPLETO_RANKING} colocados.`;
+}
+
+// Ao sair da conta, o ranking volta ao estado inicial (o próximo aluno não vê o anterior).
+function limparRanking() {
+  ranking.dados = null;
+  ranking.completo = null;
+  ranking.instancias.forEach((instancia) => {
+    instancia.expandido = false;
+    instancia.carregando = false;
+    instancia.erro.hidden = true;
+    instancia.extra.replaceChildren();
+    instancia.nota.hidden = true;
+    instancia.posicao.hidden = true;
+    instancia.contagem.hidden = true;
+    mostrarEsqueletoRanking(instancia);
+    atualizarBotaoRanking(instancia);
   });
 }
+
+function limiteDoRankingAtual() {
+  return ranking.instancias.some((instancia) => instancia.expandido) ? LIMITE_COMPLETO_RANKING : LIMITE_INICIAL_RANKING;
+}
+
+ranking.instancias = [...document.querySelectorAll('[data-ranking]')].map(montarRanking);
 
 function renderizarHistorico(historico) {
   const previa = elemento('lista-previa-recentes');
@@ -1635,7 +2146,7 @@ function renderizarHistorico(historico) {
   historico.forEach((item) => {
     const linha = corpo.insertRow();
     const nome = linha.insertCell();
-    nome.textContent = item.nome;
+    nome.textContent = item.concluido || item.modo_revisao ? item.nome : `${item.nome} (não aprovada)`;
     const tema = linha.insertCell();
     tema.textContent = `${item.materia} · ${item.tema}`;
     const dificuldade = linha.insertCell();
@@ -1651,7 +2162,7 @@ function renderizarHistorico(historico) {
     refazer.type = 'button';
     refazer.className = 'botao-refazer-historico';
     refazer.textContent = 'Refazer ↻';
-    refazer.disabled = !item.id_tema || Boolean(item.modo_revisao);
+    refazer.disabled = !item.id_tema || Boolean(item.modo_revisao) || !item.concluido;
     refazer.title = 'Criar uma nova tentativa com a mesma matéria, tema e dificuldade';
     refazer.addEventListener('click', () => refazerDesafio(item));
     acao.appendChild(refazer);
@@ -1685,12 +2196,8 @@ async function refazerDesafio(item, lista = null, pos = null) {
 }
 
 elemento('proximo-desafio').addEventListener('click', async () => {
-  if (estado.jornadaReprovada) {
-    const configuracao = estado.configuracaoBase;
-    elemento('janela-quiz').hidden = true;
-    try {
-      await gerarNovoDesafio({ id_tema: configuracao.idTema }, { quantidade: configuracao.quantidade, dificuldadeBase: configuracao.dificuldadeBase });
-    } catch (erro) { mostrarAvisoRapido(`Não foi possível recomeçar: ${erro.message}`); fecharMapaDesafio(); }
+  if (estado.faseReprovada) {
+    await tentarFaseDeNovo();
     return;
   }
   if (estado.modoRevisao) {
@@ -1755,10 +2262,18 @@ let visaoAtual = 'estudo';
 function atualizarBotaoVoltar() {
   const botao = elemento('botao-voltar');
   if (!botao) return;
+  // Na página inicial, sem nada para desfazer, a seta some em vez de ficar parada na tela.
   const semDestino = !historicoVisoes.length && visaoAtual === 'estudo' && !window.ExplAIner?.temPaginaAnteriorDoApp?.();
-  botao.setAttribute('aria-disabled', semDestino ? 'true' : 'false');
-  botao.title = semDestino ? 'Você já está na página inicial' : 'Voltar';
+  botao.hidden = semDestino;
 }
+
+// A logo do topo abre o minijogo (frontend/minijogo). Ela não recarrega a página:
+// recarregar fazia a tela de login aparecer por um instante.
+function aoClicarNaLogo() {
+  elemento('barra-lateral').classList.remove('aberto');
+  window.ExplAIner?.minijogo?.abrir();
+}
+elemento('marca-topo').addEventListener('click', aoClicarNaLogo);
 
 if (window.ExplAIner) {
   window.ExplAIner.aoVoltar = () => {
@@ -1879,6 +2394,25 @@ elemento('formulario-perfil').addEventListener('submit', async (evento) => {
     await atualizarPainel();
   } catch (erro) {
     mostrarAviso(erro.message, 'erro', 'mensagem-perfil');
+  } finally {
+    botao.disabled = false;
+  }
+});
+
+elemento('formulario-senha').addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const formulario = evento.currentTarget;
+  const botao = formulario.querySelector('button');
+  botao.disabled = true;
+  try {
+    await api('/api/auth/change-password', {
+      method: 'POST',
+      body: { senha_atual: elemento('senha-atual').value, senha_nova: elemento('senha-nova').value },
+    });
+    formulario.reset();
+    mostrarAviso('Senha trocada. Use a nova senha na próxima vez que entrar.', 'sucesso', 'mensagem-senha');
+  } catch (erro) {
+    mostrarAviso(erro.message, 'erro', 'mensagem-senha');
   } finally {
     botao.disabled = false;
   }

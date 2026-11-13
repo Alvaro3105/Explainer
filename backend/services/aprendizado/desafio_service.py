@@ -13,6 +13,7 @@ from repositories.tema_repository import TemaRepository
 from repositories.transacao import Transacao
 from services.aprendizado.erros import ErroDeNegocio
 from services.aprendizado.gerador_questoes import gerar_questoes
+from services.aprendizado.limite_geracao import vaga_de_geracao
 from services.aprendizado.regras import (
     PONTOS_POR_DIFICULDADE, QUANTIDADES_PERMITIDAS, dificuldade_da_fase, eh_revisao,
     fases_da_jornada, hoje, normalizar_dificuldade,
@@ -56,16 +57,10 @@ def resultado_das_respostas(aluno, id_desafio):
 
 class DesafioService:
 
-    def catalogo(self):
-        materias = {}
-        for tema in TemaRepository.listar_ordenados():
-            materias.setdefault(tema.materia, []).append({"id_tema": tema.id_tema, "nome": tema.nome})
-        return [{"nome": nome, "temas": temas} for nome, temas in materias.items()]
-
     def desafio_ativo(self, aluno):
         for desafio in DesafioRepository.listar_do_aluno(aluno.id_aluno, mais_recentes_primeiro=True):
             # Revisão não conta como desafio em andamento.
-            if eh_revisao(desafio) or AlunoDesafioRepository.concluido(aluno.id_aluno, desafio.id_desafio):
+            if eh_revisao(desafio) or AlunoDesafioRepository.buscar(aluno.id_aluno, desafio.id_desafio):
                 continue
             total = DesafioQuestaoRepository.contar(desafio.id_desafio)
             # Fase com tudo respondido mas não concluída também volta,
@@ -83,7 +78,8 @@ class DesafioService:
         escolhidas, acertos = resultado_das_respostas(aluno, id_desafio)
         return {"desafio": desafio.to_dict(), "questoes": questoes_do_desafio(id_desafio),
                 "respondidas": escolhidas, "acertos": acertos,
-                "concluido": AlunoDesafioRepository.concluido(aluno.id_aluno, id_desafio)}
+                "concluido": AlunoDesafioRepository.concluido(aluno.id_aluno, id_desafio),
+                "reprovado": AlunoDesafioRepository.reprovado(aluno.id_aluno, id_desafio)}
 
     def criar(self, aluno, dados):
         if dados.get("refazer"):
@@ -105,23 +101,49 @@ class DesafioService:
         tema = TemaRepository.buscar_por_id(id_tema)
         if not tema:
             raise ErroDeNegocio("O tema selecionado não existe.", 404)
+        if not tema.id_materia:
+            # Tema de matéria que saiu do catálogo: fica só no histórico.
+            raise ErroDeNegocio("Este tema não está mais disponível para novos desafios.", 404)
+        # O desafio é de UMA matéria: o tema escolhido precisa ser da matéria selecionada.
+        id_materia = dados.get("id_materia")
+        if id_materia not in (None, "") and str(tema.id_materia) != str(id_materia):
+            raise ErroDeNegocio("Este tema não pertence à matéria selecionada.")
+        # Subtema: o pedido à IA leva o tema principal e o subtema escolhido.
+        pai = TemaRepository.buscar_por_id(tema.id_tema_pai) if tema.id_tema_pai else None
         # A fase vem do navegador, mas o servidor confere: só vale se a fase anterior
-        # do mesmo tema já foi concluída. Se não foi, volta para a fase 1.
+        # do mesmo tema já foi aprovada. Se não foi, desce até a fase liberada.
         fase = min(fase_jornada, fases_da_jornada(quantidade))
-        if fase > 1 and not DesafioRepository.fase_concluida(aluno.id_aluno, tema.id_tema, fase - 1):
-            fase = 1
+        while fase > 1 and not DesafioRepository.fase_concluida(aluno.id_aluno, tema.id_tema, fase - 1):
+            fase -= 1
         # A dificuldade sobe um nível por fase, até "Difícil". O servidor recalcula a
         # dificuldade da fase que vai gravar, para bater com as questões e os pontos.
         dificuldade_base = normalizar_dificuldade(dados.get("dificuldade_base"))
         if dificuldade_base:
             dificuldade = dificuldade_da_fase(dificuldade_base, fase)
+        # Limite por aluno: uma geração por vez, com intervalo e teto por janela e por dia.
+        with vaga_de_geracao(aluno.id_aluno):
+            desafio, origem = self._gerar_e_gravar(aluno, tema, pai, fase, dificuldade, quantidade)
+        return {
+            "desafio": desafio.to_dict(),
+            "tema": tema.to_dict(),
+            "origem_questoes": origem,
+            "questoes": questoes_do_desafio(desafio.id_desafio),
+        }
+
+    def _gerar_e_gravar(self, aluno, tema, pai, fase, dificuldade, quantidade):
+        """Pede as questões ao gerador e grava o desafio. Em qualquer falha, nada fica gravado."""
         try:
             enunciados_anteriores = QuestaoRepository.enunciados_ja_vistos(aluno.id_aluno, tema.id_tema, dificuldade)
+            pedido = (tema.materia, pai.nome if pai else tema.nome, dificuldade, quantidade)
+            subtema = tema.nome if pai else None
+            # A IA pode demorar: a leitura é encerrada antes, para não prender o banco.
+            Transacao.soltar()
+            questoes_geradas, origem = gerar_questoes(*pedido, excluir_enunciados=enunciados_anteriores, subtema=subtema)
+            # Só com as questões novas na mão o desafio antigo sem respostas é trocado.
+            # Se a geração falhar, ele continua lá.
             self._apagar_desafios_em_andamento(aluno)
-            questoes_geradas, origem = gerar_questoes(
-                tema.materia, tema.nome, dificuldade, quantidade, excluir_enunciados=enunciados_anteriores)
             desafio = Desafio(
-                nome=f"{tema.nome} · Fase {fase}",
+                nome=f"{tema.nome[:85]} · Fase {fase}",  # o nome do desafio tem até 100 letras
                 dificuldade=dificuldade,
                 pontuacao=quantidade * PONTOS_POR_DIFICULDADE[dificuldade],
                 quantidade_questoes=quantidade,
@@ -143,18 +165,16 @@ class DesafioService:
                 QuestaoRepository.adicionar(questao)
                 DesafioQuestaoRepository.vincular(desafio.id_desafio, questao.id_questao)
             Transacao.confirmar()
+            return desafio, origem
         except RuntimeError as erro:
             Transacao.desfazer()
-            raise ErroDeNegocio(str(erro), 502)
+            # O gerador diz o motivo (cota, chave recusada, fora do ar) no status e na espera sugerida.
+            espera = getattr(erro, "espera", None)
+            raise ErroDeNegocio(str(erro), getattr(erro, "status", 502),
+                                cabecalhos={"Retry-After": str(espera)} if espera else None)
         except (SQLAlchemyError, KeyError, ValueError):
             Transacao.desfazer()
             raise ErroDeNegocio("Não foi possível criar o desafio. Verifique a configuração e tente novamente.", 500)
-        return {
-            "desafio": desafio.to_dict(),
-            "tema": tema.to_dict(),
-            "origem_questoes": origem,
-            "questoes": questoes_do_desafio(desafio.id_desafio),
-        }
 
     def _criar_revisao(self, aluno, refazer_de):
         """Refazer: usa as mesmas questões, na mesma ordem, de um desafio já concluído."""
@@ -170,7 +190,7 @@ class DesafioService:
             raise ErroDeNegocio("O tema deste desafio não existe mais.", 404)
         try:
             revisao = Desafio(
-                nome=f"{PREFIXO_REVISAO}{tema_origem.nome} · Tentativa", dificuldade=origem.dificuldade, pontuacao=0,
+                nome=f"{PREFIXO_REVISAO}{tema_origem.nome[:78]} · Tentativa", dificuldade=origem.dificuldade, pontuacao=0,
                 quantidade_questoes=origem.quantidade_questoes, data_criacao=hoje(), id_tema=origem.id_tema,
                 id_aluno=aluno.id_aluno, nivel_mapa=origem.nivel_mapa or 1, origem_ia=origem.origem_ia,
             )

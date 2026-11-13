@@ -9,7 +9,7 @@ class Questao(db.Model):
     id_questao = db.Column(db.Integer, primary_key=True, autoincrement=True)
     enunciado = db.Column(db.Text, nullable=False)
     alternativa_correta = db.Column(db.String(1), nullable=True)
-    id_tema = db.Column(db.Integer, db.ForeignKey("Tema.id_tema"), nullable=False)
+    id_tema = db.Column(db.Integer, db.ForeignKey("Tema.id_tema"), nullable=False, index=True)
     alternativas_json = db.Column(db.Text, nullable=True)
     explicacao = db.Column(db.Text, nullable=True)
 

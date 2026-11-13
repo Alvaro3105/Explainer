@@ -24,6 +24,12 @@ class AlunoDesafioRepository:
         return bool(registro and registro.concluido)
 
     @staticmethod
+    def reprovado(id_aluno, id_desafio):
+        """A fase foi avaliada e ficou abaixo da nota mínima?"""
+        registro = AlunoDesafioRepository.buscar(id_aluno, id_desafio)
+        return bool(registro and not registro.concluido)
+
+    @staticmethod
     def contar_concluidos(id_aluno):
         return (Desafio.query.join(AlunoDesafio, AlunoDesafio.id_desafio == Desafio.id_desafio)
                 .filter(AlunoDesafio.id_aluno == id_aluno, AlunoDesafio.concluido.is_(True),

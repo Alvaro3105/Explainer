@@ -2,6 +2,11 @@ import json
 import logging
 import os
 import random
+import re
+import threading
+import time
+import unicodedata
+import urllib.error
 import urllib.request
 
 LETRAS = ("A", "B", "C", "D")
@@ -17,44 +22,184 @@ registro = logging.getLogger(__name__)
 
 TENTATIVAS_IA = 2
 TEMPO_LIMITE_IA = 45
+PRAZO_TOTAL_IA = 80       # segundos para todas as tentativas de um pedido, somadas
+PAUSA_APOS_COTA = 30      # sem chamar o provedor por este tempo depois de um "limite atingido"
+PAUSA_MAXIMA = 120
+LIMITE_ENUNCIADO = 1500
+LIMITE_ALTERNATIVA = 400
+LIMITE_EXPLICACAO = 1200
 MENSAGEM_INDISPONIVEL = "Não foi possível gerar as questões agora. Tente novamente em instantes."
+MENSAGEM_COTA = "A IA atingiu o limite de uso por agora. Aguarde cerca de um minuto e tente de novo."
+MENSAGEM_CHAVE = "A geração de questões está indisponível no momento. Avise a equipe do ExplAIner."
+MENSAGEM_RESPOSTA = "A IA devolveu questões incompletas. Tente gerar de novo."
+
+# Trechos (sem acento e em minúsculas) que aparecem quando a própria IA percebe, na explicação,
+# que a questão não fecha: ela "reavalia", "ajusta" o enunciado ou admite que nenhuma
+# alternativa serve. Questão assim não tem resposta certa e é descartada.
+SINAIS_DE_QUESTAO_QUEBRADA = (
+    "reavaliando", "recalculando", "refazendo o calculo", "ajustando para", "ajustando a questao",
+    "ajustando o enunciado", "corrigindo o enunciado", "corrigindo a questao", "caso a questao peca",
+    "erro no enunciado", "enunciado esta incorreto", "questao esta incorreta", "gabarito incorreto",
+    "nenhuma das alternativas", "nenhuma alternativa esta correta", "nao ha alternativa correta",
+    "nao existe alternativa correta", "alternativa mais proxima", "valor mais proximo entre as alternativas",
+)
+
+
+def questoes_de_reserva(quantidade):
+    """Questões pedidas a mais (uma a cada cinco), para repor as que a validação descartar."""
+    return -(-int(quantidade) // 5)
+
+
+def _explicacao_contraditoria(explicacao):
+    texto = _normalizar(explicacao)
+    return any(sinal in texto for sinal in SINAIS_DE_QUESTAO_QUEBRADA)
+
+
+class ErroDaIA(RuntimeError):
+    """Falha de um provedor. `motivo`: "chave" (recusada), "cota" (limite de uso),
+    "resposta" (veio fora do formato) ou "indisponivel" (rede, tempo esgotado, erro do provedor)."""
+
+    def __init__(self, motivo, detalhe, espera=None):
+        super().__init__(f"Falha ao gerar questões pela IA ({motivo}): {detalhe}")
+        self.motivo = motivo
+        self.espera = espera
+
+
+class ErroDeGeracao(RuntimeError):
+    """O que o aluno vê quando nenhuma fonte gerou as questões: mensagem, status HTTP e espera sugerida."""
+
+    def __init__(self, mensagem, status=502, espera=None):
+        super().__init__(mensagem)
+        self.status = status
+        self.espera = espera
+
+
+def _igual(texto):
+    """Chave para achar textos repetidos: minúsculas e espaços simples. Sinais e números
+    ficam como estão, porque "x + 7" e "x − 7" são questões diferentes."""
+    return re.sub(r"\s+", " ", str(texto or "")).strip().casefold()
+
+
+_NUMERO = re.compile(r"\d[\d.]*(?:,\d+)?")
+
+
+def _numeros(texto):
+    """Números do texto, na ordem em que aparecem, lidos no formato brasileiro (1.200,50)."""
+    valores = []
+    for bruto in _NUMERO.findall(str(texto or "")):
+        bruto = bruto.rstrip(".")
+        if re.fullmatch(r"\d{1,3}(\.\d{3})+(,\d+)?", bruto):
+            bruto = bruto.replace(".", "")          # ponto de milhar
+        try:
+            valores.append(round(float(bruto.replace(",", ".")), 6))
+        except ValueError:
+            continue
+    return valores
+
+
+def _mesmo_valor(a, b):
+    """Iguais, aceitando a troca entre porcentagem e decimal (36% e 0,36)."""
+    return any(abs(a - b * fator) < 1e-6 for fator in (1, 100, 0.01))
+
+
+def _gabarito_desmentido_pelos_numeros(alternativas, correta, explicacao):
+    """A conta da explicação termina no número de OUTRA alternativa e nunca cita o da correta?
+
+    É uma conferência estreita de propósito, para só recusar o caso sem dúvida: as quatro
+    alternativas têm um único número cada, todos diferentes; a explicação traz uma conta
+    (tem "="); o resultado depois do último "=" é o valor de outra alternativa; e o valor
+    do gabarito não aparece em lugar nenhum da explicação.
+    Não resolve a questão: só pega a letra do gabarito trocada. Em qualquer outro caso
+    (texto, datas, unidades diferentes, mais de um número por alternativa) não opina.
+    """
+    valores = {}
+    for letra, texto in zip(LETRAS, alternativas):
+        numeros = _numeros(texto)
+        if len(numeros) != 1:
+            return False
+        valores[letra] = numeros[0]
+    if len(set(valores.values())) < len(LETRAS):
+        return False
+    explicacao = str(explicacao or "")
+    if "=" not in explicacao:
+        return False
+    depois_do_igual = _numeros(explicacao.rsplit("=", 1)[1])
+    if not depois_do_igual:
+        return False
+    if any(_mesmo_valor(numero, valores[correta]) for numero in _numeros(explicacao)):
+        return False
+    return any(_mesmo_valor(depois_do_igual[0], valor) for letra, valor in valores.items() if letra != correta)
+
+
+def _questao_valida(item):
+    """Devolve a questão no formato do sistema, ou None se ela não puder ser usada."""
+    if not isinstance(item, dict):
+        return None
+    enunciado = str(item.get("enunciado", "")).strip()
+    alternativas = item.get("alternativas", {})
+    correta = str(item.get("alternativa_correta", "")).upper().strip()
+    if isinstance(alternativas, list) and len(alternativas) == 4:
+        alternativas = dict(zip(LETRAS, alternativas))
+    if not enunciado or len(enunciado) > LIMITE_ENUNCIADO or not isinstance(alternativas, dict) or correta not in LETRAS:
+        return None
+    textos = [str(alternativas.get(letra, "") or "").strip() for letra in LETRAS]
+    if any(not texto or len(texto) > LIMITE_ALTERNATIVA for texto in textos):
+        return None
+    if len({_igual(texto) for texto in textos}) < len(LETRAS):
+        return None  # alternativas repetidas: a questão teria mais de uma resposta igual
+    explicacao = str(item.get("explicacao", "") or "").strip()
+    if _explicacao_contraditoria(explicacao):
+        return None  # a explicação desmente o próprio gabarito
+    if _gabarito_desmentido_pelos_numeros(textos, correta, explicacao):
+        return None  # a conta chega ao valor de outra alternativa: a letra do gabarito está trocada
+    explicacao = explicacao[:LIMITE_EXPLICACAO]
+    return {
+        "enunciado": enunciado,
+        "alternativas": dict(zip(LETRAS, textos)),
+        "alternativa_correta": correta,
+        "explicacao": explicacao or "Revise o conceito apresentado para compreender a resposta correta.",
+    }
 
 
 def _validar_questoes(questoes, quantidade):
+    """Fica com as primeiras `quantidade` questões válidas e diferentes entre si.
+
+    Questão incompleta, com alternativas repetidas, grande demais, com explicação que
+    desmente o gabarito ou com o mesmo enunciado de outra do lote é descartada.
+    Se não sobrar a quantidade pedida, o lote é recusado.
+    """
     if not isinstance(questoes, list) or len(questoes) < quantidade:
         raise ValueError("A IA não retornou a quantidade solicitada de questões.")
-    normalizadas = []
-    for item in questoes[:quantidade]:
-        if not isinstance(item, dict):
-            raise ValueError("Questão incompleta recebida da IA.")
-        enunciado = str(item.get("enunciado", "")).strip()
-        alternativas = item.get("alternativas", {})
-        correta = str(item.get("alternativa_correta", "")).upper().strip()
-        if isinstance(alternativas, list) and len(alternativas) == 4:
-            alternativas = dict(zip(LETRAS, alternativas))
-        if not enunciado or not isinstance(alternativas, dict) or any(not str(alternativas.get(letra, "")).strip() for letra in LETRAS):
-            raise ValueError("Questão incompleta recebida da IA.")
-        if correta not in LETRAS:
-            raise ValueError("Alternativa correta inválida recebida da IA.")
-        normalizadas.append({
-            "enunciado": enunciado,
-            "alternativas": {letra: str(alternativas[letra]).strip() for letra in LETRAS},
-            "alternativa_correta": correta,
-            "explicacao": str(item.get("explicacao", "")).strip() or "Revise o conceito apresentado para compreender a resposta correta.",
-        })
-    return normalizadas
+    validas, enunciados = [], set()
+    for item in questoes:
+        if len(validas) == quantidade:
+            break
+        questao = _questao_valida(item)
+        if questao is None or _igual(questao["enunciado"]) in enunciados:
+            continue
+        enunciados.add(_igual(questao["enunciado"]))
+        validas.append(questao)
+    if len(validas) < quantidade:
+        raise ValueError("A IA retornou questões incompletas, repetidas ou fora do formato.")
+    return validas
 
 
 SISTEMA_IA = "Você é um elaborador rigoroso de questões educacionais. Priorize precisão factual e siga exatamente o formato JSON solicitado."
 MODELOS_GEMINI = ("gemini-flash-latest", "gemini-3.1-flash-lite", "gemini-3-flash-preview")
 
 
-def _montar_prompt(materia, tema, dificuldade, quantidade, excluir_enunciados=None):
+def _montar_prompt(materia, tema, dificuldade, quantidade, excluir_enunciados=None, subtema=None):
     nivel = rotulo_dificuldade(dificuldade)
+    foco = (f"Tema: {tema}. Subtema: {subtema}. Todas as questões devem tratar especificamente do subtema \"{subtema}\"."
+            if subtema else f"Tema específico: {tema}.")
     prompt = f"""Crie exatamente {quantidade} questões de múltipla escolha em português brasileiro.
-Matéria: {materia}. Tema específico: {tema}. Dificuldade: {nivel}.
+Matéria: {materia}. {foco} Dificuldade: {nivel}.
+Público: estudantes do Ensino Médio que se preparam para o ENEM. Use linguagem clara e adequada a essa idade.
+Não misture conteúdos de outras matérias: todas as questões precisam ser de {materia}.
 As questões devem ser educacionalmente corretas, distintas, relevantes ao tema e apropriadas a estudantes.
 Cada questão deve ter quatro alternativas plausíveis A, B, C e D, apenas uma correta, e explicação curta.
+Antes de escrever cada questão, resolva-a por completo e confira que exatamente uma alternativa está correta e que é ela a indicada em "alternativa_correta". Se a conta não fechar com nenhuma alternativa, descarte a questão e crie outra no lugar.
+A explicação deve ser direta e chegar ao valor da alternativa correta. Não escreva dúvidas, correções nem revisões do próprio enunciado na explicação.
 Não use 'todas as anteriores' nem 'nenhuma das anteriores'. Não repita enunciados, exemplos, números, contexto ou estrutura dentro deste lote.
 Varie deliberadamente os subtemas, situações-problema, formatos de raciocínio e exemplos. Não use perguntas genéricas que só mencionem o tema no texto. TODA questão precisa testar diretamente um conceito do tema específico; se o tema for "corpo humano", não pergunte sobre planetas, clima ou fotossíntese. Antes de retornar, confira individualmente que cada enunciado, resposta e explicação pertence à matéria E ao tema. Se não houver conteúdo suficiente para criar questões corretas, gere variações de raciocínio dentro do próprio tema, nunca mude para outro assunto.
 A dificuldade precisa mudar o tipo de raciocínio: Fácil = conceitos fundamentais e identificação; Médio = aplicação, interpretação e relações entre conceitos; Difícil = análise, inferência e resolução em várias etapas. Evite reutilizar a mesma pergunta em dificuldades diferentes.
@@ -66,19 +211,73 @@ Retorne exclusivamente JSON neste formato:
     return prompt
 
 
-def _tentar(requisicoes, extrair, quantidade):
-    ultimo_erro = None
-    for requisicao in requisicoes:
+_pausas = {}  # provedor -> até quando (relógio monotônico) ele fica sem ser chamado
+_trava_pausas = threading.Lock()
+
+
+def _classificar(erro):
+    """Motivo da falha e espera sugerida pelo provedor (cabeçalho Retry-After), se houver."""
+    if isinstance(erro, urllib.error.HTTPError):
+        espera = None
         try:
-            with urllib.request.urlopen(requisicao, timeout=TEMPO_LIMITE_IA) as resposta:
+            espera = max(1, min(int(erro.headers.get("Retry-After", "")), PAUSA_MAXIMA))
+        except (TypeError, ValueError, AttributeError):
+            pass
+        if erro.code == 429:
+            return "cota", espera, "HTTP 429"
+        corpo = ""
+        try:
+            corpo = erro.read(2000).decode("utf-8", "replace")
+        except Exception:  # noqa: BLE001 - o corpo do erro é só uma pista a mais
+            pass
+        # O Gemini responde 400 (e não 401) quando a chave é inválida.
+        if erro.code in (401, 403) or "API_KEY_INVALID" in corpo or "API key not valid" in corpo:
+            return "chave", None, f"HTTP {erro.code}"
+        return "indisponivel", espera, f"HTTP {erro.code}"
+    if isinstance(erro, OSError):
+        return "indisponivel", None, type(erro).__name__
+    return "resposta", None, str(erro)[:120]
+
+
+def _tentar(provedor, requisicoes, extrair, quantidade, prazo=None, insistir_na_cota=False):
+    """Faz as requisições em ordem até uma devolver questões válidas.
+
+    Para na hora quando a chave é recusada (insistir não adianta) e, a menos que
+    `insistir_na_cota`, quando o limite de uso é atingido. Respeita o prazo total do pedido.
+    Os avisos gravados no log nunca levam a chave nem o corpo da resposta.
+    """
+    with _trava_pausas:
+        em_pausa = _pausas.get(provedor, 0) - time.monotonic()
+    if em_pausa > 0:
+        raise ErroDaIA("cota", f"{provedor} em pausa depois de atingir o limite", espera=int(em_pausa) + 1)
+    motivos, espera, detalhe = [], None, "sem tempo para tentar"
+    for requisicao in requisicoes:
+        restante = (prazo - time.monotonic()) if prazo else TEMPO_LIMITE_IA
+        if restante < 5:
+            break
+        try:
+            with urllib.request.urlopen(requisicao, timeout=min(TEMPO_LIMITE_IA, restante)) as resposta:
                 retorno = json.loads(resposta.read().decode("utf-8"))
             return _validar_questoes(json.loads(extrair(retorno))["questoes"], quantidade)
         except (OSError, KeyError, IndexError, TypeError, AttributeError, ValueError) as erro:
-            ultimo_erro = erro
-    raise RuntimeError(f"Falha ao gerar questões pela IA: {ultimo_erro}") from ultimo_erro
+            motivo, espera_do_provedor, detalhe = _classificar(erro)
+            motivos.append(motivo)
+            espera = espera_do_provedor or espera
+            registro.warning("IA %s: tentativa falhou (%s, %s)", provedor, motivo, detalhe)
+            if motivo == "chave" or (motivo == "cota" and not insistir_na_cota):
+                break
+    if "chave" in motivos:
+        motivo = "chave"
+    elif motivos and all(m == "cota" for m in motivos):
+        motivo = "cota"
+        with _trava_pausas:
+            _pausas[provedor] = time.monotonic() + (espera or PAUSA_APOS_COTA)
+    else:
+        motivo = motivos[-1] if motivos else "indisponivel"
+    raise ErroDaIA(motivo, detalhe, espera=espera)
 
 
-def _gerar_com_gemini(materia, tema, dificuldade, quantidade, excluir_enunciados=None):
+def _gerar_com_gemini(materia, tema, dificuldade, quantidade, excluir_enunciados=None, subtema=None, prazo=None):
     chave = os.getenv("GEMINI_API_KEY", "").strip()
     if not chave:
         return None
@@ -86,7 +285,8 @@ def _gerar_com_gemini(materia, tema, dificuldade, quantidade, excluir_enunciados
     modelos = ([escolhido] if escolhido else []) + [m for m in MODELOS_GEMINI if m != escolhido]
     payload = json.dumps({
         "systemInstruction": {"parts": [{"text": SISTEMA_IA}]},
-        "contents": [{"role": "user", "parts": [{"text": _montar_prompt(materia, tema, dificuldade, quantidade, excluir_enunciados)}]}],
+        "contents": [{"role": "user", "parts": [{"text": _montar_prompt(
+            materia, tema, dificuldade, quantidade + questoes_de_reserva(quantidade), excluir_enunciados, subtema)}]}],
         "generationConfig": {"responseMimeType": "application/json", "temperature": 0.9},
     }).encode("utf-8")
     requisicoes = [urllib.request.Request(
@@ -95,10 +295,12 @@ def _gerar_com_gemini(materia, tema, dificuldade, quantidade, excluir_enunciados
         headers={"x-goog-api-key": chave, "Content-Type": "application/json"},
         method="POST",
     ) for modelo in modelos[:TENTATIVAS_IA]]
-    return _tentar(requisicoes, lambda r: r["candidates"][0]["content"]["parts"][0]["text"], quantidade)
+    # Cada modelo do Gemini tem a sua cota: se um atingiu o limite, vale tentar o seguinte.
+    return _tentar("gemini", requisicoes, lambda r: r["candidates"][0]["content"]["parts"][0]["text"], quantidade,
+                   prazo=prazo, insistir_na_cota=True)
 
 
-def _gerar_com_openai(materia, tema, dificuldade, quantidade, excluir_enunciados=None):
+def _gerar_com_openai(materia, tema, dificuldade, quantidade, excluir_enunciados=None, subtema=None, prazo=None):
     chave = os.getenv("OPENAI_API_KEY", "").strip()
     if not chave:
         return None
@@ -106,11 +308,12 @@ def _gerar_com_openai(materia, tema, dificuldade, quantidade, excluir_enunciados
         "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
         "messages": [
             {"role": "system", "content": SISTEMA_IA},
-            {"role": "user", "content": _montar_prompt(materia, tema, dificuldade, quantidade, excluir_enunciados)},
+            {"role": "user", "content": _montar_prompt(
+                materia, tema, dificuldade, quantidade + questoes_de_reserva(quantidade), excluir_enunciados, subtema)},
         ],
         "response_format": {"type": "json_object"},
         "temperature": 0.9,
-        "max_completion_tokens": min(16000, 1000 + 450 * int(quantidade)),
+        "max_completion_tokens": min(16000, 1000 + 450 * (int(quantidade) + questoes_de_reserva(quantidade))),
     }
     requisicao = urllib.request.Request(
         "https://api.openai.com/v1/chat/completions",
@@ -118,7 +321,8 @@ def _gerar_com_openai(materia, tema, dificuldade, quantidade, excluir_enunciados
         headers={"Authorization": f"Bearer {chave}", "Content-Type": "application/json"},
         method="POST",
     )
-    return _tentar([requisicao] * TENTATIVAS_IA, lambda r: r["choices"][0]["message"]["content"], quantidade)
+    return _tentar("openai", [requisicao] * TENTATIVAS_IA, lambda r: r["choices"][0]["message"]["content"], quantidade,
+                   prazo=prazo)
 
 
 BANCO_TEMATICO = {
@@ -234,13 +438,29 @@ BANCO_TEMATICO = {
     ],
 }
 
-BANCO_TEMATICO["primeiro grau"] = BANCO_TEMATICO["do 1º grau"]
-BANCO_TEMATICO["do 1o grau"] = BANCO_TEMATICO["do 1º grau"]
+# Nomes de tema (sem acentos e em minúsculas) que usam cada banco local. A comparação é exata,
+# para um tema parecido (ex.: "Função do primeiro grau") não receber questões de outro assunto.
+TEMAS_DO_BANCO_LOCAL = {
+    "corpo humano": "corpo humano",
+    "equacao do primeiro grau": "do 1º grau",
+    "equacoes do primeiro grau": "do 1º grau",
+    "equacao do 1o grau": "do 1º grau",
+    "equacoes do 1o grau": "do 1º grau",
+    "figuras de linguagem": "figuras de linguagem",
+    "sistema solar": "sistema solar",
+    "brasil colonia": "brasil col",
+}
+
+
+def _normalizar(texto):
+    texto = unicodedata.normalize("NFKD", str(texto or ""))
+    texto = "".join(letra for letra in texto if not unicodedata.combining(letra)).casefold()
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", texto)).strip()
 
 
 def _banco_do_tema(tema):
-    tema_normalizado = str(tema or "").strip().casefold()
-    return next((questoes for nome, questoes in BANCO_TEMATICO.items() if nome in tema_normalizado), None)
+    chave = TEMAS_DO_BANCO_LOCAL.get(_normalizar(tema))
+    return BANCO_TEMATICO[chave] if chave else None
 
 
 def _gerar_local(tema, quantidade, excluir_enunciados=None):
@@ -266,12 +486,33 @@ def _gerar_local(tema, quantidade, excluir_enunciados=None):
     return saida
 
 
-def gerar_questoes(materia, tema, dificuldade, quantidade, excluir_enunciados=None):
+def _erro_para_o_aluno(motivos, espera):
+    """Escolhe a mensagem e o status conforme o motivo das falhas da IA."""
+    if "cota" in motivos:
+        return ErroDeGeracao(MENSAGEM_COTA, 503, espera=espera or 60)
+    if "chave" in motivos:
+        registro.error("A chave da IA foi recusada pelo provedor. Confira GEMINI_API_KEY / OPENAI_API_KEY.")
+        return ErroDeGeracao(MENSAGEM_CHAVE, 503)
+    if motivos and all(motivo == "resposta" for motivo in motivos):
+        return ErroDeGeracao(MENSAGEM_RESPOSTA, 502)
+    return ErroDeGeracao(MENSAGEM_INDISPONIVEL, 502)
+
+
+def gerar_questoes(materia, tema, dificuldade, quantidade, excluir_enunciados=None, subtema=None):
+    """Questões do tema (e do subtema, se houver): Gemini, depois OpenAI, depois o banco local."""
+    prazo = time.monotonic() + PRAZO_TOTAL_IA
+    motivos, espera = [], None
     for gerador in (_gerar_com_gemini, _gerar_com_openai):
         try:
-            geradas = gerador(materia, tema, dificuldade, quantidade, excluir_enunciados)
+            geradas = gerador(materia, tema, dificuldade, quantidade, excluir_enunciados, subtema=subtema, prazo=prazo)
             if geradas:
                 return geradas, "ia"
         except RuntimeError as erro:
             registro.warning("%s", erro)
-    return _gerar_local(tema, quantidade, excluir_enunciados), "banco_local"
+            motivos.append(getattr(erro, "motivo", "indisponivel"))
+            espera = getattr(erro, "espera", None) or espera
+    # O banco local só serve quando o nome escolhido é exatamente um dos temas que ele cobre.
+    try:
+        return _gerar_local(subtema or tema, quantidade, excluir_enunciados), "banco_local"
+    except RuntimeError:
+        raise _erro_para_o_aluno(motivos, espera) from None

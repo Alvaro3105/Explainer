@@ -2,8 +2,10 @@ from functools import wraps
 
 from flask import Blueprint, jsonify, request, session
 
+from services.aprendizado.catalogo_service import CatalogoService
 from services.aprendizado.conclusao_service import ConclusaoService
 from services.aprendizado.conta_service import ContaService
+from repositories.transacao import Transacao
 from services.aprendizado.desafio_service import DesafioService
 from services.aprendizado.erros import ErroDeNegocio
 from services.aprendizado.progresso_service import ProgressoService
@@ -41,6 +43,10 @@ def rota(exige_login=True):
                 for nome, valor in erro.cabecalhos.items():
                     resposta.headers[nome] = valor
                 return resposta, erro.status
+            except OverflowError:
+                # Número grande demais para o banco (ou "Infinity" no JSON): é erro de quem enviou.
+                Transacao.desfazer()
+                return jsonify({"erro": "Número fora do limite permitido."}), 400
         return envolvida
     return decorador
 
@@ -50,7 +56,7 @@ def rota(exige_login=True):
 @aprendizado_controller.post("/api/auth/register")
 @rota(exige_login=False)
 def registrar_conta(_aluno):
-    aluno = ContaService().registrar(_dados())
+    aluno = ContaService().registrar(_dados(), request.remote_addr)
     _iniciar_sessao(aluno)
     return jsonify({"aluno": aluno.to_dict()}), 201
 
@@ -78,6 +84,14 @@ def excluir_propria_conta(aluno):
     return jsonify({"ok": True})
 
 
+@aprendizado_controller.post("/api/auth/change-password")
+@rota()
+def trocar_senha(aluno):
+    dados = _dados()
+    ContaService().trocar_senha(aluno, dados.get("senha_atual"), dados.get("senha_nova"), request.remote_addr)
+    return jsonify({"ok": True})
+
+
 @aprendizado_controller.post("/api/auth/accept-terms")
 @rota()
 def aceitar_termos(aluno):
@@ -100,10 +114,31 @@ def atualizar_perfil(aluno):
 
 # Rotas dos desafios
 
+def _filtros():
+    return request.args.get("q", ""), request.args.get("limite"), request.args.get("pagina", 1)
+
+
 @aprendizado_controller.get("/api/learning/catalog")
 @rota(exige_login=False)
 def catalogo_estudo(_aluno):
-    return jsonify({"materias": DesafioService().catalogo()})
+    """Lista ou pesquisa as matérias (?q=mat). Os temas vêm pelas rotas abaixo, aos poucos."""
+    texto, limite, pagina = _filtros()
+    return jsonify(CatalogoService().materias(texto, limite, pagina))
+
+
+@aprendizado_controller.get("/api/learning/catalog/<int:id_materia>/themes")
+@rota(exige_login=False)
+def temas_da_materia(_aluno, id_materia):
+    """Pesquisa temas e subtemas de UMA matéria (?q=fin&limite=8)."""
+    texto, limite, pagina = _filtros()
+    return jsonify(CatalogoService().temas(id_materia, texto, limite, pagina))
+
+
+@aprendizado_controller.get("/api/learning/catalog/themes/<int:id_tema>/subtopics")
+@rota(exige_login=False)
+def subtemas_do_tema(_aluno, id_tema):
+    texto, limite, pagina = _filtros()
+    return jsonify(CatalogoService().subtemas(id_tema, texto, limite, pagina))
 
 
 @aprendizado_controller.get("/api/learning/active-challenge")
@@ -147,8 +182,8 @@ def registrar_tempo_ativo(aluno):
 @aprendizado_controller.get("/api/learning/ranking")
 @rota(exige_login=False)
 def ranking_de_estudo(aluno):
-    limite = request.args.get("limite", default=20, type=int)
-    return jsonify(ProgressoService().ranking(aluno, limite))
+    """?limite=5 (início) ou ?limite=100 (lista completa). Outro valor vira 5."""
+    return jsonify(ProgressoService().ranking(aluno, request.args.get("limite")))
 
 
 @aprendizado_controller.get("/api/learning/history")

@@ -16,7 +16,7 @@ class RespostaDesafio(db.Model):
     id_resposta = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_aluno = db.Column(db.Integer, db.ForeignKey("Aluno.id_aluno"), nullable=False, index=True)
     id_desafio = db.Column(db.Integer, db.ForeignKey("desafio.id_desafio"), nullable=False, index=True)
-    id_questao = db.Column(db.Integer, db.ForeignKey("Questao.id_questao"), nullable=False)
+    id_questao = db.Column(db.Integer, db.ForeignKey("Questao.id_questao"), nullable=False, index=True)
     alternativa_escolhida = db.Column(db.String(1), nullable=False)
     correta = db.Column(db.Boolean, nullable=False, default=False)
     pontos_ganhos = db.Column(db.Integer, nullable=False, default=0)

@@ -12,7 +12,12 @@ _TMP = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
 os.environ["DATABASE_URL"] = os.getenv("TEST_DATABASE_URL") or f"sqlite:///{Path(_TMP.name, 'teste.db').as_posix()}"
 os.environ["OPENAI_API_KEY"] = ""
 os.environ["GEMINI_API_KEY"] = ""
+os.environ["GEMINI_MODEL"] = ""
 os.environ["FLASK_SECRET_KEY"] = "chave-de-teste"
+# Os testes criam vários desafios seguidos com o mesmo aluno; o limite de geração
+# tem testes próprios em tests/test_protecoes.py e fica desligado nos demais.
+for _limite in ("INTERVALO_ENTRE_GERACOES", "GERACOES_POR_JANELA", "GERACOES_POR_DIA", "CADASTROS_POR_HORA_POR_IP"):
+    os.environ[_limite] = "0"
 os.environ.pop("ENABLE_ADMIN_PANEL", None)
 os.environ.pop("CORS_ORIGINS", None)
 sys.path.insert(0, str(BACKEND))
@@ -21,11 +26,11 @@ import app as app_module
 
 
 def tema_com_banco_local(client):
-    catalogo = client.get("/api/learning/catalog").get_json()
-    for materia in catalogo["materias"]:
-        if materia["nome"] == "Ciências":
-            return next(t for t in materia["temas"] if t["nome"] == "Sistema solar")["id_tema"]
-    raise AssertionError("Tema com banco local não encontrado no catálogo inicial")
+    """Física > Sistema Solar, achado pela busca do catálogo. Ele tem questões no banco local."""
+    materias = client.get("/api/learning/catalog?q=fisica").get_json()["materias"]
+    fisica = next(m for m in materias if m["nome"] == "Física")
+    temas = client.get(f"/api/learning/catalog/{fisica['id_materia']}/themes?q=sistema solar").get_json()["temas"]
+    return next(t for t in temas if t["nome"] == "Sistema Solar")["id_tema"]
 
 
 class BaseApi(unittest.TestCase):
@@ -45,15 +50,34 @@ class BaseApi(unittest.TestCase):
         self.assertEqual(201, resposta.status_code, resposta.get_data(as_text=True))
         return resposta.get_json()
 
-    def concluir(self, desafio):
+    def gabarito(self, id_questao):
+        from models.model_questao import Questao
+        with app_module.app.app_context():
+            return app_module.d.db.session.get(Questao, id_questao).alternativa_correta
+
+    def responder_todas(self, desafio, acertos=None):
+        """Responde todas as questões, acertando as `acertos` primeiras (todas, se não informado)."""
         id_desafio = desafio["desafio"]["id_desafio"]
-        for questao in desafio["questoes"]:
+        total = len(desafio["questoes"])
+        acertos = total if acertos is None else acertos
+        for indice, questao in enumerate(desafio["questoes"]):
+            certa = self.gabarito(questao["id_questao"])
+            letra = certa if indice < acertos else next(x for x in "ABCD" if x != certa)
             resposta = self.client.post(f"/api/learning/challenges/{id_desafio}/answer", json={
-                "id_questao": questao["id_questao"], "alternativa": "A"})
+                "id_questao": questao["id_questao"], "alternativa": letra})
             self.assertEqual(200, resposta.status_code, resposta.get_data(as_text=True))
+            self.assertEqual(indice < acertos, resposta.get_json()["correta"])
+
+    def concluir(self, desafio, acertos=None):
+        """Responde tudo e conclui. Por padrão acerta todas, para a fase ser aprovada."""
+        self.responder_todas(desafio, acertos)
+        id_desafio = desafio["desafio"]["id_desafio"]
         conclusao = self.client.post(f"/api/learning/challenges/{id_desafio}/complete", json={})
         self.assertEqual(200, conclusao.status_code, conclusao.get_data(as_text=True))
         return conclusao.get_json()
+
+    def pontos(self):
+        return self.client.get("/api/learning/me").get_json()["aluno"]["pontos"]
 
 
 class TestSeguranca(BaseApi):
@@ -197,37 +221,198 @@ class TestProgressaoDeDificuldade(BaseApi):
         self.assertIn("Médio", resposta.get_json()["erro"])
 
 
-class TestReprovacaoDaJornada(BaseApi):
+class TestNotaMinimaDaFase(BaseApi):
+    """A fase só é aprovada com pelo menos 60% de acertos."""
 
-    def errar_tudo(self, desafio):
-        from models.model_questao import Questao
-        id_desafio = desafio["desafio"]["id_desafio"]
-        for q in desafio["questoes"]:
-            with app_module.app.app_context():
-                certa = app_module.d.db.session.get(Questao, q["id_questao"]).alternativa_correta
-            errada = next(letra for letra in "ABCD" if letra != certa)
-            resposta = self.client.post(f"/api/learning/challenges/{id_desafio}/answer",
-                                        json={"id_questao": q["id_questao"], "alternativa": errada})
-            self.assertFalse(resposta.get_json()["correta"])
-        return self.client.post(f"/api/learning/challenges/{id_desafio}/complete", json={}).get_json()
+    def test_menos_de_60_por_cento_nao_aprova(self):
+        self.registrar("abaixo@exemplo.com")
+        for quantidade, acertos, percentual in ((5, 2, 40), (20, 11, 55), (5, 0, 0)):
+            with self.subTest(quantidade=quantidade, acertos=acertos):
+                resultado = self.concluir(self.criar_desafio(quantidade_questoes=quantidade), acertos=acertos)
+                self.assertFalse(resultado["concluido"])
+                self.assertTrue(resultado["reprovado"])
+                self.assertFalse(resultado["aprovado"])
+                self.assertEqual(percentual, resultado["percentual_acertos"])
+                self.assertEqual("reprovado", resultado["desempenho"])
+                self.assertEqual(60, resultado["minimo_para_avancar"])
 
-    def test_jornada_com_muitos_erros_e_reprovada(self):
+    def test_exatamente_60_por_cento_aprova(self):
+        self.registrar("exato@exemplo.com")
+        for quantidade, acertos in ((5, 3), (20, 12)):
+            with self.subTest(quantidade=quantidade):
+                resultado = self.concluir(self.criar_desafio(quantidade_questoes=quantidade), acertos=acertos)
+                self.assertTrue(resultado["concluido"])
+                self.assertTrue(resultado["aprovado"])
+                self.assertEqual(60, resultado["percentual_acertos"])
+                self.assertEqual("aprovado", resultado["desempenho"])
+                self.assertEqual(10, resultado["bonus_conclusao"])
+                self.assertEqual(0, resultado["bonus_perfeito"])
+
+    def test_acima_de_60_por_cento_aprova(self):
+        self.registrar("acima@exemplo.com")
+        for acertos, percentual, desempenho, bonus_perfeito in ((4, 80, "otimo", 0), (5, 100, "perfeito", 25)):
+            with self.subTest(acertos=acertos):
+                resultado = self.concluir(self.criar_desafio(), acertos=acertos)
+                self.assertTrue(resultado["concluido"])
+                self.assertEqual(percentual, resultado["percentual_acertos"])
+                self.assertEqual(desempenho, resultado["desempenho"])
+                self.assertEqual(bonus_perfeito, resultado["bonus_perfeito"])
+
+    def test_feedback_corresponde_a_porcentagem_real(self):
+        self.registrar("feedback@exemplo.com")
+        esperado = {0: "reprovado", 1: "reprovado", 2: "reprovado", 3: "aprovado", 4: "otimo", 5: "perfeito"}
+        for acertos, desempenho in esperado.items():
+            with self.subTest(acertos=acertos):
+                resultado = self.concluir(self.criar_desafio(), acertos=acertos)
+                self.assertEqual(acertos, resultado["questoes_corretas"])
+                self.assertEqual(5, resultado["quantidade_questoes"])
+                self.assertEqual(round(acertos * 100 / 5), resultado["percentual_acertos"])
+                self.assertEqual(desempenho, resultado["desempenho"])
+                self.assertEqual(acertos >= 3, resultado["aprovado"])
+
+    def test_reprovar_mantem_historico_e_pontos_das_respostas(self):
         from models.model_desafio import Desafio
-        aluno = self.registrar("reprova@exemplo.com")
+        aluno = self.registrar("historico@exemplo.com")
         id_tema = tema_com_banco_local(self.client)
-        fase1 = self.criar_desafio(id_tema=id_tema, quantidade_questoes=20, dificuldade="facil",
-                                   dificuldade_base="facil", fase_jornada=1)
-        self.assertTrue(self.errar_tudo(fase1)["concluido"])
-        fase2 = self.criar_desafio(id_tema=id_tema, quantidade_questoes=20, dificuldade="normal",
-                                   dificuldade_base="facil", fase_jornada=2)
+        fase1 = self.criar_desafio(id_tema=id_tema, dificuldade_base="facil", fase_jornada=1)
+        self.assertTrue(self.concluir(fase1)["concluido"])
+        fase2 = self.criar_desafio(id_tema=id_tema, dificuldade_base="facil", fase_jornada=2)
         self.assertEqual(2, fase2["desafio"]["nivel_mapa"])
-        resultado = self.errar_tudo(fase2)
+        self.responder_todas(fase2, acertos=1)
+        pontos_antes = self.pontos()
+        resultado = self.client.post(f"/api/learning/challenges/{fase2['desafio']['id_desafio']}/complete", json={}).get_json()
         self.assertTrue(resultado["reprovado"])
-        self.assertEqual(100, resultado["taxa_erro"])
-        self.assertEqual(0, resultado["pontos_totais"])
+        self.assertEqual(pontos_antes, resultado["pontos_totais"])
+        self.assertEqual(pontos_antes, self.pontos())
         with app_module.app.app_context():
-            self.assertEqual(0, Desafio.query.filter_by(id_aluno=aluno["id_aluno"]).count())
+            self.assertEqual(2, Desafio.query.filter_by(id_aluno=aluno["id_aluno"]).count())
+        historico = {item["id_desafio"]: item for item in self.client.get("/api/learning/history").get_json()["historico"]}
+        self.assertTrue(historico[fase1["desafio"]["id_desafio"]]["concluido"])
+        self.assertFalse(historico[fase2["desafio"]["id_desafio"]]["concluido"])
+
+    def test_proxima_fase_fica_bloqueada_sem_a_nota_minima(self):
+        self.registrar("bloqueio@exemplo.com")
+        id_tema = tema_com_banco_local(self.client)
+        fase1 = self.criar_desafio(id_tema=id_tema, dificuldade_base="facil", fase_jornada=1)
+        self.assertTrue(self.concluir(fase1, acertos=2)["reprovado"])
+        # Fase 1 reprovada: pedir a fase 2 (ou a 5) devolve a fase 1 de novo.
+        for pedido in (2, 5):
+            with self.subTest(pedido=pedido):
+                nova = self.criar_desafio(id_tema=id_tema, dificuldade_base="facil", fase_jornada=pedido)
+                self.assertEqual(1, nova["desafio"]["nivel_mapa"])
+        self.assertTrue(self.concluir(nova)["concluido"])
+        fase2 = self.criar_desafio(id_tema=id_tema, dificuldade_base="facil", fase_jornada=2)
+        self.assertEqual(2, fase2["desafio"]["nivel_mapa"])
+        self.assertTrue(self.concluir(fase2, acertos=1)["reprovado"])
+        # Fase 2 reprovada: pedir a fase 3 devolve a fase 2, não a 3 nem a 1.
+        de_novo = self.criar_desafio(id_tema=id_tema, dificuldade_base="facil", fase_jornada=3)
+        self.assertEqual(2, de_novo["desafio"]["nivel_mapa"])
+
+    def test_bonus_so_quando_a_fase_e_aprovada(self):
+        self.registrar("bonus@exemplo.com")
+        reprovada = self.criar_desafio()
+        self.responder_todas(reprovada, acertos=2)
+        antes = self.pontos()
+        resultado = self.client.post(f"/api/learning/challenges/{reprovada['desafio']['id_desafio']}/complete", json={}).get_json()
+        self.assertEqual((0, 0, 0), (resultado["bonus_conclusao"], resultado["bonus_perfeito"], resultado["bonus_jornada"]))
+        self.assertEqual(antes, self.pontos())
+        aprovada = self.criar_desafio()
+        self.responder_todas(aprovada, acertos=3)
+        antes = self.pontos()
+        resultado = self.client.post(f"/api/learning/challenges/{aprovada['desafio']['id_desafio']}/complete", json={}).get_json()
+        self.assertEqual(10, resultado["bonus_conclusao"])
+        self.assertEqual(antes + 10, self.pontos())
+
+    def test_pedidos_repetidos_nao_duplicam_bonus(self):
+        self.registrar("repetido@exemplo.com")
+        for acertos in (5, 1):
+            with self.subTest(acertos=acertos):
+                desafio = self.criar_desafio()
+                primeiro = self.concluir(desafio, acertos=acertos)
+                pontos = self.pontos()
+                caminho = f"/api/learning/challenges/{desafio['desafio']['id_desafio']}/complete"
+                for _ in range(3):
+                    repetido = self.client.post(caminho, json={}).get_json()
+                    self.assertEqual(primeiro["concluido"], repetido["concluido"])
+                    self.assertEqual((0, 0, 0), (repetido["bonus_conclusao"], repetido["bonus_perfeito"], repetido["bonus_jornada"]))
+                    self.assertEqual(pontos, self.pontos())
+        historico = self.client.get("/api/learning/history").get_json()["historico"]
+        self.assertEqual(2, len(historico))
+
+    def test_fase_reprovada_sai_do_continuar_e_pode_ser_tentada_de_novo(self):
+        self.registrar("tentar@exemplo.com")
+        reprovada = self.criar_desafio()
+        self.assertTrue(self.concluir(reprovada, acertos=1)["reprovado"])
         self.assertFalse(self.client.get("/api/learning/active-challenge").get_json()["ativo"])
+        detalhe = self.client.get(f"/api/learning/challenges/{reprovada['desafio']['id_desafio']}").get_json()
+        self.assertTrue(detalhe["reprovado"])
+        self.assertFalse(detalhe["concluido"])
+        nova = self.criar_desafio()
+        self.assertNotEqual(reprovada["desafio"]["id_desafio"], nova["desafio"]["id_desafio"])
+        self.assertEqual(1, nova["desafio"]["nivel_mapa"])
+        self.assertTrue(self.concluir(nova, acertos=3)["concluido"])
+
+    def test_nao_da_para_burlar_a_progressao(self):
+        self.registrar("burlar@exemplo.com")
+        id_tema = tema_com_banco_local(self.client)
+        desafio = self.criar_desafio(id_tema=id_tema, dificuldade_base="facil", fase_jornada=1)
+        id_desafio = desafio["desafio"]["id_desafio"]
+        # Concluir sem responder tudo é recusado.
+        self.assertEqual(400, self.client.post(f"/api/learning/challenges/{id_desafio}/complete", json={}).status_code)
+        self.responder_todas(desafio, acertos=2)
+        # Mandar "aprovado" ou "jornada_concluida" no corpo não muda o resultado.
+        resultado = self.client.post(f"/api/learning/challenges/{id_desafio}/complete",
+                                     json={"aprovado": True, "jornada_concluida": True, "percentual_acertos": 100}).get_json()
+        self.assertTrue(resultado["reprovado"])
+        # Responder de novo uma questão já respondida não troca a resposta.
+        primeira = desafio["questoes"][3]
+        repetida = self.client.post(f"/api/learning/challenges/{id_desafio}/answer", json={
+            "id_questao": primeira["id_questao"], "alternativa": self.gabarito(primeira["id_questao"])}).get_json()
+        self.assertTrue(repetida["ja_respondida"])
+        self.assertFalse(repetida["correta"])
+        self.assertTrue(self.client.post(f"/api/learning/challenges/{id_desafio}/complete", json={}).get_json()["reprovado"])
+        self.assertEqual(1, self.criar_desafio(id_tema=id_tema, dificuldade_base="facil", fase_jornada=2)["desafio"]["nivel_mapa"])
+
+    def test_revisao_nao_tem_nota_minima_nem_bonus(self):
+        self.registrar("revisao60@exemplo.com")
+        original = self.criar_desafio()
+        self.concluir(original)
+        pontos = self.pontos()
+        revisao = self.client.post("/api/learning/challenges", json={
+            "refazer": True, "refazer_de": original["desafio"]["id_desafio"]}).get_json()
+        resultado = self.concluir(revisao, acertos=0)
+        self.assertTrue(resultado["concluido"])
+        self.assertEqual("revisao", resultado["desempenho"])
+        self.assertEqual(pontos, self.pontos())
+
+    def test_jornada_so_termina_com_todas_as_fases_aprovadas(self):
+        self.registrar("jornada60@exemplo.com")
+        id_tema = tema_com_banco_local(self.client)
+        fase1 = self.criar_desafio(id_tema=id_tema, quantidade_questoes=20, dificuldade_base="facil", fase_jornada=1)
+        self.assertFalse(self.concluir(fase1, acertos=12)["jornada_concluida"])
+        fase2 = self.criar_desafio(id_tema=id_tema, quantidade_questoes=20, dificuldade_base="facil", fase_jornada=2)
+        reprovada = self.concluir(fase2, acertos=11)
+        self.assertTrue(reprovada["reprovado"])
+        self.assertFalse(reprovada["jornada_concluida"])
+        de_novo = self.criar_desafio(id_tema=id_tema, quantidade_questoes=20, dificuldade_base="facil", fase_jornada=2)
+        self.assertEqual(2, de_novo["desafio"]["nivel_mapa"])
+        final = self.concluir(de_novo, acertos=20)
+        self.assertTrue(final["jornada_concluida"])
+        self.assertEqual(50, final["bonus_jornada"])
+        self.assertEqual(80, final["aproveitamento"])
+
+    def test_ranking_e_progresso_continuam_depois_de_reprovar(self):
+        eu = self.registrar("ranking60@exemplo.com")
+        self.assertTrue(self.concluir(self.criar_desafio(), acertos=5)["concluido"])
+        self.assertTrue(self.concluir(self.criar_desafio(), acertos=1)["reprovado"])
+        perfil = self.client.get("/api/learning/me").get_json()
+        self.assertEqual(1, perfil["progresso"]["desafios_concluidos"])
+        self.assertEqual(10, perfil["progresso"]["questoes_respondidas"])
+        self.assertEqual(60, perfil["progresso"]["precisao"])
+        ranking = self.client.get("/api/learning/ranking?limite=100").get_json()
+        meu = next(item for item in ranking["itens"] if item["id_aluno"] == eu["id_aluno"])
+        self.assertEqual(perfil["aluno"]["pontos"], meu["pontos"])
+        self.assertEqual(meu["posicao"], ranking["posicao_usuario"])
 
 
 class TestAceiteDosTermos(BaseApi):
@@ -310,7 +495,7 @@ class TestRetomada(BaseApi):
     def test_tudo_respondido_sem_concluir_ainda_pode_ser_retomado(self):
         self.registrar("presa@exemplo.com")
         desafio = self.criar_desafio()
-        self.responder(desafio, len(desafio["questoes"]))
+        self.responder_todas(desafio)
         ativo = self.client.get("/api/learning/active-challenge").get_json()
         self.assertTrue(ativo["ativo"])
         self.assertTrue(ativo["todas_respondidas"])
@@ -405,7 +590,7 @@ class TestCorrecoesDaAuditoria(BaseApi):
         self.assertEqual(200, self.client.get("/api/learning/me").status_code)
 
     def test_ranking_mostra_posicao_de_quem_esta_fora_do_topo(self):
-        for indice in range(3):
+        for indice in range(6):
             self.registrar(f"topo{indice}@exemplo.com")
             self.concluir(self.criar_desafio())
             self.client.post("/api/auth/logout")
@@ -414,8 +599,9 @@ class TestCorrecoesDaAuditoria(BaseApi):
         id_desafio = desafio["desafio"]["id_desafio"]
         self.client.post(f"/api/learning/challenges/{id_desafio}/answer",
                          json={"id_questao": desafio["questoes"][0]["id_questao"], "alternativa": "A"})
-        ranking = self.client.get("/api/learning/ranking?limite=1").get_json()
-        self.assertEqual(1, len(ranking["itens"]))
+        ranking = self.client.get("/api/learning/ranking?limite=5").get_json()
+        self.assertEqual(5, len(ranking["itens"]))
+        self.assertNotIn(eu["id_aluno"], [item["id_aluno"] for item in ranking["itens"]])
         completo = self.client.get("/api/learning/ranking?limite=100").get_json()
         minha = next(i["posicao"] for i in completo["itens"] if i["id_aluno"] == eu["id_aluno"])
         self.assertEqual(completo["total_alunos"], ranking["total_alunos"])
@@ -446,7 +632,8 @@ class TestCorrecoesDaAuditoria(BaseApi):
         from models.model_questao import Questao
         from repositories.questao_repository import QuestaoRepository
         with app_module.app.app_context():
-            tema = app_module.Tema.query.first()
+            from models.model_tema import Tema
+            tema = Tema.query.first()
             questao = Questao(enunciado="Sem gabarito", alternativa_correta=None, id_tema=tema.id_tema)
             app_module.d.db.session.add(questao)
             app_module.d.db.session.commit()
@@ -489,12 +676,13 @@ class TestCorrecoesDaAuditoria(BaseApi):
             "nome": None, "email": "nulo@exemplo.com", "senha": "senha-segura-123", "aceite_termos": True})
         self.assertEqual(400, resposta.status_code)
 
-    def test_cadastro_com_nick_nulo_usa_o_nome(self):
+    def test_cadastro_com_nick_nulo_usa_so_o_primeiro_nome(self):
         resposta = self.client.post("/api/auth/register", json={
             "nome": "Sem Nick", "nick": None, "email": "semnick@exemplo.com", "senha": "senha-segura-123",
             "aceite_termos": True})
         self.assertEqual(201, resposta.status_code, resposta.get_data(as_text=True))
-        self.assertEqual("Sem Nick", resposta.get_json()["aluno"]["nick"])
+        # Só o primeiro nome: o nome completo não pode aparecer no ranking.
+        self.assertEqual("Sem", resposta.get_json()["aluno"]["nick"])
 
     def test_corpo_que_nao_e_objeto_nao_vira_erro_500(self):
         self.assertEqual(400, self.client.post("/api/auth/register", json=["a", "b"]).status_code)

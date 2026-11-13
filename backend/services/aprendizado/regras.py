@@ -13,7 +13,7 @@ PONTOS_POR_DIFICULDADE = {"Fácil": 10, "Normal": 15, "Difícil": 20}
 BONUS_PERFEITO = 25
 BONUS_CONCLUSAO_FASE = 10
 BONUS_CONCLUSAO_JORNADA = 50
-LIMITE_ERROS_JORNADA = 70
+MINIMO_ACERTOS_FASE = 60  # % de acertos para a fase ser aprovada
 FUSO_BRASILIA = timezone(timedelta(hours=-3))
 
 
@@ -35,8 +35,36 @@ def penalidade_por_erro(ganho):
     return (ganho + 3) // 4
 
 
+def percentual_de_acertos(corretas, total):
+    return round(corretas * 100 / total) if total else 0
+
+
+def fase_aprovada(corretas, total):
+    """A fase só é aprovada com pelo menos 60% de acertos."""
+    return total > 0 and corretas * 100 >= MINIMO_ACERTOS_FASE * total
+
+
+def nivel_de_desempenho(corretas, total):
+    """Faixa usada na mensagem da tela: reprovado, aprovado, otimo ou perfeito."""
+    if not fase_aprovada(corretas, total):
+        return "reprovado"
+    if corretas == total:
+        return "perfeito"
+    return "otimo" if corretas * 100 >= 80 * total else "aprovado"
+
+
 def fases_da_jornada(quantidade):
     return {5: 5, 10: 4, 15: 3, 20: 2}.get(int(quantidade or 5), 5)
+
+
+def nome_publico(nick, nome):
+    """Nome que os outros alunos veem (ranking). Sem nick, só o primeiro nome:
+    o nome completo de um estudante nunca aparece para os colegas."""
+    nick = str(nick or "").strip()
+    if nick:
+        return nick
+    partes = str(nome or "").split()
+    return partes[0][:40] if partes else "Estudante"
 
 
 def eh_revisao(desafio):

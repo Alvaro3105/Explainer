@@ -7,7 +7,20 @@ from repositories.resposta_repository import RespostaRepository
 from repositories.tema_repository import TemaRepository
 from repositories.transacao import Transacao
 from services.aprendizado.erros import ErroDeNegocio
-from services.aprendizado.regras import atualizar_sequencia_diaria, eh_revisao
+from services.aprendizado.regras import atualizar_sequencia_diaria, eh_revisao, nome_publico
+
+# O ranking abre com os 5 primeiros e pode ser expandido até os 100 primeiros.
+# Só esses dois tamanhos existem, para ninguém pedir milhares de alunos de uma vez.
+LIMITES_RANKING = (5, 100)
+LIMITE_INICIAL_RANKING = 5
+
+
+def limite_do_ranking(valor):
+    try:
+        limite = int(str(valor).strip())
+    except (TypeError, ValueError, OverflowError):
+        return LIMITE_INICIAL_RANKING
+    return limite if limite in LIMITES_RANKING else LIMITE_INICIAL_RANKING
 
 
 class ProgressoService:
@@ -44,25 +57,39 @@ class ProgressoService:
         Transacao.confirmar()
         return {"minutos_ativos": aluno.minutos_ativos, "sequencia_atual": aluno.sequencia_atual}
 
-    def ranking(self, aluno_atual, limite=20):
-        limite = max(1, min(int(limite or 20), 100))
+    def ranking(self, aluno_atual, limite=LIMITE_INICIAL_RANKING):
+        """Os primeiros colocados (5 ou 100) e a posição real de quem está logado.
+
+        A ordem vem toda do banco (AlunoRepository.ranking_topo): mais pontos primeiro;
+        no empate, ordem alfabética do nome e depois a ordem de cadastro. Por isso o 2º
+        lugar do top 5 é o mesmo 2º lugar do top 100. Só participa quem já respondeu
+        pelo menos uma questão.
+        """
+        limite = limite_do_ranking(limite)
         resultado = [{
             "posicao": posicao,
             "id_aluno": linha["id_aluno"],
-            "nick": linha["nick"] or linha["nome"],
+            "nick": nome_publico(linha["nick"], linha["nome"]),
             "pontos": linha["pontos"] or 0,
             "sequencia_atual": linha["sequencia_atual"] or linha["foguinho"] or 0,
             "minutos_ativos": linha["minutos_ativos"] or 0,
         } for posicao, linha in enumerate(AlunoRepository.ranking_topo(limite), start=1)]
+        total = AlunoRepository.total_participantes()
         posicao_atual = None
+        usuario_atual = None
         if aluno_atual:
             posicao_atual = next((item["posicao"] for item in resultado if item["id_aluno"] == aluno_atual.id_aluno), None)
             if posicao_atual is None and AlunoRepository.participa_do_ranking(aluno_atual.id_aluno):
-                # Fora do topo: conta quantos alunos estão na frente.
+                # Fora da lista: conta quantos alunos estão na frente, com a mesma regra de desempate.
                 posicao_atual = AlunoRepository.quantos_a_frente(
                     aluno_atual.pontos or 0, aluno_atual.nome, aluno_atual.id_aluno) + 1
-        return {"itens": resultado, "posicao_usuario": posicao_atual,
-                "total_alunos": AlunoRepository.total_participantes()}
+            usuario_atual = {"posicao": posicao_atual, "pontos": aluno_atual.pontos or 0,
+                             "nick": nome_publico(aluno_atual.nick, aluno_atual.nome),
+                             "na_lista": any(item["id_aluno"] == aluno_atual.id_aluno for item in resultado)}
+        return {"itens": resultado, "limite": limite, "retornados": len(resultado),
+                "total_participantes": total, "tem_mais": total > len(resultado),
+                "posicao_usuario": posicao_atual, "usuario_atual": usuario_atual,
+                "total_alunos": total}
 
     def historico(self, aluno):
         resultado = []

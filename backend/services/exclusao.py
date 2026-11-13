@@ -2,6 +2,7 @@ from repositories.aluno_desafio_repository import AlunoDesafioRepository
 from repositories.aluno_repositories import AlunoRepository
 from repositories.desafio_questao_repository import DesafioQuestaoRepository
 from repositories.desafio_repository import DesafioRepository
+from repositories.geracao_repository import GeracaoRepository
 from repositories.questao_repository import QuestaoRepository
 from repositories.ranking_repository import RankingRepository
 from repositories.resposta_repository import RespostaRepository
@@ -31,6 +32,7 @@ def remover_aluno(aluno):
     RespostaRepository.remover_do_aluno(aluno.id_aluno)
     AlunoDesafioRepository.remover_do_aluno(aluno.id_aluno)
     RankingRepository.remover_do_aluno(aluno.id_aluno)
+    GeracaoRepository.remover_do_aluno(aluno.id_aluno)
     for desafio in DesafioRepository.listar_do_aluno(aluno.id_aluno):
         remover_desafio(desafio)
     AlunoRepository.remover(aluno)

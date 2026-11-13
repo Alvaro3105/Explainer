@@ -8,15 +8,17 @@
   <title>ExplAIner — Aprenda em fases</title>
   <link rel="stylesheet" href="vendor/fonts/fonts.css">
   <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
-  <link rel="icon" type="image/png" href="assets/logo-foguete.png">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/logo-explainer.png">
   <link rel="stylesheet" href="estudar.css">
+  <link rel="stylesheet" href="minijogo/minijogo.css">
 </head>
 <body>
 
-  <div class="tela-acesso" id="tela-acesso">
+  <div class="tela-acesso" id="tela-acesso" hidden>
     <div class="moldura-acesso">
       <section class="apresentacao-acesso">
-        <a class="marca-acesso" href="/"><span class="circulo-logo"><img src="assets/logo-foguete.png" alt=""></span><span class="titulo-marca">Expl<span class="marca-ia">AI</span>ner</span></a>
+        <a class="marca-acesso" href="/"><span class="circulo-logo"><img src="assets/logo-explainer.png" alt="" width="512" height="512"></span><span class="titulo-marca">Expl<span class="marca-ia">AI</span>ner</span></a>
         <img class="astro-acesso" src="assets/astronauta.png" alt="" aria-hidden="true">
         <div class="texto-apresentacao-acesso">
           <div class="sobretitulo"><span class="ponto-sobretitulo"></span> SEU PRÓXIMO NÍVEL COMEÇA AQUI</div>
@@ -83,8 +85,8 @@
 
       <header class="barra-superior">
         <button class="menu-celular botao-icone" id="menu-celular" aria-label="Abrir menu"><i class="fa-solid fa-bars"></i></button>
-        <button class="botao-voltar botao-icone" id="botao-voltar" type="button" data-voltar data-voltar-fallback="/" aria-label="Voltar para a página anterior" title="Voltar"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></button>
-        <a href="/" class="marca-topo"><span class="circulo-logo"><img src="assets/logo-foguete.png" alt=""></span><span class="titulo-marca">Expl<span class="marca-ia">AI</span>ner</span></a>
+        <button class="botao-voltar botao-icone" id="botao-voltar" type="button" data-voltar data-voltar-fallback="/" aria-label="Voltar para a página anterior" title="Voltar" hidden><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></button>
+        <button type="button" class="marca-topo" id="marca-topo" aria-haspopup="dialog" aria-label="ExplAIner: abrir o minijogo Chuva de asteroides" title="Minijogo"><span class="circulo-logo"><img src="assets/logo-explainer.png" alt="" width="512" height="512"></span><span class="titulo-marca">Expl<span class="marca-ia">AI</span>ner</span></button>
         <div class="migalhas"><span>Área do estudante</span><b>/</b><strong id="titulo-pagina">Aprender</strong></div>
         <div class="acoes-barra-superior">
           <div class="indicador-topo topo-pontos" title="Pontos de experiência"><i class="fa-solid fa-bolt" aria-hidden="true"></i><strong id="pontos-topo">0</strong></div>
@@ -121,9 +123,10 @@
 
             <form id="formulario-desafio" class="formulario-desafio">
               <div class="linha-formulario linha-formulario-materias">
-                <label class="campo"><span>Matéria</span><select id="selecao-materia" required><option value="">Carregando matérias…</option></select></label>
-                <label class="campo"><span>Tema</span><select id="selecao-tema" required><option value="">Selecione uma matéria primeiro</option></select></label>
+                <div class="campo campo-busca" id="busca-materia"><span id="rotulo-busca-materia">Matéria</span><div class="caixa-busca"><i class="fa-solid fa-magnifying-glass icone-busca" aria-hidden="true"></i><input type="text" id="entrada-materia" placeholder="Pesquisar matéria..." autocomplete="off" spellcheck="false" enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugestoes-materia" aria-labelledby="rotulo-busca-materia"><button type="button" class="limpar-busca" id="limpar-materia" aria-label="Limpar matéria" hidden><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div><ul class="sugestoes-busca" id="sugestoes-materia" role="listbox" aria-label="Sugestões de matéria" hidden></ul></div>
+                <div class="campo campo-busca" id="busca-tema"><span id="rotulo-busca-tema">Tema</span><div class="caixa-busca"><i class="fa-solid fa-magnifying-glass icone-busca" aria-hidden="true"></i><input type="text" id="entrada-tema" placeholder="Escolha a matéria primeiro" autocomplete="off" spellcheck="false" enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugestoes-tema" aria-labelledby="rotulo-busca-tema" disabled><button type="button" class="limpar-busca" id="limpar-tema" aria-label="Limpar tema" hidden><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div><ul class="sugestoes-busca" id="sugestoes-tema" role="listbox" aria-label="Sugestões de tema" hidden></ul></div>
               </div>
+              <div class="subtemas-sugeridos" id="subtemas-sugeridos" hidden><span class="rotulo-subtemas">Quer focar em um subtema? <small>(opcional)</small></span><div class="lista-subtemas" id="lista-subtemas"></div></div>
               <div class="campo campo-quantidade">
                 <div class="linha-rotulo-campo"><span>Questões por desafio</span><small>Escolha seu ritmo</small></div>
                 <div class="grade-escolha opcoes-quantidade">
@@ -179,26 +182,22 @@
             <div class="cabecalho-inferior"><div><div class="mini-chamada">CONTINUE DE ONDE PAROU</div><h2>Atividades recentes</h2></div><button class="botao-texto" data-ir-visao="progresso" type="button">Ver histórico <span aria-hidden="true">→</span></button></div>
             <div id="lista-previa-recentes" class="lista-recentes"><div class="linha-carregando">Carregando seu histórico…</div></div>
           </article>
-          <aside class="coluna-lateral-inicio" aria-label="Sequência diária e ranking">
-            <article class="painel painel-sequencia">
+          <article class="painel painel-sequencia">
               <div class="cabecalho-sequencia"><div><div class="mini-chamada">CONSTÂNCIA</div><h2>Sua sequência</h2></div><span class="chama-sequencia" aria-hidden="true"><i class="fa-solid fa-fire"></i></span></div>
               <div class="rotulos-semana" aria-hidden="true"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div>
               <div class="dias-semana" id="dias-semana"><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span><span><i class="fa-solid fa-fire"></i></span></div>
               <p id="mensagem-sequencia">Estude hoje para iniciar sua sequência.</p>
-            </article>
-            <article class="painel previa-ranking">
-              <div class="cabecalho-inferior"><div><div class="mini-chamada">COMUNIDADE</div><h2>Ranking</h2></div><button class="botao-texto" data-ir-visao="ranking" type="button">Ver tudo <span aria-hidden="true">→</span></button></div>
-              <div id="lista-previa-ranking" class="lista-ranking"><div class="linha-carregando">Carregando classificação…</div></div>
-            </article>
-          </aside>
+          </article>
+          <!-- Ranking: o conteúdo é montado pelo estudar.js (montarRanking). -->
+          <article class="painel painel-ranking" data-ranking="inicio" data-chamada="COMUNIDADE" data-titulo="Ranking"></article>
         </section>
       </div>
 
-      <section class="painel-visao visao-secundaria" id="visao-ranking" hidden><div class="introducao-pagina"><div class="mini-chamada">COMPETIÇÃO SAUDÁVEL</div><h1>Ranking da comunidade</h1><p>Compare sua evolução e veja quem está mantendo a constância.</p></div><article class="painel painel-tabela"><div class="cabecalho-painel"><div><h3>Classificação geral</h3><p>Ordenada pelo total de pontos acumulados.</p></div><span class="pilula-suave">Atualizado agora</span></div><div class="caixa-tabela"><table><thead><tr><th>Posição</th><th>Estudante</th><th>Sequência</th><th>Tempo ativo</th><th>Pontos</th></tr></thead><tbody id="corpo-tabela-ranking"><tr><td colspan="5">Carregando ranking…</td></tr></tbody></table></div></article></section>
+      <section class="painel-visao visao-secundaria" id="visao-ranking" hidden><div class="introducao-pagina"><div class="mini-chamada">COMPETIÇÃO SAUDÁVEL</div><h1>Ranking da comunidade</h1><p>Compare sua evolução e veja quem está mantendo a constância.</p></div><article class="painel painel-ranking" data-ranking="pagina" data-chamada="CLASSIFICAÇÃO GERAL" data-titulo="Melhores colocados"></article></section>
 
-      <section class="painel-visao visao-secundaria" id="visao-progresso" hidden><div class="introducao-pagina"><div class="mini-chamada">CADA SESSÃO CONTA</div><h1>Seu progresso</h1><p>Veja sua consistência, desempenho e histórico de desafios.</p></div><section class="grade-indicadores indicadores-progresso"><article class="cartao-indicador"><div class="icone-indicador indicador-pontos">✓</div><div><span>Desafios concluídos</span><strong id="concluidos-progresso">0</strong><small>Fases finalizadas</small></div></article><article class="cartao-indicador"><div class="icone-indicador indicador-tempo">◎</div><div><span>Precisão das respostas</span><strong><span id="precisao-progresso">0</span><em>%</em></strong><small>Questões respondidas corretamente</small></div></article><article class="cartao-indicador"><div class="icone-indicador indicador-fogo">✦</div><div><span>Questões respondidas</span><strong id="respondidas-progresso">0</strong><small>Experiência acumulada</small></div></article></section><article class="painel painel-historico"><div class="cabecalho-painel"><div><h3>Histórico de desafios</h3><p>Confira seu desempenho em cada fase.</p></div></div><div class="caixa-tabela"><table><thead><tr><th>Desafio</th><th>Matéria e tema</th><th>Dificuldade</th><th>Resultado</th><th>Data</th><th>Ação</th></tr></thead><tbody id="corpo-tabela-historico"><tr><td colspan="5">Carregando histórico…</td></tr></tbody></table></div></article><article class="painel painel-perfil"><div class="cabecalho-painel"><div><h3>Seu perfil público</h3><p>Este nome aparece no ranking.</p></div></div><form id="formulario-perfil" class="formulario-perfil"><label class="campo"><span>Nick</span><input id="nick-perfil" type="text" maxlength="40" required></label><button class="botao botao-principal" type="submit">Salvar nick</button></form><p id="mensagem-perfil" class="recado" hidden></p><p class="situacao-termos"><span id="situacao-termos"></span> <a href="termos-de-uso.html" target="_blank" rel="noopener">Termos de Uso</a> · <a href="termo-de-consentimento.html" target="_blank" rel="noopener">Termo de Consentimento</a></p></article></section>
+      <section class="painel-visao visao-secundaria" id="visao-progresso" hidden><div class="introducao-pagina"><div class="mini-chamada">CADA SESSÃO CONTA</div><h1>Seu progresso</h1><p>Veja sua consistência, desempenho e histórico de desafios.</p></div><section class="grade-indicadores indicadores-progresso"><article class="cartao-indicador"><div class="icone-indicador indicador-pontos">✓</div><div><span>Desafios concluídos</span><strong id="concluidos-progresso">0</strong><small>Fases finalizadas</small></div></article><article class="cartao-indicador"><div class="icone-indicador indicador-tempo">◎</div><div><span>Precisão das respostas</span><strong><span id="precisao-progresso">0</span><em>%</em></strong><small>Questões respondidas corretamente</small></div></article><article class="cartao-indicador"><div class="icone-indicador indicador-fogo">✦</div><div><span>Questões respondidas</span><strong id="respondidas-progresso">0</strong><small>Experiência acumulada</small></div></article></section><article class="painel painel-historico"><div class="cabecalho-painel"><div><h3>Histórico de desafios</h3><p>Confira seu desempenho em cada fase.</p></div></div><div class="caixa-tabela"><table><thead><tr><th>Desafio</th><th>Matéria e tema</th><th>Dificuldade</th><th>Resultado</th><th>Data</th><th>Ação</th></tr></thead><tbody id="corpo-tabela-historico"><tr><td colspan="6">Carregando histórico…</td></tr></tbody></table></div></article><article class="painel painel-perfil"><div class="cabecalho-painel"><div><h3>Seu perfil público</h3><p>Este nome aparece no ranking.</p></div></div><form id="formulario-perfil" class="formulario-perfil"><label class="campo"><span>Nick</span><input id="nick-perfil" type="text" maxlength="40" required></label><button class="botao botao-principal" type="submit">Salvar nick</button></form><p id="mensagem-perfil" class="recado" hidden></p><form id="formulario-senha" class="formulario-perfil formulario-senha"><label class="campo"><span>Senha atual</span><input id="senha-atual" type="password" autocomplete="current-password" required></label><label class="campo"><span>Nova senha <small>(mín. 8 caracteres)</small></span><input id="senha-nova" type="password" autocomplete="new-password" minlength="8" maxlength="200" required></label><button class="botao botao-secundario" type="submit">Trocar senha</button></form><p id="mensagem-senha" class="recado" hidden></p><p class="situacao-termos"><span id="situacao-termos"></span> <a href="termos-de-uso.html" target="_blank" rel="noopener">Termos de Uso</a> · <a href="termo-de-consentimento.html" target="_blank" rel="noopener">Termo de Consentimento</a></p></article></section>
 
-      <footer class="rodape-principal"><span>ExplAIner</span><span>Aprenda no seu ritmo. Evolua todos os dias.</span><a href="/api" target="_blank" rel="noreferrer">API</a></footer>
+      <footer class="rodape-principal"><span>ExplAIner</span><span>Aprenda no seu ritmo. Evolua todos os dias.</span></footer>
     </main>
   </div>
 
@@ -281,6 +280,9 @@
   <div class="aviso-rapido" id="aviso-rapido" role="status" hidden></div>
 
   <script src="voltar.js"></script>
+  <script src="minijogo/sprites.js"></script>
+  <script src="minijogo/astronauta.js"></script>
+  <script src="minijogo/jogo.js"></script>
   <script src="estudar.js"></script>
 </body>
 </html>

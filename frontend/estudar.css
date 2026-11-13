@@ -65,8 +65,9 @@ p{font-size:15px}
 .ponto-sobretitulo,.ponto-ativo{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cor2);box-shadow:0 0 0 4px rgba(209,220,90,.2)}
 .marca-ia{color:var(--cor2);font-weight:800}
 .titulo-marca{font-size:24px;font-weight:700;letter-spacing:-.3px}
-.circulo-logo{width:50px;height:50px;border-radius:50%;background:var(--cor2);display:inline-flex;justify-content:center;align-items:center;overflow:hidden;flex:none}
-.circulo-logo img{width:200%;max-width:none;transform:rotate(-45deg);margin-top:4px}
+/* Logo: selo redondo em pixel art (o fundo já vem transparente na imagem). */
+.circulo-logo{width:52px;height:52px;border-radius:50%;display:inline-flex;flex:none;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35))}
+.circulo-logo img{display:block;width:100%;height:100%;image-rendering:auto}
 
 .botao{border:0;border-radius:12px;display:inline-flex;gap:12px;align-items:center;justify-content:center;min-height:48px;padding:0 22px;font-weight:700;font-size:15px;transition:transform .2s ease,background .2s ease,box-shadow .2s ease,border-color .2s}
 .botao:hover{transform:translateY(-1px)}
@@ -193,7 +194,6 @@ body.tema-claro .menu-conta button:hover{background:rgba(30,44,50,.06)}
 
 .painel-visao{width:100%;max-width:1320px;margin:0 auto;padding:30px;position:relative;z-index:2;flex:1}
 .rodape-principal{padding:14px 30px 24px;display:flex;gap:18px;justify-content:center;font-size:12px;color:var(--apagado);position:relative;z-index:2}
-.rodape-principal a{color:var(--cor7)}
 
 .decoracao{position:absolute;top:80px;left:0;width:100%;height:1000px;z-index:1;pointer-events:none;overflow:hidden;opacity:.6}
 .enfeite{position:absolute}
@@ -223,7 +223,10 @@ body.tema-claro .decoracao{opacity:.4}
 .boas-vindas-inicio p{font-size:18px;color:var(--apagado)}
 .acao-boas-vindas{box-shadow:0 5px 0 var(--cor14)}
 .grade-estudo{order:2;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:30px;align-items:stretch}
-.grade-inferior-inicio{order:3;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:30px;align-items:start}
+.grade-inferior-inicio{order:3;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:30px;align-items:stretch}
+/* O ranking ocupa a linha inteira. Antes ele ficava empilhado com a sequência numa coluna estreita,
+   e a coluna de Atividades recentes, mais baixa, deixava um vão vazio ao lado dele. */
+.grade-inferior-inicio .painel-ranking{grid-column:1/-1}
 .indicadores-rapidos{order:4;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:30px}
 
 .indicador-rapido{position:relative;background:var(--cor8);border:1px solid var(--borda-cartao);box-shadow:var(--sombra-cartao);border-radius:16px;padding:16px;min-height:160px;display:flex;flex-direction:column;justify-content:space-between}
@@ -323,7 +326,6 @@ select:focus,.painel input:focus{outline:none;border-color:var(--cor7)}
 .texto-recentes strong{display:block;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .texto-recentes span{font-size:12px;color:var(--apagado)}
 .pontos-recentes{font-weight:800;color:var(--cor5)}
-.coluna-lateral-inicio{display:flex;flex-direction:column;gap:30px}
 .cabecalho-sequencia{display:flex;justify-content:space-between;align-items:flex-start}
 .chama-sequencia{font-size:26px;color:var(--cor6)}
 .rotulos-semana,.dias-semana{display:grid;grid-template-columns:repeat(7,1fr);justify-items:center;gap:4px}
@@ -333,18 +335,6 @@ select:focus,.painel input:focus{outline:none;border-color:var(--cor7)}
 body.tema-claro .dias-semana span{color:rgba(30,44,50,.2)}
 .dias-semana span.ativo{background:var(--cor2);color:var(--cor13)}
 #mensagem-sequencia{text-align:center;font-size:14px}
-.lista-ranking{display:flex;flex-direction:column}
-.linha-ranking{display:grid;grid-template-columns:34px 44px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:2px solid var(--cor1)}
-body.tema-claro .linha-ranking{border-color:var(--linha)}
-.linha-ranking:last-child{border-bottom:0}
-.colocacao-ranking{font-weight:700;color:var(--apagado)}
-.colocacao-ranking.primeiro{color:#d3af37}
-.avatar-ranking{width:42px;height:42px;border-radius:50%;background:var(--cor7);color:var(--cor1);display:grid;place-items:center;font-weight:800}
-body.tema-claro .avatar-ranking{color:#fff}
-.nome-ranking{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nome-ranking small{display:block;font-size:11.5px;color:var(--apagado);font-weight:500}
-.pontuacao-ranking{color:var(--cor5);font-weight:700;font-size:14px;white-space:nowrap}
-body.tema-claro .pontuacao-ranking{color:#5b57e0}
 
 .visao-secundaria .introducao-pagina{margin-bottom:26px}
 .introducao-pagina h1{font-size:38px;font-weight:800;margin:6px 0}
@@ -355,10 +345,6 @@ table{width:100%;border-collapse:collapse;text-align:left}
 th{font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--cor7);padding:12px 14px;border-bottom:2px solid var(--cor1)}
 td{padding:14px;border-bottom:1px solid var(--linha);font-size:14px}
 body.tema-claro th{border-color:var(--linha)}
-tr.linha-usuario-atual td{background:rgba(209,220,90,.13)}
-.celula-estudante{display:flex;align-items:center;gap:12px;font-weight:600}
-.medalha-posicao{width:32px;height:32px;border-radius:50%;display:inline-grid;place-items:center;font-weight:800;background:var(--cor9)}
-.medalha-posicao.ouro{background:#d3af37;color:#1E2C32}.medalha-posicao.prata{background:#c4c4c4;color:#1E2C32}.medalha-posicao.bronze{background:#ce8946;color:#1E2C32}
 .celula-pontos{font-weight:800;color:var(--cor5)}
 .grade-indicadores{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px;margin-bottom:26px}
 .cartao-indicador{display:flex;align-items:center;gap:16px;padding:20px;border-radius:16px;background:var(--cor8);border:1px solid var(--borda-cartao);box-shadow:var(--sombra-cartao)}
@@ -379,6 +365,7 @@ tr.linha-usuario-atual td{background:rgba(209,220,90,.13)}
 .formulario-perfil{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap}
 .formulario-perfil .campo{display:flex;flex-direction:column;gap:6px;flex:1;min-width:220px}
 .formulario-perfil .campo>span{font-size:13px;font-weight:700}
+.formulario-senha{margin-top:22px;padding-top:20px;border-top:1px solid var(--linha)}
 
 /* ---------- Mapa do desafio ---------- */
 .tela-mapa-desafio{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;background:var(--cor1);color:var(--cor10)}
@@ -567,7 +554,7 @@ body.tema-claro .aviso-rapido{color:#1E2C32}
 @media (max-width:420px){
   .barra-superior{gap:8px;padding:0 12px}
   .marca-topo .titulo-marca{display:none}
-  .marca-topo .circulo-logo{width:40px;height:40px}
+  .marca-topo .circulo-logo{width:42px;height:42px}
 }
 
 @media (prefers-reduced-motion:reduce){
@@ -641,3 +628,118 @@ body.tema-claro .aviso-rapido{color:#1E2C32}
 .peca-confete.redondo{border-radius:50%;height:var(--largura,10px)}
 @keyframes confete-cai{0%{opacity:1;transform:translate3d(0,0,0) rotate(0)}85%{opacity:1}100%{opacity:0;transform:translate3d(var(--deriva,0px),108vh,0) rotate(var(--giro,720deg))}}
 @media (prefers-reduced-motion:reduce){.emoji-subindo,.peca-confete{animation-duration:.01s!important}}
+
+/* ---------- Busca de matéria e tema ---------- */
+.campo-busca{position:relative}
+.caixa-busca{position:relative;display:flex;align-items:center}
+.caixa-busca .icone-busca{position:absolute;left:14px;color:var(--apagado);font-size:14px;pointer-events:none}
+.painel .caixa-busca input[type="text"]{padding:0 42px 0 40px}
+.painel .caixa-busca input[type="text"]:disabled{opacity:.55;cursor:not-allowed}
+.limpar-busca{position:absolute;right:8px;width:30px;height:30px;border:0;border-radius:50%;background:transparent;color:var(--apagado);cursor:pointer}
+.limpar-busca:hover,.limpar-busca:focus-visible{background:var(--cor8);color:var(--cor10);outline:none}
+.sugestoes-busca{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;max-height:320px;overflow-y:auto;margin:0;padding:6px;list-style:none;border-radius:12px;background:var(--cor8);border:1px solid var(--linha);box-shadow:0 18px 40px rgba(0,0,0,.35);animation:sugestoes-entram .15s ease-out}
+.sugestoes-busca[hidden]{display:none}
+.sugestoes-busca li{padding:9px 12px;border-radius:9px;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:14px}
+.sugestoes-busca li[aria-selected="true"],.sugestoes-busca li:hover{background:rgba(51,180,189,.16)}
+.sugestoes-busca li small{font-size:12px;color:var(--apagado)}
+.sugestoes-busca li.mensagem-busca{cursor:default;color:var(--apagado);text-align:center}
+.sugestoes-busca li.mensagem-busca:hover{background:transparent}
+.sugestoes-busca mark{background:transparent;color:var(--cor2);font-weight:800}
+body.tema-claro .sugestoes-busca mark{color:#5a6510}
+.subtemas-sugeridos{display:flex;flex-direction:column;gap:8px}
+.subtemas-sugeridos[hidden]{display:none}
+.rotulo-subtemas{font-size:13px;font-weight:700;color:var(--cor10)}
+.rotulo-subtemas small{font-weight:500;color:var(--apagado)}
+.lista-subtemas{display:flex;flex-wrap:wrap;gap:8px}
+.chip-subtema{padding:6px 12px;border-radius:999px;border:1px solid var(--linha);background:var(--cor9);color:var(--cor10);font-size:13px;cursor:pointer}
+.chip-subtema:hover,.chip-subtema:focus-visible{border-color:var(--cor7);outline:none}
+@keyframes sugestoes-entram{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.sugestoes-busca{animation:none}}
+
+/* ---------- Ranking: top 5 com expansão até o top 100 ---------- */
+.painel-ranking{container-type:inline-size}
+.cabecalho-ranking{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}
+.cabecalho-ranking p{margin:0;font-size:14px}
+.corpo-ranking{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:24px;align-items:start}
+.coluna-lista-ranking{min-width:0}
+.lista-ranking{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.item-ranking{display:grid;grid-template-columns:40px 42px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 14px;border-radius:12px;border:1px solid transparent}
+.item-ranking.podio{background:var(--cor9)}
+.item-ranking.podio-1{background:linear-gradient(90deg,rgba(211,175,55,.2),rgba(211,175,55,.04) 70%);border-color:rgba(211,175,55,.35)}
+.item-ranking.podio-2{background:linear-gradient(90deg,rgba(196,196,196,.13),rgba(196,196,196,.02) 70%)}
+.item-ranking.podio-3{background:linear-gradient(90deg,rgba(206,137,70,.15),rgba(206,137,70,.02) 70%)}
+.lista-topo-ranking .item-ranking:not(.podio){border-radius:0;border-bottom-color:var(--linha);padding-top:12px;padding-bottom:12px}
+.lista-topo-ranking .item-ranking:not(.podio):last-child{border-bottom-color:transparent}
+.posicao-ranking{font-weight:800;font-size:15px;color:var(--apagado);text-align:center;font-variant-numeric:tabular-nums}
+.medalha-ranking{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:800;color:#1E2C32;margin:0 auto}
+.medalha-ranking.ouro{background:linear-gradient(145deg,#f1d36b,#c99a22);box-shadow:0 0 0 4px rgba(211,175,55,.18)}
+.medalha-ranking.prata{background:linear-gradient(145deg,#e7e7e7,#a9a9a9)}
+.medalha-ranking.bronze{background:linear-gradient(145deg,#e3a368,#b56d2c)}
+.avatar-ranking{width:42px;height:42px;border-radius:50%;background:var(--cor7);color:var(--cor1);display:grid;place-items:center;font-weight:800}
+body.tema-claro .avatar-ranking{color:#fff}
+.nome-item-ranking{min-width:0;display:flex;flex-direction:column}
+.nome-item-ranking strong{font-weight:700;font-size:15px;white-space:nowrap;display:flex;align-items:center;gap:7px;min-width:0}
+.nome-item-ranking strong span{overflow:hidden;text-overflow:ellipsis}
+.nome-item-ranking small{font-size:12px;color:var(--apagado);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.coroa-ranking{color:#e2bd45;font-size:13px;flex:none}
+.selo-voce{flex:none;padding:1px 8px;border-radius:999px;background:var(--cor2);color:#1E2C32;font-size:11px;font-weight:800}
+.item-ranking.voce{border-color:rgba(209,220,90,.55);box-shadow:inset 3px 0 0 var(--cor2)}
+.pontos-ranking{font-weight:800;font-size:15px;color:var(--cor5);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.pontos-ranking small{font-size:11.5px;font-weight:700;margin-left:2px;opacity:.8}
+body.tema-claro .pontos-ranking{color:#5b57e0}
+/* Do 6º em diante: linhas mais compactas. */
+.lista-extra-ranking{margin-top:6px;gap:0}
+.lista-extra-ranking .item-ranking{grid-template-columns:40px 32px minmax(0,1fr) auto;padding:8px 14px;border-radius:10px}
+.lista-extra-ranking .item-ranking:nth-child(odd){background:rgba(255,255,255,.025)}
+body.tema-claro .lista-extra-ranking .item-ranking:nth-child(odd){background:rgba(30,44,50,.03)}
+.lista-extra-ranking .avatar-ranking{width:32px;height:32px;font-size:13px}
+.lista-extra-ranking .nome-item-ranking strong{font-size:14px;font-weight:600}
+.lista-extra-ranking .pontos-ranking{font-size:14px}
+/* Expansão suave: a altura vai de 0 ao tamanho da lista sem medir nada no JavaScript. */
+.expansao-ranking{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s ease}
+.expansao-ranking.aberta{grid-template-rows:1fr}
+.interior-expansao{overflow:hidden;min-height:0}
+.expansao-ranking:not(.aberta) .interior-expansao{visibility:hidden;transition:visibility 0s .4s}
+.expansao-ranking.aberta .item-ranking{animation:entrar-ranking .35s ease both;animation-delay:calc(min(var(--ordem,0),12) * 18ms)}
+@keyframes entrar-ranking{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.nota-ranking{margin:12px 0 0;font-size:13px;color:var(--apagado);text-align:center}
+.botao-expandir-ranking{margin-top:14px;width:100%;min-height:46px;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:12px;border:1px solid rgba(106,197,203,.35);background:rgba(106,197,203,.06);color:var(--cor7);font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;transition:background .2s,border-color .2s}
+.botao-expandir-ranking:hover:not([aria-disabled="true"]){background:rgba(106,197,203,.14);border-color:rgba(106,197,203,.6)}
+.botao-expandir-ranking:focus-visible{outline:2px solid var(--cor2);outline-offset:2px}
+.botao-expandir-ranking[aria-disabled="true"]{cursor:progress;opacity:.75}
+.botao-expandir-ranking i{transition:transform .3s ease}
+body.tema-claro .botao-expandir-ranking{color:#24868c}
+.erro-ranking{margin:12px 0 0;padding:10px 14px;border-radius:10px;background:rgba(234,43,43,.12);color:#ffb3b3;font-size:13px}
+body.tema-claro .erro-ranking{color:#b42323}
+/* Sua posição: fica ao lado da lista e acompanha a rolagem quando o top 100 está aberto. */
+.sua-posicao-ranking{position:sticky;top:100px;padding:20px;border-radius:14px;background:var(--cor9);border:1px solid rgba(209,220,90,.25);display:flex;flex-direction:column;gap:4px}
+.sua-posicao-ranking .mini-chamada{margin-bottom:6px}
+.numero-posicao{font-size:38px;font-weight:800;line-height:1;color:var(--cor2)}
+.numero-posicao small{font-size:15px;font-weight:700;color:var(--cor10);margin-left:4px}
+body.tema-claro .numero-posicao{color:#6b7418}
+.pontos-posicao{font-weight:800;color:var(--cor5);font-size:16px}
+body.tema-claro .pontos-posicao{color:#5b57e0}
+.detalhe-posicao{font-size:13px;color:var(--apagado);margin:0}
+/* Carregando: barras cinza no lugar dos nomes. */
+.item-ranking.esqueleto span{display:block;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--cor9),rgba(255,255,255,.08),var(--cor9));background-size:200% 100%;animation:brilho-esqueleto 1.4s linear infinite}
+.item-ranking.esqueleto .avatar-ranking{height:42px;border-radius:50%}
+.item-ranking.esqueleto span:last-child{width:60px}
+@keyframes brilho-esqueleto{to{background-position:-200% 0}}
+@container (max-width:680px){
+  .corpo-ranking{grid-template-columns:1fr}
+  .sua-posicao-ranking{position:static;flex-direction:row;flex-wrap:wrap;align-items:baseline;column-gap:14px;padding:16px}
+  .sua-posicao-ranking .mini-chamada{width:100%;margin-bottom:0}
+  .numero-posicao{font-size:30px}
+  .detalhe-posicao{width:100%}
+}
+@container (max-width:420px){
+  .item-ranking{grid-template-columns:34px 36px minmax(0,1fr) auto;gap:10px;padding:9px 10px}
+  .lista-extra-ranking .item-ranking{grid-template-columns:34px 28px minmax(0,1fr) auto;padding:7px 10px}
+  .avatar-ranking{width:36px;height:36px}
+  .lista-extra-ranking .avatar-ranking{width:28px;height:28px;font-size:12px}
+  .medalha-ranking{width:30px;height:30px;font-size:14px}
+  .nome-item-ranking strong,.pontos-ranking{font-size:14px}
+  .nome-item-ranking small{display:none}
+  .cabecalho-ranking .pilula-suave{display:none}
+}
+@media (max-width:560px){.painel-ranking{padding:18px 14px}}

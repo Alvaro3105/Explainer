@@ -1,4 +1,5 @@
 import hmac
+import os
 import re
 import threading
 import time
@@ -11,6 +12,7 @@ from models.model_aluno import VERSAO_TERMOS_ATUAL, Aluno
 from repositories.aluno_repositories import AlunoRepository
 from repositories.transacao import Transacao
 from services.aprendizado.erros import ErroDeNegocio
+from services.aprendizado.regras import nome_publico
 from services.exclusao import remover_aluno
 
 # Hash usado quando o e-mail não existe, para o login demorar o mesmo tempo
@@ -20,11 +22,46 @@ _HASH_FICTICIO = generate_password_hash("senha-ficticia-para-tempo-constante")
 # Limite de tentativas de login: depois de 5 erros em 15 minutos, bloqueia por um tempo.
 # A contagem é por e-mail e IP, e também só por IP. Fica na memória do servidor,
 # então vale para um servidor só.
+# O limite só por IP é alto de propósito: uma escola inteira sai para a internet com o
+# mesmo IP, e 20 senhas erradas somadas da turma não podem travar o login de todo mundo.
 LIMITE_FALHAS_LOGIN = 5
-LIMITE_FALHAS_POR_IP = 20
+LIMITE_FALHAS_POR_IP = 100
 JANELA_FALHAS_LOGIN = 15 * 60
 _falhas_login = {}
 _trava_falhas = threading.Lock()
+
+
+# Limite de contas novas por IP, por hora. É alto de propósito: uma escola inteira pode se
+# cadastrar pelo mesmo IP no mesmo dia. Serve para parar scripts que criam contas sem parar.
+JANELA_CADASTROS = 60 * 60
+CADASTROS_POR_HORA_PADRAO = 100
+_cadastros_por_ip = {}
+
+
+def _limite_de_cadastros():
+    try:
+        return max(0, int(os.getenv("CADASTROS_POR_HORA_POR_IP", "").strip() or CADASTROS_POR_HORA_PADRAO))
+    except ValueError:
+        return CADASTROS_POR_HORA_PADRAO
+
+
+def _conferir_limite_de_cadastros(ip):
+    limite = _limite_de_cadastros()
+    if not limite:
+        return
+    agora = time.monotonic()
+    with _trava_falhas:
+        recentes = [t for t in _cadastros_por_ip.get(ip, []) if agora - t < JANELA_CADASTROS]
+        _cadastros_por_ip[ip] = recentes
+        if len(recentes) >= limite:
+            espera = int(JANELA_CADASTROS - (agora - recentes[0])) + 1
+            raise ErroDeNegocio("Muitas contas foram criadas a partir desta rede. Tente de novo mais tarde.",
+                                429, cabecalhos={"Retry-After": str(espera)})
+
+
+def _contar_cadastro(ip):
+    with _trava_falhas:
+        _cadastros_por_ip.setdefault(ip, []).append(time.monotonic())
 
 
 def _falhas_recentes(chave, agora):
@@ -74,7 +111,8 @@ class ContaService:
     def aluno_da_sessao(self, id_aluno):
         return AlunoRepository.buscar_por_id(id_aluno)
 
-    def registrar(self, dados):
+    def registrar(self, dados, ip=None):
+        ip = ip or "desconhecido"
         nome = str(dados.get("nome") or "").strip()
         nick = str(dados.get("nick") or "").strip()
         email = str(dados.get("email") or "").strip().lower()
@@ -91,6 +129,7 @@ class ContaService:
             raise ErroDeNegocio("Para criar a conta, é preciso aceitar os Termos de Uso e o Termo de Consentimento.")
         if AlunoRepository.buscar_por_email(email):
             raise ErroDeNegocio("Já existe uma conta com este e-mail.", 409)
+        _conferir_limite_de_cadastros(ip)
         nascimento = dados.get("data_nascimento") or None
         try:
             data_nascimento = date.fromisoformat(nascimento) if nascimento else None
@@ -98,7 +137,7 @@ class ContaService:
             raise ErroDeNegocio("A data de nascimento é inválida.")
         aluno = Aluno(
             nome=nome,
-            nick=(nick or nome)[:40],
+            nick=nome_publico(nick, nome)[:40],
             email=email,
             senha=generate_password_hash(senha),
             data_nascimento=data_nascimento,
@@ -115,6 +154,7 @@ class ContaService:
         except IntegrityError:
             Transacao.desfazer()
             raise ErroDeNegocio("Já existe uma conta com este e-mail.", 409)
+        _contar_cadastro(ip)
         return aluno
 
     def entrar(self, email, senha, ip):
@@ -150,6 +190,29 @@ class ContaService:
         except SQLAlchemyError:
             Transacao.desfazer()
             raise ErroDeNegocio("Não foi possível excluir a conta. Nenhum dado foi alterado.", 500)
+
+    def trocar_senha(self, aluno, senha_atual, senha_nova, ip=None):
+        """Troca a senha de quem está logado. Exige a senha atual, com o mesmo limite de erros do login."""
+        ip = ip or "desconhecido"
+        senha_atual, senha_nova = str(senha_atual or ""), str(senha_nova or "")
+        espera = _login_bloqueado(aluno.email, ip)
+        if espera:
+            minutos = max(1, round(espera / 60))
+            raise ErroDeNegocio(f"Muitas tentativas. Tente novamente em cerca de {minutos} min.",
+                                429, cabecalhos={"Retry-After": str(espera)})
+        if not senha_confere(aluno.senha, senha_atual):
+            _registrar_falha_login(aluno.email, ip)
+            raise ErroDeNegocio("A senha atual está incorreta.", 403)
+        if len(senha_nova) < 8:
+            raise ErroDeNegocio("A nova senha deve ter pelo menos 8 caracteres.")
+        if len(senha_nova) > 200:
+            raise ErroDeNegocio("A nova senha é longa demais.")
+        if senha_nova == senha_atual:
+            raise ErroDeNegocio("A nova senha precisa ser diferente da atual.")
+        aluno.senha = generate_password_hash(senha_nova)
+        _limpar_falhas_login(aluno.email, ip)
+        Transacao.confirmar()
+        return aluno
 
     def aceitar_termos(self, aluno):
         self._registrar_aceite(aluno)

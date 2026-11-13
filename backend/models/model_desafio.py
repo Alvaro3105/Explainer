@@ -6,6 +6,10 @@ PREFIXO_REVISAO = "[REFAZER] "
 
 class Desafio(db.Model):
     __tablename__ = "desafio"
+    __table_args__ = (
+        # Os desafios são sempre procurados pelo aluno (e, na jornada, pelo aluno e pelo tema).
+        db.Index("ix_desafio_aluno_tema", "id_aluno", "id_tema"),
+    )
 
     id_desafio = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String(100), nullable=False)
@@ -13,7 +17,7 @@ class Desafio(db.Model):
     pontuacao = db.Column(db.Integer, nullable=False)
     quantidade_questoes = db.Column(db.Integer, nullable=True)
     data_criacao = db.Column(db.Date)
-    id_tema = db.Column(db.Integer, db.ForeignKey("Tema.id_tema"), nullable=True)
+    id_tema = db.Column(db.Integer, db.ForeignKey("Tema.id_tema"), nullable=True, index=True)
     id_aluno = db.Column(db.Integer, db.ForeignKey("Aluno.id_aluno"), nullable=True)
     nivel_mapa = db.Column(db.Integer, nullable=False, default=1)
     origem_ia = db.Column(db.Boolean, nullable=False, default=False)
