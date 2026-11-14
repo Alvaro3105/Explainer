@@ -84,6 +84,49 @@ def gabarito(banco, enunciado):
         conexao.close()
 
 
+def esperar_questao_aberta(pg, numero, total):
+    """Espera a janela da questão `numero` aberta e pronta para responder."""
+    pg.wait_for_function(
+        """([n, t]) => {
+            const quiz = document.querySelector('#janela-quiz');
+            const opcao = document.querySelector('.opcao-resposta');
+            return !quiz.hidden && !quiz.classList.contains('fechando')
+                && document.querySelector('#contador-quiz').innerText.trim() === `Questão ${n} de ${t}`
+                && document.querySelector('#titulo-questao-quiz').innerText.trim().length > 0
+                && opcao && !opcao.disabled;
+        }""",
+        arg=[numero, total], timeout=15000)
+
+
+def cadastrar_e_gerar_desafio(pg, base, nick, email):
+    """Cadastra um aluno, escolhe Física › Sistema Solar (banco local) e gera um desafio de 5 questões."""
+    pg.goto(base + "/")
+    pg.wait_for_selector("#tela-acesso:not([hidden])", timeout=15000)
+    pg.evaluate("() => document.querySelector('#aba-acesso-cadastro').click()")
+    cadastro = "#formulario-cadastro"
+    pg.fill(cadastro + " input[name=nome]", f"Aluno {nick}")
+    pg.fill(cadastro + " input[name=nick]", nick)
+    pg.fill(cadastro + " input[name=email]", email)
+    pg.fill(cadastro + " input[name=senha]", SENHA)
+    pg.check(cadastro + " input[name=aceite_termos]")
+    pg.evaluate("s => document.querySelector(s).click()", cadastro + " button[type=submit]")
+    pg.wait_for_selector("#estrutura-app:not([hidden])", timeout=15000)
+    pg.click("#entrada-materia")
+    pg.wait_for_selector("#busca-materia [role=option]", timeout=8000)
+    pg.type("#entrada-materia", "fis", delay=10)
+    pg.keyboard.press("Enter")
+    pg.wait_for_function("() => !document.querySelector('#entrada-tema').disabled", timeout=8000)
+    pg.click("#entrada-tema")
+    pg.type("#entrada-tema", "sistema solar", delay=30)
+    pg.wait_for_function("() => [...document.querySelectorAll('#busca-tema [role=option]')].some(o => o.innerText.includes('Sistema Solar'))", timeout=8000)
+    pg.keyboard.press("Enter")
+    pg.evaluate("() => document.querySelector(\"input[name=quantidade][value='5']\").click()")
+    pg.evaluate("() => document.querySelector('#botao-criar-desafio').click()")
+    # A camada de carregamento cobre a tela até o mapa ficar pronto.
+    pg.wait_for_selector("#tela-mapa-desafio:not([hidden])", timeout=20000)
+    pg.wait_for_selector("#camada-gerando", state="hidden", timeout=10000)
+
+
 def test_jornada_completa_do_aluno(servidor, navegador):
     base, banco = servidor
     contexto = navegador.new_context(viewport={"width": 1366, "height": 800}, locale="pt-BR")
@@ -134,21 +177,19 @@ def test_jornada_completa_do_aluno(servidor, navegador):
     assert pg.input_value("#entrada-tema") == "Sistema Solar"
 
     # --- gerar o desafio e responder as 5 questões ---
+    # A primeira questão abre sozinha depois de gerar, e cada acerto leva sozinho à seguinte
+    # (sem clicar na bolinha nem em "voltar ao mapa").
     clicar("input[name=quantidade][value='5']")
     clicar("#botao-criar-desafio")
     pg.wait_for_selector("#tela-mapa-desafio:not([hidden])", timeout=20000)
     pg.wait_for_function("() => document.querySelectorAll('.bolinha-mapa').length === 5", timeout=8000)
     for indice in range(5):
-        pg.evaluate("i => document.querySelectorAll('.bolinha-mapa')[i].click()", indice)
-        pg.wait_for_selector("#janela-quiz:not([hidden])", timeout=8000)
-        pg.wait_for_function("() => document.querySelector('#titulo-questao-quiz').innerText.trim().length > 0", timeout=8000)
+        esperar_questao_aberta(pg, indice + 1, 5)
         certa = gabarito(banco, texto("#titulo-questao-quiz"))
         clicar(f".opcao-resposta[data-resposta='{certa}']")
-        clicar("#proxima-questao")                      # confirma a resposta
+        clicar("#proxima-questao")                      # envia a resposta
+        clicar("#proxima-questao")                      # um segundo clique não envia de novo
         pg.wait_for_function("() => /correta!/.test(document.querySelector('#titulo-retorno')?.innerText || '')", timeout=8000)
-        pg.wait_for_function("() => !document.querySelector('#proxima-questao').disabled", timeout=8000)
-        pg.wait_for_timeout(400)                        # a tela termina de mostrar a correção
-        clicar("#proxima-questao")                      # volta ao mapa (ou conclui, na última)
         if indice < 4:
             pg.wait_for_function("i => (document.querySelectorAll('.bolinha-mapa')[i].getAttribute('aria-label') || '').includes('acertou')",
                                  arg=indice, timeout=8000)
@@ -190,6 +231,48 @@ def test_jornada_completa_do_aluno(servidor, navegador):
     clicar(".item-nav[data-visao='progresso']")
     pg.wait_for_selector("#tela-acesso:not([hidden])", timeout=10000)
     assert "sessão terminou" in texto("#mensagem-acesso")
+
+    contexto.close()
+    assert problemas == []
+
+
+def test_erro_mostra_explicacao_por_7_6_segundos_e_segue_sozinho(servidor, navegador):
+    base, banco = servidor
+    contexto = navegador.new_context(viewport={"width": 1366, "height": 800}, locale="pt-BR")
+    pg = contexto.new_page()
+    problemas = []
+    pg.on("pageerror", lambda erro: problemas.append(f"erro de JavaScript: {erro}"))
+    cadastrar_e_gerar_desafio(pg, base, "errante", "errante@exemplo.com")
+
+    esperar_questao_aberta(pg, 1, 5)
+    enunciado = pg.evaluate("() => document.querySelector('#titulo-questao-quiz').innerText.trim()")
+    certa = gabarito(banco, enunciado)
+    errada = next(letra for letra in "ABCD" if letra != certa)
+    pg.evaluate("s => document.querySelector(s).click()", f".opcao-resposta[data-resposta='{errada}']")
+    pg.evaluate("() => document.querySelector('#proxima-questao').click()")
+
+    # A explicação aparece sobre a questão, com a resposta marcada, a correta e o porquê.
+    pg.wait_for_selector("#janela-explicacao:not([hidden])", timeout=8000)
+    inicio = time.monotonic()
+    assert pg.is_visible("#janela-quiz")
+    assert pg.inner_text("#letra-marcada-explicacao").strip() == errada
+    assert pg.inner_text("#letra-correta-explicacao").strip() == certa
+    assert len(pg.inner_text("#texto-explicacao").strip()) > 0
+
+    # Escape não fecha; a barra de tempo diminui.
+    pg.keyboard.press("Escape")
+    pg.wait_for_timeout(2000)
+    assert pg.is_visible("#janela-explicacao")
+    escala = pg.evaluate("() => new DOMMatrix(getComputedStyle(document.querySelector('#barra-tempo-explicacao')).transform).a")
+    assert 0.5 < escala < 0.95
+
+    # Depois de 7,6 s (mais a entrada do painel), fecha e a próxima questão abre sozinha.
+    pg.wait_for_selector("#janela-explicacao", state="hidden", timeout=12000)
+    duracao = time.monotonic() - inicio
+    assert 7.5 <= duracao <= 9.0, duracao
+    esperar_questao_aberta(pg, 2, 5)
+    rotulo = pg.evaluate("() => document.querySelectorAll('.bolinha-mapa')[0].getAttribute('aria-label')")
+    assert "errou" in rotulo
 
     contexto.close()
     assert problemas == []
