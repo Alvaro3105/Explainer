@@ -232,7 +232,7 @@
   </section>
 
   <div class="janela-quiz" id="janela-quiz" hidden>
-    <section class="moldura-quiz" role="dialog" aria-modal="true" aria-labelledby="titulo-questao-quiz">
+    <section class="moldura-quiz" id="moldura-quiz" role="dialog" aria-modal="true" aria-labelledby="titulo-questao-quiz" tabindex="-1">
       <header class="barra-superior-quiz"><button class="fechar-quiz-x" id="fechar-quiz" type="button" aria-label="Sair do desafio">×</button><div class="area-progresso-quiz"><div class="info-quiz"><span id="rotulo-tema-quiz">Tema do desafio</span><strong id="contador-quiz">Questão 1 de 5</strong></div><div class="trilho-progresso-quiz"><div class="preenchimento-progresso-quiz" id="preenchimento-progresso-quiz"></div></div></div><div class="xp-quiz"><span>✦</span><strong id="total-xp-quiz">0</strong></div></header>
       <div class="conteudo-quiz" id="conteudo-quiz"><div class="cabecalho-questao"><strong id="numero-questao-quiz">Questão 1</strong><span class="bolinhas-questao" aria-hidden="true">••••</span></div><div class="chamada-quiz"><span class="ponto-ativo"></span> DESAFIO EM ANDAMENTO</div><h1 id="titulo-questao-quiz">Preparando sua questão…</h1><p class="instrucao-quiz">Selecione uma única resposta para continuar.</p><div class="lista-respostas" id="lista-respostas"></div><div class="retorno-resposta" id="retorno-resposta" hidden><strong id="titulo-retorno"></strong><p id="texto-retorno"></p><small id="pontos-retorno"></small></div><div class="acoes-quiz"><span class="icone-situacao-questao" aria-hidden="true">✓</span><span id="dica-acao-quiz">Escolha uma alternativa</span><button class="botao botao-principal" id="proxima-questao" type="button" disabled>Continuar</button></div></div>
       <div class="resultado-quiz" id="resultado-quiz" hidden><div class="medalha-resultado">✦</div><div class="mini-chamada">FASE CONCLUÍDA</div><h1 id="titulo-resultado">Desafio concluído!</h1><p id="descricao-resultado">Você completou mais uma etapa da sua jornada.</p><div class="metricas-resultado"><div><span>Acertos</span><strong id="resultado-corretas">0/5</strong></div><div><span>Pontos ganhos</span><strong id="pontos-resultado">+0</strong></div><div><span>Precisão</span><strong id="precisao-resultado">0%</strong></div></div><div class="revisao-resultado" id="revisao-resultado" hidden><span class="titulo-revisao-resultado">Suas respostas</span><ol class="lista-revisao-resultado" id="lista-revisao-resultado"></ol></div><p class="bonus-resultado" id="bonus-resultado" hidden>✦ Bônus de desafio perfeito: +25 pontos</p><div class="acoes-resultado"><button class="botao botao-principal botao-largo" id="proximo-desafio" type="button">Próxima fase <span>→</span></button><button class="botao botao-secundario botao-largo" id="finalizar-quiz" type="button">Voltar ao mapa</button></div></div>
@@ -279,10 +279,65 @@
 
   <div class="aviso-rapido" id="aviso-rapido" role="status" hidden></div>
 
+  <!-- Explicação do erro: fica sobre a questão por 7,6 s e depois o fluxo segue sozinho. -->
+  <div class="janela-explicacao" id="janela-explicacao" hidden>
+    <section class="cartao-explicacao" id="cartao-explicacao" role="alertdialog" aria-modal="true" aria-labelledby="titulo-explicacao" aria-describedby="corpo-explicacao" tabindex="-1">
+      <header class="topo-explicacao">
+        <span class="icone-explicacao" aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
+        <div>
+          <span class="mini-chamada">RESPOSTA INCORRETA</span>
+          <h2 id="titulo-explicacao">Não foi dessa vez, mas dá pra entender</h2>
+        </div>
+      </header>
+      <div class="corpo-explicacao" id="corpo-explicacao">
+        <p class="enunciado-explicacao" id="enunciado-explicacao"></p>
+        <div class="comparacao-explicacao">
+          <div class="alternativa-explicacao marcada">
+            <span class="rotulo-alternativa-explicacao">Você marcou</span>
+            <strong><b id="letra-marcada-explicacao">B</b><span id="texto-marcado-explicacao"></span></strong>
+          </div>
+          <div class="alternativa-explicacao correta">
+            <span class="rotulo-alternativa-explicacao">Resposta correta</span>
+            <strong><b id="letra-correta-explicacao">A</b><span id="texto-correto-explicacao"></span></strong>
+          </div>
+        </div>
+        <h3 id="titulo-raciocinio-explicacao">Por que a resposta certa é A</h3>
+        <p class="texto-explicacao" id="texto-explicacao"></p>
+        <p class="pontos-explicacao" id="pontos-explicacao" hidden></p>
+      </div>
+      <p class="aviso-tempo-explicacao">Seguindo para a próxima questão em <strong><span id="segundos-explicacao">8</span> s</strong></p>
+      <div class="tempo-explicacao" id="progresso-tempo-explicacao" role="progressbar" aria-label="Tempo de leitura restante, em segundos" aria-valuemin="0" aria-valuemax="7.6" aria-valuenow="7.6"><i id="barra-tempo-explicacao"></i></div>
+    </section>
+  </div>
+
+  <!-- Carregamento ao gerar atividade: cobre e bloqueia toda a interface até a atividade ficar pronta. -->
+  <div class="camada-gerando" id="camada-gerando" hidden>
+    <section class="cartao-gerando" id="cartao-gerando" role="alertdialog" aria-modal="true" aria-labelledby="titulo-gerando" aria-describedby="texto-gerando" tabindex="-1">
+      <div id="estado-carregando-gerando">
+        <div class="bolinhas-gerando" aria-hidden="true">
+          <span class="trilha-gerando"></span>
+          <i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <h2 id="titulo-gerando" aria-live="polite">Gerando sua atividade…</h2>
+        <p id="texto-gerando">A inteligência artificial está preparando as questões. Isso pode levar alguns segundos.</p>
+      </div>
+      <div id="estado-erro-gerando" hidden>
+        <div class="icone-modal" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h2>Não conseguimos gerar a atividade</h2>
+        <p class="recado erro" id="mensagem-erro-gerando" role="alert"></p>
+        <div class="acoes-modal">
+          <button class="botao botao-secundario" id="fechar-erro-gerando" type="button">Fechar</button>
+          <button class="botao botao-principal" id="tentar-gerar-novamente" type="button">Tentar novamente</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
   <script src="voltar.js"></script>
   <script src="minijogo/sprites.js"></script>
   <script src="minijogo/astronauta.js"></script>
   <script src="minijogo/jogo.js"></script>
+  <script src="fluxo-atividade.js"></script>
   <script src="estudar.js"></script>
 </body>
 </html>

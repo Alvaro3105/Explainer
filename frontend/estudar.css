@@ -743,3 +743,85 @@ body.tema-claro .pontos-posicao{color:#5b57e0}
   .cabecalho-ranking .pilula-suave{display:none}
 }
 @media (max-width:560px){.painel-ranking{padding:18px 14px}}
+
+/* ======================================================================
+   Fluxo das atividades (fluxo-atividade.js)
+   ====================================================================== */
+
+/* ---------- Carregamento ao gerar atividade ---------- */
+body.gerando-atividade{overflow:hidden}
+.camada-gerando{position:fixed;inset:0;z-index:400;display:grid;place-items:center;padding:20px;background:rgba(10,16,20,.82);backdrop-filter:blur(6px);touch-action:none;overscroll-behavior:contain;animation:carregar-suave .2s}
+.camada-gerando[hidden]{display:none}
+.camada-gerando.saindo{animation:gerando-sai .22s forwards}
+@keyframes gerando-sai{to{opacity:0}}
+.cartao-gerando{width:min(440px,100%);padding:34px 28px 30px;border-radius:22px;background:var(--cor1);color:var(--cor10);border:2px solid var(--cor2);box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 6px rgba(209,220,90,.12);text-align:center;outline:none;animation:modal-entra .28s cubic-bezier(.2,1.3,.4,1)}
+body.tema-claro .cartao-gerando{background:#fff}
+.cartao-gerando h2{font-size:22px;font-weight:800;margin-bottom:8px}
+.cartao-gerando p{font-size:14.5px;line-height:1.55;color:var(--apagado)}
+.cartao-gerando .recado{margin:14px 0 0}
+.cartao-gerando .acoes-modal .botao{flex:1}
+
+/* Cinco bolinhas do mapa sobre uma trilha pontilhada: pulam em onda e "acendem" uma a uma. */
+.bolinhas-gerando{position:relative;display:flex;justify-content:space-between;align-items:center;width:230px;height:74px;margin:0 auto 18px}
+.trilha-gerando{position:absolute;left:16px;right:16px;top:50%;height:6px;transform:translateY(-50%);background:radial-gradient(circle,var(--cor16) 2.6px,transparent 3px) left center/14px 6px repeat-x}
+.bolinhas-gerando i{position:relative;z-index:1;width:30px;height:28px;border-radius:50%;background:var(--cor2);box-shadow:0 5px 0 var(--cor14);animation:bolinha-pula 1.5s cubic-bezier(.45,0,.55,1) infinite,bolinha-acende 3s steps(1,end) infinite}
+.bolinhas-gerando i:nth-of-type(even){background:var(--cor15);box-shadow:0 5px 0 var(--cor16)}
+.bolinhas-gerando i:nth-of-type(1){animation-delay:0s,0s}
+.bolinhas-gerando i:nth-of-type(2){animation-delay:.15s,.3s}
+.bolinhas-gerando i:nth-of-type(3){animation-delay:.3s,.6s}
+.bolinhas-gerando i:nth-of-type(4){animation-delay:.45s,.9s}
+.bolinhas-gerando i:nth-of-type(5){animation-delay:.6s,1.2s}
+@keyframes bolinha-pula{0%,55%,100%{transform:translateY(0)}25%{transform:translateY(-16px)}}
+@keyframes bolinha-acende{0%,45%{filter:none}50%,95%{filter:brightness(1.18) drop-shadow(0 0 8px rgba(255,255,255,.35))}}
+
+/* ---------- Janela da questão fechando ---------- */
+.janela-quiz.fechando{animation:quiz-fecha .24s ease forwards}
+.janela-quiz.fechando .moldura-quiz{animation:quiz-moldura-fecha .24s ease forwards}
+@keyframes quiz-fecha{to{opacity:0}}
+@keyframes quiz-moldura-fecha{to{transform:translateY(10px) scale(.96)}}
+.moldura-quiz:focus{outline:none}
+/* Opções travadas enquanto a resposta é validada ou durante a transição. */
+.lista-respostas.travada .opcao-resposta{cursor:default}
+
+/* ---------- Avanço pelo caminho ---------- */
+.trecho-trilha{transition:background-color .18s ease}
+.marcador-avanco{position:absolute;z-index:3;width:28px;height:28px;margin:0;border-radius:50%;transform:translate(-50%,-50%);background:#fff;box-shadow:0 0 0 6px rgba(124,121,255,.45),0 0 24px 6px rgba(209,220,90,.55);pointer-events:none}
+.marcador-avanco.chegou{animation:marcador-chega .4s ease-out forwards}
+@keyframes marcador-chega{to{opacity:0;transform:translate(-50%,-50%) scale(2.2)}}
+
+/* ---------- Explicação do erro (7,6 s) ---------- */
+.janela-explicacao{position:fixed;inset:0;z-index:300;display:grid;place-items:center;padding:20px;background:rgba(10,16,20,.55);animation:carregar-suave .22s}
+.janela-explicacao[hidden]{display:none}
+.cartao-explicacao{position:relative;overflow:hidden;width:min(560px,100%);max-height:92vh;overflow-y:auto;padding:26px 26px 30px;border-radius:20px;background:var(--cor1);color:var(--cor10);border:2px solid var(--cor12);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 6px rgba(234,43,43,.16);outline:none;animation:modal-entra .26s cubic-bezier(.2,1.3,.4,1)}
+body.tema-claro .cartao-explicacao{background:#fff}
+.topo-explicacao{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.icone-explicacao{width:52px;height:52px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:24px;color:#fff;background:var(--cor12);box-shadow:0 5px 0 #a31d1d}
+.topo-explicacao .mini-chamada{color:#ff8f8f}
+body.tema-claro .topo-explicacao .mini-chamada{color:#b42323}
+.topo-explicacao h2{font-size:21px;font-weight:800;line-height:1.2;margin-top:2px}
+.enunciado-explicacao{font-size:14px;color:var(--apagado);line-height:1.5;margin-bottom:14px}
+.comparacao-explicacao{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.alternativa-explicacao{padding:12px 14px;border-radius:12px;border:2px solid transparent}
+.alternativa-explicacao.marcada{background:rgba(234,43,43,.14);border-color:rgba(234,43,43,.5)}
+.alternativa-explicacao.correta{background:rgba(63,184,96,.16);border-color:rgba(63,184,96,.6)}
+.rotulo-alternativa-explicacao{display:block;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--apagado);margin-bottom:6px}
+.alternativa-explicacao strong{display:flex;align-items:flex-start;gap:8px;font-size:15px;line-height:1.35}
+.alternativa-explicacao b{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:#fff}
+.alternativa-explicacao.marcada b{background:var(--cor12)}
+.alternativa-explicacao.correta b{background:#3fb860}
+.corpo-explicacao h3{font-size:16px;font-weight:800;margin-bottom:6px}
+.texto-explicacao{font-size:15px;line-height:1.6;color:var(--cor10)}
+.pontos-explicacao{margin-top:10px;font-size:13px;font-weight:700;color:#ff8f8f}
+body.tema-claro .pontos-explicacao{color:#b42323}
+.aviso-tempo-explicacao{margin-top:18px;font-size:13px;color:var(--apagado)}
+.aviso-tempo-explicacao strong{color:var(--cor10)}
+/* Barra de tempo: o JS reduz a escala a partir do mesmo relógio do temporizador. */
+.tempo-explicacao{position:absolute;left:0;right:0;bottom:0;height:7px;background:rgba(255,255,255,.08)}
+body.tema-claro .tempo-explicacao{background:rgba(30,44,50,.1)}
+.tempo-explicacao i{display:block;height:100%;width:100%;background:var(--cor12);transform-origin:left center;transform:scaleX(1)}
+
+@media (max-width:560px){
+  .cartao-explicacao{padding:22px 18px 28px}
+  .comparacao-explicacao{grid-template-columns:minmax(0,1fr)}
+  .bolinhas-gerando{width:200px}
+}

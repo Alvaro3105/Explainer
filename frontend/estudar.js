@@ -24,6 +24,9 @@ const estado = {
   revisao: null,          // lista de desafios e posição atual, quando está refazendo
   faseAtiva: 1,           // fase do desafio em andamento (muda a cor do espaço)
   faseReprovada: false,
+  fluxo: 'livre',         // etapa da questão aberta (ver "Fluxo de cada questão")
+  controleFluxo: null,    // AbortController da questão aberta
+  geometriaMapa: null,    // pontos e curvas da trilha desenhada
 };
 
 const elemento = (id) => document.getElementById(id);
@@ -879,6 +882,7 @@ function dificuldadeBaseDaFase(dificuldadeAtual, fase) {
 
 // Limpa o estado do desafio em um lugar só, para não sobrar nada do desafio anterior.
 function iniciarEstadoDesafio(dados, { modoMapa = true, modoRevisao = false, configuracao = null, revisao = null, respondidas = null, acertos = null, concluido = false } = {}) {
+  cancelarFluxo(); // um desafio novo encerra qualquer etapa pendente do anterior
   estado.faseConcluida = Boolean(concluido);
   estado.desafio = dados.desafio;
   estado.temaAtual = dados.tema || { nome: dados.desafio.nome, materia: '' };
@@ -914,6 +918,7 @@ async function criarProximoDesafio({ idTema, quantidade, dificuldadeBase, mostra
     id_tema: Number(idTema), quantidade_questoes: Number(quantidade), dificuldade, fase_jornada: fase,
     dificuldade_base: chaveDificuldade(dificuldadeBase),
   }});
+  garantirQuestoes(dados);
   iniciarEstadoDesafio(dados, {
     modoMapa: mostrarMapa,
     configuracao: { idTema: Number(idTema), quantidade: Number(quantidade), dificuldadeBase, fasesPlanejadas: Number(fasesPlanejadas), faseNaJornada: Number(dados.desafio.nivel_mapa || faseNaJornada) },
@@ -1062,13 +1067,17 @@ elemento('formulario-desafio').addEventListener('submit', async (evento) => {
     return;
   }
   const botao = elemento('botao-criar-desafio');
-  if (botao.disabled) return;
+  // Cliques repetidos não iniciam outra geração.
+  if (botao.disabled || FluxoAtividade.carregamento.ativo()) return;
   botao.disabled = true;
+  // A camada aparece no mesmo instante do clique e bloqueia o fundo.
+  FluxoAtividade.carregamento.iniciar({ titulo: 'Gerando sua atividade…', texto: 'Conferindo o seu progresso antes de começar.' });
   try {
     // Se já existe um desafio em andamento, pede confirmação antes de trocar.
     let ativo = { ativo: false };
     try { ativo = await api('/api/learning/active-challenge'); } catch (erro) { if (erro.status === 401) throw erro; }
     if (ativo.ativo) {
+      FluxoAtividade.carregamento.encerrar();
       const confirmou = await perguntar({
         titulo: 'Gerar um novo desafio?',
         texto: 'Você tem um desafio em andamento. Se gerar um novo, o atual fica sem terminar, mas os pontos que você já fez continuam valendo. Deseja continuar?',
@@ -1078,8 +1087,13 @@ elemento('formulario-desafio').addEventListener('submit', async (evento) => {
       if (!confirmou) return;
       gravarSeguidos(0); // largar um desafio zera a contagem de seguidos
     }
-    await gerarNovoDesafio(tema);
+    cancelarFluxo();
+    // A camada só sai quando o mapa da atividade está montado; em falha, oferece tentar de novo.
+    const gerou = await FluxoAtividade.gerarComCarregamento(() => gerarNovoDesafio(tema));
+    if (gerou) abrirQuestaoInicial();
+    atualizarBotoesDesafio();
   } catch (erro) {
+    FluxoAtividade.carregamento.encerrar();
     mostrarAvisoRapido(erro.message);
   } finally {
     botao.disabled = false;
@@ -1102,16 +1116,23 @@ async function gerarNovoDesafio(tema) {
         dificuldade_base: chaveDificuldade(dificuldadeBase),
       },
     });
+    garantirQuestoes(dados);
     iniciarEstadoDesafio(dados, {
       modoMapa: true,
       configuracao: { idTema: Number(tema.id_tema), quantidade, dificuldadeBase, fasesPlanejadas: fasesPorQuantidade(quantidade), faseNaJornada: 1 },
     });
-    mostrarAvisoRapido('Seu mapa de desafio está pronto. Clique na primeira bolinha para começar.');
     abrirMapaDesafio();
+    mostrarAvisoRapido('Seu mapa de desafio está pronto. Vamos à primeira questão!');
   } finally {
     botao.innerHTML = textoOriginal;
   }
-  await atualizarBotoesDesafio();
+}
+
+// Um desafio sem questões conta como falha da geração (a camada mostra "Tentar novamente").
+function garantirQuestoes(dados) {
+  if (!dados || !Array.isArray(dados.questoes) || !dados.questoes.length) {
+    throw new Error('O desafio foi criado sem questões disponíveis. Tente novamente.');
+  }
 }
 
 function abrirMapaDesafio() {
@@ -1221,7 +1242,9 @@ function renderizarMapaDesafio() {
     const progresso = quantidade === 1 ? 0.5 : indice / (quantidade - 1);
     return { x: margemX + progresso * (largura - margemX * 2), y: altura * (0.50 + Math.sin(indice * 1.42) * 0.27 + Math.cos(indice * 0.61) * 0.08) };
   });
-  desenharTrilha(elemento('trilha-mapa-espacial'), pontos);
+  const controles = desenharTrilha(elemento('trilha-mapa-espacial'), pontos);
+  // Guardado para a animação de avanço percorrer exatamente a curva desenhada.
+  estado.geometriaMapa = { pontos, controles };
 
   estado.questoes.forEach((questao, indice) => {
     const respondida = estado.questoesRespondidas.has(indice);
@@ -1239,6 +1262,8 @@ function renderizarMapaDesafio() {
     botao.title = `Questão ${indice + 1}${respondida ? (errou ? ' — errou' : ' — acertou') : bloqueada ? ' — bloqueada' : ''}`;
     botao.innerHTML = `<span class="sombra-bolinha" aria-hidden="true"></span><span class="face-bolinha" aria-hidden="true"><i class="marca-play-bolinha fa-solid ${respondida ? (errou ? 'fa-xmark' : 'fa-check') : bloqueada ? 'fa-lock' : 'fa-play'}"></i></span><span class="legenda-bolinha">Questão ${indice + 1}</span>`;
     botao.addEventListener('click', () => {
+      // Durante o avanço automático, a próxima questão abre sozinha.
+      if (fluxoOcupado()) return;
       if (respondida) {
         mostrarAvisoRapido('Esta questão já foi concluída. Siga para a próxima bolinha.');
         return;
@@ -1290,20 +1315,12 @@ elemento('proxima-acao-mapa').addEventListener('click', async () => {
   const botao = elemento('proxima-acao-mapa');
   botao.disabled = true;
   try {
+    if (fluxoOcupado()) return;
     if (estado.faseReprovada) {
       await tentarFaseDeNovo();
     } else if (!estado.faseConcluida) {
       // Usa a mesma conclusão do quiz e mostra a tela de resultado.
-      elemento('resultado-quiz').hidden = true;
-      elemento('conteudo-quiz').hidden = true;
-      await concluirQuiz();
-      if (!elemento('resultado-quiz').hidden) {
-        elemento('rotulo-tema-quiz').textContent = `${estado.temaAtual.materia} · ${estado.temaAtual.nome}`;
-        elemento('total-xp-quiz').textContent = formatarNumero(estado.aluno?.pontos || 0);
-        elemento('janela-quiz').hidden = false;
-      } else {
-        elemento('conteudo-quiz').hidden = false;
-      }
+      await concluirFaseNoMapa();
     } else {
       await seguirParaProximaFase();
     }
@@ -1317,7 +1334,8 @@ elemento('proxima-acao-mapa').addEventListener('click', async () => {
 // O trecho até uma questão já respondida muda de cor.
 function desenharTrilha(container, pontos) {
   container.replaceChildren();
-  if (pontos.length < 2) return;
+  const controles = [];
+  if (pontos.length < 2) return controles;
   const espessura = parseFloat(getComputedStyle(container).getPropertyValue('--espessura-trilha')) || 20;
   const camadaSombra = document.createElement('div');
   camadaSombra.className = 'camada-trilha camada-trilha-sombra';
@@ -1338,6 +1356,7 @@ function desenharTrilha(container, pontos) {
   pontos.slice(0, -1).forEach((inicio, indice) => {
     const fim = pontos[indice + 1];
     const controle = { x: (inicio.x + fim.x) / 2, y: (inicio.y + fim.y) / 2 + (indice % 2 === 0 ? -58 : 58) };
+    controles.push(controle);
     const cor = estado.questoesRespondidas.has(indice + 1) ? 'feito' : indice % 2 === 0 ? 'lima' : 'turquesa';
     // Trecho mais longo recebe mais pedaços, para a curva ficar lisa.
     const passos = Math.max(8, Math.ceil(Math.hypot(fim.x - inicio.x, fim.y - inicio.y) / espessura));
@@ -1350,11 +1369,14 @@ function desenharTrilha(container, pontos) {
         y: (1 - t) * (1 - t) * inicio.y + 2 * (1 - t) * t * controle.y + t * t * fim.y,
       };
       camadaSombra.appendChild(criarPilula(anterior, atual, 'trecho-trilha'));
-      camadaCor.appendChild(criarPilula(anterior, atual, `trecho-trilha ${cor}`));
+      const pedaco = criarPilula(anterior, atual, `trecho-trilha ${cor}`);
+      pedaco.dataset.segmento = String(indice);
+      camadaCor.appendChild(pedaco);
       anterior = atual;
     }
   });
   container.append(camadaSombra, camadaCor);
+  return controles;
 }
 
 // A próxima questão é sempre a primeira que ainda não foi respondida.
@@ -1373,9 +1395,124 @@ function abrirQuestaoDoMapa() {
   elemento('rotulo-tema-quiz').textContent = `${estado.temaAtual.materia} · ${estado.temaAtual.nome}`;
   elemento('total-xp-quiz').textContent = formatarNumero(estado.aluno.pontos || 0);
   mostrarQuestaoAtual();
+  elemento('moldura-quiz').focus({ preventScroll: true });
+}
+
+/* ---------- Fluxo de cada questão ----------
+ * Estados: livre → respondendo → validando → (acerto | explicacao) → transicao → respondendo (próxima)
+ *                                                                              ↘ concluindo (última)
+ * Cada questão aberta ganha um AbortController. Encerrar o fluxo (sair do mapa, gerar outro
+ * desafio, abrir outra questão) aborta o anterior: temporizadores, animações e respostas
+ * atrasadas daquela questão deixam de ter efeito.
+ */
+const ESTADOS_OCUPADOS = new Set(['validando', 'acerto', 'explicacao', 'transicao', 'concluindo']);
+
+function fluxoOcupado() {
+  return ESTADOS_OCUPADOS.has(estado.fluxo);
+}
+
+function definirFluxo(novo) {
+  estado.fluxo = novo;
+  // Enquanto a resposta é validada ou o avanço acontece, não dá para fechar a questão.
+  elemento('fechar-quiz').disabled = ESTADOS_OCUPADOS.has(novo);
+}
+
+function cancelarFluxo() {
+  if (estado.controleFluxo) estado.controleFluxo.abort();
+  estado.controleFluxo = null;
+  definirFluxo('livre');
+}
+
+function novoControleFluxo() {
+  cancelarFluxo();
+  estado.controleFluxo = new AbortController();
+  return estado.controleFluxo.signal;
+}
+
+// Logo depois de gerar ou carregar um desafio, abre a primeira questão pendente,
+// com uma pausa curta para o aluno ver o mapa montado.
+async function abrirQuestaoInicial() {
+  const sinal = novoControleFluxo();
+  definirFluxo('transicao');
+  try {
+    await FluxoAtividade.esperar(FluxoAtividade.menosMovimento() ? 150 : 450, sinal);
+  } catch (erro) {
+    return;
+  }
+  definirFluxo('livre');
+  const proxima = indiceDaProximaQuestao();
+  if (proxima < 0 || elemento('tela-mapa-desafio').hidden) return;
+  estado.indiceQuestao = proxima;
+  abrirQuestaoDoMapa();
+}
+
+// Conclui a fase e mostra a tela de resultado que já existe.
+async function concluirFaseNoMapa() {
+  elemento('resultado-quiz').hidden = true;
+  elemento('conteudo-quiz').hidden = true;
+  await concluirQuiz();
+  if (!elemento('resultado-quiz').hidden) {
+    elemento('rotulo-tema-quiz').textContent = `${estado.temaAtual.materia} · ${estado.temaAtual.nome}`;
+    elemento('total-xp-quiz').textContent = formatarNumero(estado.aluno?.pontos || 0);
+    elemento('janela-quiz').hidden = false;
+    elemento('moldura-quiz').focus({ preventScroll: true });
+  } else {
+    // Falhou ao salvar: o botão "Concluir fase" do rodapé do mapa continua disponível.
+    elemento('conteudo-quiz').hidden = false;
+  }
+}
+
+// Depois do feedback (acerto) ou da explicação (erro): fecha a questão, marca a bolinha,
+// percorre o trecho do caminho até a próxima e abre a próxima questão.
+async function avancarDepoisDaResposta(indiceRespondido, sinal) {
+  definirFluxo('transicao');
+  await FluxoAtividade.fecharComTransicao(elemento('janela-quiz'), sinal);
+  FluxoAtividade.verificar(sinal);
+  const proxima = indiceDaProximaQuestao();
+
+  if (!estado.modoMapa) {
+    if (proxima < 0) {
+      definirFluxo('concluindo');
+      elemento('janela-quiz').hidden = false;
+      await concluirQuiz();
+      definirFluxo('livre');
+      return;
+    }
+    estado.indiceQuestao = proxima;
+    elemento('janela-quiz').hidden = false;
+    mostrarQuestaoAtual();
+    return;
+  }
+
+  renderizarMapaDesafio(); // a bolinha respondida aparece marcada (acerto ou erro)
+  if (proxima < 0) {
+    definirFluxo('concluindo');
+    await FluxoAtividade.esperar(FluxoAtividade.menosMovimento() ? 150 : 450, sinal);
+    await concluirFaseNoMapa();
+    definirFluxo('livre');
+    return;
+  }
+
+  const geometria = estado.geometriaMapa;
+  if (geometria && proxima === indiceRespondido + 1 && geometria.controles[indiceRespondido]) {
+    await FluxoAtividade.animarTrecho({
+      area: elemento('rolagem-mapa-espacial'),
+      trilha: elemento('trilha-mapa-espacial'),
+      de: geometria.pontos[indiceRespondido],
+      controle: geometria.controles[indiceRespondido],
+      ate: geometria.pontos[proxima],
+      segmento: indiceRespondido,
+    }, sinal);
+  } else {
+    await FluxoAtividade.esperar(300, sinal);
+  }
+  FluxoAtividade.verificar(sinal);
+  estado.indiceQuestao = proxima;
+  abrirQuestaoDoMapa();
 }
 
 function fecharMapaDesafio() {
+  cancelarFluxo();
   elemento('janela-quiz').hidden = true;
   elemento('tela-mapa-desafio').hidden = true;
   document.body.classList.remove('mapa-aberto');
@@ -1390,7 +1527,8 @@ let tempoRedimensionar = null;
 window.addEventListener('resize', () => {
   clearTimeout(tempoRedimensionar);
   tempoRedimensionar = setTimeout(() => {
-    if (!elemento('tela-mapa-desafio').hidden) renderizarMapaDesafio();
+    // Durante o avanço, redesenhar apagaria a animação; o mapa é redesenhado na próxima questão.
+    if (!elemento('tela-mapa-desafio').hidden && estado.fluxo !== 'transicao') renderizarMapaDesafio();
   }, 150);
 });
 
@@ -1434,16 +1572,19 @@ function abrirQuiz() {
 
 function mostrarQuestaoAtual() {
   const questao = estado.questoes[estado.indiceQuestao];
+  novoControleFluxo(); // encerra qualquer etapa pendente da questão anterior
+  definirFluxo('respondendo');
   estado.alternativaSelecionada = null;
   estado.respostaEnviada = false;
   estado.inicioQuestao = Date.now();
+  elemento('lista-respostas').classList.remove('travada');
   elemento('contador-quiz').textContent = `Questão ${estado.indiceQuestao + 1} de ${estado.questoes.length}`;
   elemento('numero-questao-quiz').textContent = `Questão ${estado.indiceQuestao + 1}`;
   elemento('preenchimento-progresso-quiz').style.width = `${(estado.indiceQuestao / estado.questoes.length) * 100}%`;
   elemento('titulo-questao-quiz').textContent = questao.enunciado;
   elemento('dica-acao-quiz').textContent = 'Escolha uma alternativa';
   elemento('proxima-questao').disabled = true;
-  elemento('proxima-questao').innerHTML = estado.modoMapa ? 'Continuar' : 'Confirmar resposta <span>→</span>';
+  elemento('proxima-questao').innerHTML = 'Enviar resposta <span>→</span>';
   elemento('retorno-resposta').hidden = true;
   elemento('retorno-resposta').classList.remove('errada');
   const lista = elemento('lista-respostas');
@@ -1466,7 +1607,7 @@ function mostrarQuestaoAtual() {
 }
 
 function selecionarAlternativa(letra) {
-  if (estado.respostaEnviada) return;
+  if (estado.respostaEnviada || estado.fluxo !== 'respondendo') return;
   estado.alternativaSelecionada = letra;
   document.querySelectorAll('.opcao-resposta').forEach((botao) => {
     botao.classList.toggle('selecionada', botao.dataset.resposta === letra);
@@ -1495,40 +1636,77 @@ elemento('proxima-questao').addEventListener('click', async () => {
     }
     return;
   }
-  if (!estado.alternativaSelecionada) return;
+  // Só envia uma vez: a partir daqui o estado deixa de ser "respondendo".
+  if (estado.fluxo !== 'respondendo' || !estado.alternativaSelecionada || !estado.controleFluxo) return;
+  const sinal = estado.controleFluxo.signal;
+  const indice = estado.indiceQuestao;
+  const idDesafio = estado.desafio.id_desafio;
+  const questao = estado.questoes[indice];
+  const letraMarcada = estado.alternativaSelecionada;
   const botaoProximo = elemento('proxima-questao');
+  definirFluxo('validando');
   botaoProximo.disabled = true;
   botaoProximo.textContent = 'Verificando…';
-  const questao = estado.questoes[estado.indiceQuestao];
+  elemento('lista-respostas').classList.add('travada');
+  document.querySelectorAll('.opcao-resposta').forEach((botao) => { botao.disabled = true; });
   const segundosGastos = Math.max(0, Math.round((Date.now() - estado.inicioQuestao) / 1000));
-  try {
 
-    const resultado = await api(`/api/learning/challenges/${estado.desafio.id_desafio}/answer`, {
+  let resultado;
+  try {
+    resultado = await api(`/api/learning/challenges/${idDesafio}/answer`, {
       method: 'POST',
-      body: { id_questao: questao.id_questao, alternativa: estado.alternativaSelecionada, segundos_gastos: segundosGastos },
+      body: { id_questao: questao.id_questao, alternativa: letraMarcada, segundos_gastos: segundosGastos },
     });
-    estado.respostaEnviada = true;
-    if (estado.modoMapa) estado.questoesRespondidas.add(estado.indiceQuestao);
-    estado.resultadoQuestoes.set(estado.indiceQuestao, Boolean(resultado.correta));
-    estado.aluno.pontos = resultado.pontos_totais;
-    estado.aluno.minutos_ativos = Math.max(estado.aluno.minutos_ativos || 0, resultado.minutos_ativos || 0);
-    elemento('total-xp-quiz').textContent = formatarNumero(estado.aluno.pontos || 0);
-    atualizarIdentidade();
-    document.querySelectorAll('.opcao-resposta').forEach((botao) => {
-      botao.disabled = true;
-      if (botao.dataset.resposta === resultado.alternativa_correta) botao.classList.add('correta');
-      else if (botao.dataset.resposta === estado.alternativaSelecionada && !resultado.correta) botao.classList.add('incorreta');
-    });
-    const retorno = elemento('retorno-resposta');
-    retorno.hidden = false;
-    retorno.classList.toggle('errada', !resultado.correta);
-    elemento('titulo-retorno').textContent = resultado.correta ? 'Resposta correta!' : `A resposta correta é ${resultado.alternativa_correta}.`;
-    elemento('texto-retorno').textContent = resultado.explicacao;
-    elemento('pontos-retorno').textContent = resultado.correta
-      ? (resultado.pontos_ganhos > 0 ? `+${resultado.pontos_ganhos} pontos adicionados ao seu total.` : 'Revisão: esta tentativa não altera seus pontos.')
-      : (resultado.pontos_ganhos < 0 ? `${Math.abs(resultado.pontos_ganhos)} pontos perdidos por errar. Continue tentando.` : 'Nenhum ponto nesta questão. Continue tentando.');
+  } catch (erro) {
+    if (sinal.aborted) return;
+    // Falha na validação: nada é registrado e o aluno pode enviar de novo.
+    definirFluxo('respondendo');
+    elemento('lista-respostas').classList.remove('travada');
+    document.querySelectorAll('.opcao-resposta').forEach((botao) => { botao.disabled = false; });
+    mostrarAvisoRapido(erro.message);
+    botaoProximo.disabled = false;
+    botaoProximo.innerHTML = 'Tentar enviar de novo <span>→</span>';
+    // Erro 409: a questão já foi respondida (em outra aba, por exemplo) ou está fora de ordem.
+    // Recarrega o desafio salvo para o mapa ficar igual ao servidor.
+    if (erro.status === 409 && estado.desafio && estado.modoMapa && !estado.modoRevisao) {
+      cancelarFluxo();
+      elemento('janela-quiz').hidden = true;
+      await continuarDesafioSalvo(estado.desafio.id_desafio);
+    }
+    return;
+  }
+  // Resposta atrasada de uma questão que já não está aberta: não mexe na questão atual.
+  if (sinal.aborted || estado.indiceQuestao !== indice || estado.desafio?.id_desafio !== idDesafio) return;
+
+  // Registro único da resposta.
+  estado.respostaEnviada = true;
+  if (estado.modoMapa) estado.questoesRespondidas.add(indice);
+  estado.resultadoQuestoes.set(indice, Boolean(resultado.correta));
+  estado.aluno.pontos = resultado.pontos_totais;
+  estado.aluno.minutos_ativos = Math.max(estado.aluno.minutos_ativos || 0, resultado.minutos_ativos || 0);
+  elemento('total-xp-quiz').textContent = formatarNumero(estado.aluno.pontos || 0);
+  atualizarIdentidade();
+  document.querySelectorAll('.opcao-resposta').forEach((botao) => {
+    if (botao.dataset.resposta === resultado.alternativa_correta) botao.classList.add('correta');
+    else if (botao.dataset.resposta === letraMarcada && !resultado.correta) botao.classList.add('incorreta');
+  });
+  elemento('preenchimento-progresso-quiz').style.width = `${(Math.max(estado.questoesRespondidas.size, indice + 1) / estado.questoes.length) * 100}%`;
+  const ultima = estado.modoMapa ? indiceDaProximaQuestao() < 0 : indice >= estado.questoes.length - 1;
+  botaoProximo.textContent = ultima ? 'Fechando a fase…' : 'Indo para a próxima…';
+
+  try {
     if (resultado.correta) {
+      definirFluxo('acerto');
       estado.acertosSeguidos += 1;
+      const retorno = elemento('retorno-resposta');
+      retorno.hidden = false;
+      retorno.classList.remove('errada');
+      elemento('titulo-retorno').textContent = 'Resposta correta!';
+      elemento('texto-retorno').textContent = resultado.explicacao || '';
+      elemento('pontos-retorno').textContent = resultado.pontos_ganhos > 0
+        ? `+${resultado.pontos_ganhos} pontos adicionados ao seu total.`
+        : 'Revisão: esta tentativa não altera seus pontos.';
+      elemento('dica-acao-quiz').textContent = ultima ? 'Última questão respondida!' : 'Boa! Seguindo para a próxima questão…';
       const elogios = [
         'Mandou bem! Você acabou de conquistar mais um acerto.',
         'Boa leitura da questão! Seu esforço está aparecendo.',
@@ -1537,28 +1715,37 @@ elemento('proxima-questao').addEventListener('click', async () => {
         'Aí sim! Você está construindo conhecimento de verdade.'
       ];
       mostrarAvisoRapido(elogios[(estado.acertosSeguidos - 1) % elogios.length]);
+      // Feedback breve de acerto antes de seguir.
+      await FluxoAtividade.esperar(1300, sinal);
     } else {
+      definirFluxo('explicacao');
       estado.acertosSeguidos = 0;
+      // Um elogio ainda na tela (da questão anterior) contradiria a explicação do erro.
+      clearTimeout(estado.tempoDoAviso);
+      elemento('aviso-rapido').hidden = true;
+      elemento('dica-acao-quiz').textContent = 'Leia a explicação. A próxima questão abre em seguida.';
+      const textoPontos = resultado.pontos_ganhos < 0
+        ? `Você perdeu ${Math.abs(resultado.pontos_ganhos)} pontos nesta questão.`
+        : (estado.modoRevisao ? 'Revisão: esta tentativa não altera seus pontos.' : '');
+      await FluxoAtividade.mostrarExplicacaoErro({
+        enunciado: questao.enunciado,
+        letraMarcada,
+        textoMarcado: questao.alternativas?.[letraMarcada] || '',
+        letraCorreta: resultado.alternativa_correta,
+        textoCorreto: questao.alternativas?.[resultado.alternativa_correta] || '',
+        explicacao: resultado.explicacao,
+        textoPontos,
+      }, sinal);
     }
-    elemento('preenchimento-progresso-quiz').style.width = `${(estado.questoesRespondidas.size / estado.questoes.length) * 100}%`;
-    elemento('dica-acao-quiz').textContent = estado.modoMapa
-      ? (estado.questoesRespondidas.size >= estado.questoes.length ? 'Todas as questões foram respondidas.' : 'Volte ao mapa para escolher outra bolinha.')
-      : (resultado.correta ? 'Boa! Vamos continuar.' : 'Revise a explicação e siga para a próxima.');
-    botaoProximo.disabled = false;
-    botaoProximo.innerHTML = estado.modoMapa
-      ? (estado.questoesRespondidas.size >= estado.questoes.length ? 'Concluir fase →' : 'Voltar ao mapa')
-      : (estado.indiceQuestao < estado.questoes.length - 1 ? 'Próxima questão <span>→</span>' : 'Ver resultado <span>→</span>');
-    if (estado.modoMapa) renderizarMapaDesafio();
+    await avancarDepoisDaResposta(indice, sinal);
   } catch (erro) {
-    mostrarAvisoRapido(erro.message);
-    botaoProximo.disabled = false;
-    botaoProximo.innerHTML = 'Tentar novamente <span>→</span>';
-    // Erro 409: a questão já foi respondida (em outra aba, por exemplo) ou está fora de ordem.
-    // Recarrega o desafio salvo para o mapa ficar igual ao servidor.
-    if (erro.status === 409 && estado.desafio && estado.modoMapa && !estado.modoRevisao) {
-      elemento('janela-quiz').hidden = true;
-      await continuarDesafioSalvo(estado.desafio.id_desafio);
-    }
+    if (FluxoAtividade.foiCancelado(erro)) return;
+    // Algo deu errado na transição: a resposta já está salva; volta ao mapa sem travar nada.
+    console.error(erro);
+    cancelarFluxo();
+    elemento('janela-quiz').hidden = true;
+    if (estado.modoMapa && !elemento('tela-mapa-desafio').hidden) renderizarMapaDesafio();
+    mostrarAvisoRapido('Sua resposta foi salva. Toque na próxima bolinha para continuar.');
   }
 });
 
@@ -1671,8 +1858,15 @@ async function tentarFaseDeNovo() {
   const configuracao = estado.configuracaoBase;
   elemento('janela-quiz').hidden = true;
   if (!configuracao) { fecharMapaDesafio(); return; }
+  if (FluxoAtividade.carregamento.ativo()) return;
+  cancelarFluxo();
+  const faseNaJornada = Number(estado.desafio?.nivel_mapa || configuracao.faseNaJornada || 1);
   try {
-    await criarProximoDesafio({ ...configuracao, faseNaJornada: Number(estado.desafio?.nivel_mapa || configuracao.faseNaJornada || 1), mostrarMapa: true, novaTentativa: true });
+    const gerou = await FluxoAtividade.gerarComCarregamento(
+      () => criarProximoDesafio({ ...configuracao, faseNaJornada, mostrarMapa: true, novaTentativa: true }),
+      { titulo: 'Preparando uma nova tentativa…', texto: 'Novas questões para a mesma fase estão sendo geradas.' },
+    );
+    if (gerou) abrirQuestaoInicial();
   } catch (erro) {
     mostrarAvisoRapido(`Não foi possível criar a nova tentativa: ${erro.message}`);
     fecharMapaDesafio();
@@ -1782,8 +1976,10 @@ elemento('finalizar-quiz').addEventListener('click', async () => {
 });
 
 elemento('fechar-quiz').addEventListener('click', () => {
+  // Validando, mostrando o feedback ou avançando: a questão fecha sozinha.
+  if (fluxoOcupado()) return;
   if ((estado.modoRevisao || estado.faseReprovada) && !elemento('resultado-quiz').hidden) { elemento('janela-quiz').hidden = true; fecharMapaDesafio(); return; }
-  if (estado.modoRevisao) { elemento('janela-quiz').hidden = true; renderizarMapaDesafio(); return; }
+  if (estado.modoRevisao) { cancelarFluxo(); elemento('janela-quiz').hidden = true; renderizarMapaDesafio(); return; }
   if (estado.desafio && !elemento('resultado-quiz').hidden) {
     elemento('janela-quiz').hidden = true;
     renderizarMapaDesafio();
@@ -1792,6 +1988,7 @@ elemento('fechar-quiz').addEventListener('click', () => {
   // A resposta já está salva no servidor, então pode fechar direto.
   const confirmou = estado.respostaEnviada || window.confirm('Voltar ao mapa? A resposta desta questão só será salva quando você confirmar.');
   if (confirmou) {
+    cancelarFluxo();
     elemento('janela-quiz').hidden = true;
     renderizarMapaDesafio();
   }
@@ -2170,29 +2367,39 @@ function renderizarHistorico(historico) {
 }
 
 async function refazerDesafio(item, lista = null, pos = null) {
+  if (FluxoAtividade.carregamento.ativo()) return;
+  cancelarFluxo();
   try {
-    mostrarAvisoRapido('Preparando uma nova tentativa…');
-    const quantidade = [5, 10, 15, 20].includes(Number(item.quantidade_questoes)) ? Number(item.quantidade_questoes) : 5;
-    // Refazer usa a mesma dificuldade do desafio original.
-    const dificuldadeBase = chaveDificuldade(item.dificuldade);
-    const dados = await api('/api/learning/challenges', { method: 'POST', body: {
-      id_tema: Number(item.id_tema), quantidade_questoes: quantidade, dificuldade: dificuldadeBase, refazer: true, refazer_de: item.id_desafio,
-    }});
-    // Ordem da revisão: desafio 1, 2, 3, só os que já foram concluídos.
-    let sequencia = lista || desafiosConcluidosDoTema(item.id_tema);
-    let posicao = pos !== null ? pos : sequencia.findIndex((registro) => registro.id_desafio === item.id_desafio);
-    if (posicao < 0) { sequencia = [item]; posicao = 0; }
-    iniciarEstadoDesafio(dados, {
-      modoMapa: true,
-      modoRevisao: true,
-      revisao: { lista: sequencia, pos: posicao },
-      configuracao: { idTema: Number(item.id_tema), quantidade, dificuldadeBase, fasesPlanejadas: fasesPorQuantidade(quantidade), faseNaJornada: 1 },
-    });
-    abrirMapaDesafio();
-    mostrarAvisoRapido(`Revisão do desafio ${posicao + 1}: você pode sair a qualquer momento. Esta tentativa não altera sua jornada nem concede pontos.`);
+    const gerou = await FluxoAtividade.gerarComCarregamento(
+      () => prepararRevisao(item, lista, pos),
+      { titulo: 'Preparando a revisão…', texto: 'Carregando as questões deste desafio para você treinar de novo.' },
+    );
+    if (gerou) abrirQuestaoInicial();
   } catch (erro) {
     mostrarAvisoRapido(`Não foi possível refazer: ${erro.message}`);
   }
+}
+
+async function prepararRevisao(item, lista, pos) {
+  const quantidade = [5, 10, 15, 20].includes(Number(item.quantidade_questoes)) ? Number(item.quantidade_questoes) : 5;
+  // Refazer usa a mesma dificuldade do desafio original.
+  const dificuldadeBase = chaveDificuldade(item.dificuldade);
+  const dados = await api('/api/learning/challenges', { method: 'POST', body: {
+    id_tema: Number(item.id_tema), quantidade_questoes: quantidade, dificuldade: dificuldadeBase, refazer: true, refazer_de: item.id_desafio,
+  }});
+  garantirQuestoes(dados);
+  // Ordem da revisão: desafio 1, 2, 3, só os que já foram concluídos.
+  let sequencia = lista || desafiosConcluidosDoTema(item.id_tema);
+  let posicao = pos !== null ? pos : sequencia.findIndex((registro) => registro.id_desafio === item.id_desafio);
+  if (posicao < 0) { sequencia = [item]; posicao = 0; }
+  iniciarEstadoDesafio(dados, {
+    modoMapa: true,
+    modoRevisao: true,
+    revisao: { lista: sequencia, pos: posicao },
+    configuracao: { idTema: Number(item.id_tema), quantidade, dificuldadeBase, fasesPlanejadas: fasesPorQuantidade(quantidade), faseNaJornada: 1 },
+  });
+  abrirMapaDesafio();
+  mostrarAvisoRapido(`Revisão do desafio ${posicao + 1}: você pode sair a qualquer momento. Esta tentativa não altera sua jornada nem concede pontos.`);
 }
 
 elemento('proximo-desafio').addEventListener('click', async () => {
@@ -2245,9 +2452,15 @@ async function seguirParaProximaFase({ aoPreparar = null } = {}) {
     mostrarAvisoRapido('Jornada concluída! Você terminou todas as fases planejadas. Escolha um novo tema para continuar.');
     return;
   }
+  if (FluxoAtividade.carregamento.ativo()) return;
   if (aoPreparar) aoPreparar();
+  cancelarFluxo();
   try {
-    await criarProximoDesafio({ ...configuracao, faseNaJornada: Number(configuracao.faseNaJornada || 1) + 1, mostrarMapa: true });
+    const gerou = await FluxoAtividade.gerarComCarregamento(
+      () => criarProximoDesafio({ ...configuracao, faseNaJornada: Number(configuracao.faseNaJornada || 1) + 1, mostrarMapa: true }),
+      { titulo: 'Preparando a próxima fase…', texto: 'A inteligência artificial está criando questões um pouco mais difíceis.' },
+    );
+    if (gerou) abrirQuestaoInicial();
   } catch (erro) {
     mostrarAvisoRapido(`Não foi possível criar a próxima fase: ${erro.message}`);
   }
